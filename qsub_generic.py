@@ -7,6 +7,18 @@ import numpy as np
 import nibabel as nib
 import pandas as pd
 
+
+# Hardcoded variables
+# singularityVersion > runSingularity.sh
+
+
+
+
+
+
+
+
+
 # basedir="/bcbl/home/public/Gari/MAGNO2/"
 basedir="/export/home/glerma/glerma/00local/PROYECTOS/MAGNO2/"
 tool   ="fs_7.1.1-03"
@@ -15,11 +27,11 @@ tool   ="fs_7.1.1-03"
 analysis="01" 
 
 # PREVIOUS ANALYSIS
-pretoolfs="fs_7.1.1-03"
-preanalysisfs="01"
+# pretoolfs="fs_7.1.1-03"
+# preanalysisfs="01"
 
-pretoolpp="rtppreproc_1.1.2"
-preanalysispp="01"
+# pretoolpp="rtppreproc_1.1.2"
+# preanalysispp="01"
 
 mem="60G"
 

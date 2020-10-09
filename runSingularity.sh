@@ -1,8 +1,8 @@
 #!/bin/bash
 
 echo $sub
-
-module load singularity/3.5.2
+singularityVersion=3.5.2
+module load singularity/$singularityVersion
 
 echo "Starting singularity, using:"
 echo "Tool: ${tool}"

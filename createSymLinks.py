@@ -33,8 +33,6 @@ import pandas as pd
 
 # basedir="/bcbl/home/public/Gari/MAGNO2/"
 basedir="/export/home/glerma/glerma/00local/PROYECTOS/MAGNO2/"
-# sub    ="S023"
-# ses    ="T02"
 # THIS ANALYSIS
 tool   ="fs_7.1.1-03"
 # tool   ="rtppreproc_1.1.2"
