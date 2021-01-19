@@ -38,7 +38,7 @@ printf "\n\n It will use basedir:$basedir and tool:$tool \n\n"
 		singularity run -e --no-home \
 		        --bind /scratch:/scratch \
 		        --bind ${path2subderivatives}/input:/flywheel/v0/input:ro \
-                --bind ${path2subderivatives}/output:/flywheel/v0/output \
+                        --bind ${path2subderivatives}/output:/flywheel/v0/output \
 		        --bind ${path2config}:/flywheel/v0/config.json \
 		        ${container}
 
@@ -50,8 +50,9 @@ printf "\n\n It will use basedir:$basedir and tool:$tool \n\n"
    		qsub \
             -q $que -l mem=$mem,nodes=1:ppn=$core \
             -N t-${tool}_a-${analysis}_s-${sub}_s-${ses} \
-            -o "$HOME"/logs/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.o \
-            -e "$HOME"/logs/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.e \
-            -v tool=${tool},path2subderivatives=${path2subderivatives},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir} ${codedir}/runSingularity.sh 
+            -o "$HOME"/logs/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.o${JOB_ID} \
+            -e "$HOME"/logs/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.e${JOB_ID} \
+            -v tool=${tool},path2subderivatives=${path2subderivatives},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir} \
+            ${codedir}/runSingularity.sh 
 	fi
 
