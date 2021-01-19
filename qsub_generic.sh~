@@ -1,5 +1,5 @@
 #!/bin/bash
-printf "[qsub_generic.sh] "
+
 # get the arguments from the command line
 while getopts "t:s:e:a:b:o:m:q:c:p:i:n:u:" opt; do
     case $opt in
@@ -25,7 +25,7 @@ export subjbids="$sub"
 export path2subderivatives="${basedir}/Nifti/derivatives/${tool}/analysis-${analysis}/sub-${subjbids}/ses-${ses}"
 export path2config="${basedir}/Nifti/derivatives/${tool}/analysis-${analysis}/config.json"
 	
-printf "\n\n [qsub_generic.sh] It will use basedir:$basedir and tool:$tool \n\n"
+printf "\n\n It will use basedir:$basedir and tool:$tool \n\n"
 
 	if [ "$qsub" = "False" ]; then
 		printf "\n\nNO-QSUB MODE DETECTED\n\n"
@@ -48,21 +48,10 @@ printf "\n\n [qsub_generic.sh] It will use basedir:$basedir and tool:$tool \n\n"
  		printf "############## $sub_$ses ################\n"
    		printf "#########################################\n"
    		qsub \
-# NOTE FOR LEANDRO
-# THIS IS FOR BCBL
-                    -q $que \
-                    -l mem_free=$mem \
+                    -q $que -l mem=$mem,nodes=1:ppn=$core \
                     -N t-${tool}_a-${analysis}_s-${sub}_s-${ses} \
+                    -o "$HOME"/logs/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.o${JOB_ID} \
+                    -e "$HOME"/logs/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.e${JOB_ID} \
                     -v tool=${tool},path2subderivatives=${path2subderivatives},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir} ${codedir}/runSingularity.sh 
-##########
-
-# THIS IS FOR DIPC
-            -q $que -l mem=$mem,nodes=1:ppn=$core \
-            -N t-${tool}_a-${analysis}_s-${sub}_s-${ses} \
-            -o "$HOME"/logs/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.o${JOB_ID} \
-            -e "$HOME"/logs/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.e${JOB_ID} \
-            -v tool=${tool},path2subderivatives=${path2subderivatives},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir} \
-            ${codedir}/runSingularity.sh 
-##############
 	fi
 
