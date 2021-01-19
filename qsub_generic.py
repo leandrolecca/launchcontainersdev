@@ -4,57 +4,42 @@ import shutil as sh
 import glob
 import subprocess as sp
 import numpy as np
-import nibabel as nib
+# import nibabel as nib
 import pandas as pd
 
 
-# Hardcoded variables
-# singularityVersion > runSingularity.sh
+# qsub -q bcbl -l mem=64G,nodes=1:ppn=6 -N TEST -o "$HOME"/logs/TEST.o
+# -v
+# tool=fs_7.1.1-03d,path2subderivatives=/scratch/glerma/DATA/KSHIPRA/Nifti/derivatives/fs_7.1.1-03d/analysis-01/sub-BBINT07/ses-T01,path2config=/scratch/glerma/DATA/KSHIPRA/Nifti/derivatives/fs_7.1.1-03d/analysis-01/config.json,sin_ver=Singularity/3.5.3-GCC-8.3.0,container=
 
+# tool   ="fs_7.1.1-03d"
+# tool   ="rtppreproc_1.1.3"
+tool   ="rtp-pipeline_4.3.7"
+analysis="02" 
 
-
-
-
-
-
-
-
-#tool   ="fs_7.1.1-03"
-tool   ="rtppreproc_1.1.2"
-# tool   ="rtp-pipeline_4.3.4"
-analysis="01" 
-
-# PREVIOUS ANALYSIS
-# pretoolfs="fs_7.1.1-03"
-# preanalysisfs="01"
-
-# pretoolpp="rtppreproc_1.1.2"
-# preanalysispp="01"
-
-
-pj = "MAGNO" # possible values: MAGNO, ThaTract
-host ='dipc' # possible values: dipc, bcbl
+pj = "KSHIPRA" # possible values: MAGNO, ThaTract
+host ="dipc" # possible values: dipc, bcbl
 
 # find the correct code dir
 if pj == "MAGNO":
+    gitdir = "paper-MAGNO"
+elif pj == "KSHIPRA":
     gitdir = "paper-MAGNO"
 elif pj == "ThaTract":
     gitdir = "ThaTract"
 
 
 if host == "dipc":
-    
-    basedir = f"/scratch/lmx/{pj}"
-    codedir = f"/dipc/lmx/GIT/{gitdir}"
+    basedir = f"/scratch/glerma/DATA/{pj}"
+    codedir = f"/dipc/glerma/soft/{gitdir}"
     mem = "100G"  # memory to use for each qsub task
     que = "bcbl"  # in dipc cluster, we can only submit tasks to bcbl queue
     core = 6      # use 6 cores to compute one single task
-    tmpdir = "/scratch/lmx" # this will pass to SINGULARITYENV_TMPDIR for matlab use.
+    tmpdir = "/scratch/glerma" # this will pass to SINGULARITYENV_TMPDIR for matlab use.
     sin_ver = "Singularity/3.5.3-GCC-8.3.0" 
-    container = f"/scratch/lmx/containers/{tool}.sif"
+    container = f"/scratch/glerma/containers/{tool}.sif"
 
 elif host == "bcbl":
-    
     basedir = ""
     codedir = ""
     mem = "60G"     
@@ -68,7 +53,7 @@ qsub="True"   # use qsub to run singualrity or not, possible values: 'True' or '
 
 
 # Get the unique list of subjects and sessions
-subseslist=os.path.join(codedir,"subSesList.txt")
+subseslist=os.path.join(basedir,"Nifti","subSesList.txt")
 os.chdir(codedir)
 
 # all arguments we need to submit the task
@@ -99,11 +84,18 @@ for row in dt.itertuples(index=True, name='Pandas'):
     func = row.func
     if RUN and dwi:
         cmdstr = (f"{codedir}/qsub_generic.sh " + 
-                  f"-t {tool} -s {sub} -e {ses} " + 
+                  f"-t {tool} " +
+		  f"-s {sub} " +
+		  f"-e {ses} " + 
                   f"-a {analysis} "              +
-                  f"-b {basedir} -o {codedir} " + 
-                  f"-m {mem} -q {que} -c {core} " + 
-                  f"-p {tmpdir} -i {sin_ver} " + 
-                  f"-n {container} -u {qsub} ")
+                  f"-b {basedir} " +
+		  f"-o {codedir} " + 
+                  f"-m {mem} " +
+		  f"-q {que} " +
+		  f"-c {core} " + 
+                  f"-p {tmpdir} " +
+		  f"-i {sin_ver} " + 
+                  f"-n {container} " +
+		  f"-u {qsub} ")
         print(cmdstr)
         sp.call(cmdstr, shell=True)
