@@ -17,9 +17,32 @@ import pandas as pd
 tool   ="rtp-pipeline_4.3.7"
 analysis="02" 
 
+
+
+
+
+
+
+# CHOOSE TOOL
+# tool   ="fs_7.1.1-03d"
+# tool   ="rtppreproc_1.1.3"
+tool   ="rtp-pipeline_4.3.7"
+
+# CHOOSE ANALYSI SNUMBER
+analysis="01" 
+
+# CHOOSE PROJECT
+pj = "BERTSOLARI" # possible values: BERTSOLARI, MAGNO, ThaTract
+
+# CHOOSE HOST
+host ='bcbl' # possible values: dipc, bcbl
+
+
 pj = "KSHIPRA" # possible values: MAGNO, ThaTract
 host ="dipc" # possible values: dipc, bcbl
 
+
+# IT SHOOULD WORK BELOW
 # find the correct code dir
 if pj == "MAGNO":
     gitdir = "paper-MAGNO"
@@ -40,14 +63,17 @@ if host == "dipc":
     container = f"/scratch/glerma/containers/{tool}.sif"
 
 elif host == "bcbl":
+    basedir = f"/bcbl/home/public/Gari/{pj}"
+    codedir = f"/bcbl/home/home_g-m/glerma/GIT/{gitdir}"
+    mem = "31G"     
     basedir = ""
     codedir = ""
     mem = "60G"     
     que = "long.q"
-    core = ""
+    core = "6"
     tmpdir = "/scratch" # in bcbl, /scratch is writable, it's ok to use /scratch as tmp dir
     sin_ver = "singularity/3.5.2"
-    container = ""
+    container = f"/bcbl/home/home_g-m/glerma/containers/{tool}.sif"
 
 qsub="True"   # use qsub to run singualrity or not, possible values: 'True' or 'False'
 

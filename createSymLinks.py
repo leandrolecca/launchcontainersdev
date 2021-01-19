@@ -32,13 +32,12 @@ import pandas as pd
 # args = parser.parse_args()
 
 # basedir="/bcbl/home/public/Gari/MAGNO2/"
-basedir="/scratch/glerma/DATA/KSHIPRA"
+basedir="/bcbl/home/public/Gari/BERTSOLARI"
 rpe=False
 # THIS ANALYSIS
 # tool   ="fs_7.1.1-03d"
 # tool   ="rtppreproc_1.1.3"
 tool   ="rtp-pipeline_4.3.7"
-analysis="02"
 
 # PREVIOUS ANALYSIS
 pretoolfs="fs_7.1.1-03d"
@@ -74,7 +73,7 @@ for index in dt.index:
         if not os.path.exists(dstDirOp): os.makedirs(dstDirOp)
         if not os.path.exists(os.path.join(dstDirIn,"anatomical")): 
             os.makedirs(os.path.join(dstDirIn,"anatomical")) 
-       # Create the destination paths
+        # Create the destination paths
         dstAnatomicalFile = os.path.join(dstDirIn,'anatomical',"T1.nii.gz")
         # Create the symbolic links
         if os.path.isfile(dstAnatomicalFile): 
@@ -102,7 +101,6 @@ for index in dt.index:
             srcDwiR_niiFile  = os.path.join(srcDir,'dwi',"sub-"+sub+"_ses-"+ses+"_acq-PA_dwi.nii.gz") 
             srcDwiR_bvalFile = os.path.join(srcDir,'dwi',"sub-"+sub+"_ses-"+ses+"_acq-PA_dwi.bval") 
             srcDwiR_bvecFile = os.path.join(srcDir,'dwi',"sub-"+sub+"_ses-"+ses+"_acq-PA_dwi.bvec") 
-        
             # If bval and bvec do not exist because it is only b0-s, create them
             # (it would be better if dcm2niix would output them but...)
             img = nib.load(srcDwiR_niiFile)
@@ -112,7 +110,6 @@ for index in dt.index:
                 f = open(srcDwiR_bvalFile, "x")
                 f.write(volumes * "0 ")
                 f.close()
-        
                 # Write bvec file
                 f = open(srcDwiR_bvecFile, "x")
                 f.write(volumes * "0 ")
