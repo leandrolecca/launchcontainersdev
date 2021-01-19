@@ -13,6 +13,7 @@
 export sess=$2
 # export basedir=/export/home/glerma/public/Gari/MAGNO2
 basedir="/export/home/glerma/glerma/00local/PROYECTOS/MAGNO2/"
+basedir="/bcbl/home/public/KSHIPRA/dwibygari"
 
 read SUBJECTS < $1
 for sub in ${SUBJECTS};
@@ -22,7 +23,7 @@ for sub in ${SUBJECTS};
 	printf "#########################################"
 	printf "############## $sub_$sess ###############"
 	printf "#########################################"
-	qsub    -q long.q \
+	qsub    -q veryshort.q \
 		-N t-heudiconv_s-${sub}_s-${sess} \
 		-l mem_free=16G \
 		-v subj=$subj \

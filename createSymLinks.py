@@ -32,24 +32,28 @@ import pandas as pd
 # args = parser.parse_args()
 
 # basedir="/bcbl/home/public/Gari/MAGNO2/"
-basedir="/scratch/lmx/MAGNO/"
+# basedir="/scratch/lmx/MAGNO/"
+basedir="/bcbl/home/public/Gari/BERTSOLARI"
+rpe=False
 # THIS ANALYSIS
-#tool   ="fs_7.1.1-03"
-tool   ="rtppreproc_1.1.2"
-# tool   ="rtp-pipeline_4.3.4"
+# tool   ="fs_7.1.1-03d"
+# tool   ="rtppreproc_1.1.3"
+tool   ="rtp-pipeline_4.3.7"
 analysis="01" 
 
 # PREVIOUS ANALYSIS
-pretoolfs="fs_7.1.1-03"
+pretoolfs="fs_7.1.1-03d"
 preanalysisfs="01"
 
-pretoolpp="rtppreproc_1.1.2"
+pretoolpp="rtppreproc_1.1.3"
 preanalysispp="01"
 
 
 # Get the unique list of subjects and sessions
 codedir  = "/dipc/lmx/GIT/paper-MAGNO"
-subseslist=os.path.join(codedir,"subSesList.txt")
+codedir  = "/bcbl/home/home_g-m/glerma/GIT/paper-MAGNO"
+# codedir="/bcbl/home/public/Gari/BERTSOLARI/Nifti"
+subseslist=os.path.join(codedir,"subSesList_BERTSOLARI.txt")
 os.chdir(codedir)
 
 # READ THE FILE
@@ -73,7 +77,7 @@ for index in dt.index:
         if not os.path.exists(dstDirOp): os.makedirs(dstDirOp)
         if not os.path.exists(os.path.join(dstDirIn,"anatomical")): 
             os.makedirs(os.path.join(dstDirIn,"anatomical")) 
-       # Create the destination paths
+        # Create the destination paths
         dstAnatomicalFile = os.path.join(dstDirIn,'anatomical',"T1.nii.gz")
        
         # Create the symbolic links
@@ -95,29 +99,30 @@ for index in dt.index:
         srcDwiF_bvalFile = os.path.join(srcDir,'dwi',"sub-"+sub+"_ses-"+ses+"_acq-AP_dwi.bval") 
         srcDwiF_bvecFile = os.path.join(srcDir,'dwi',"sub-"+sub+"_ses-"+ses+"_acq-AP_dwi.bvec") 
         
-        srcDwiR_niiFile  = os.path.join(srcDir,'dwi',"sub-"+sub+"_ses-"+ses+"_acq-PA_dwi.nii.gz") 
-        srcDwiR_bvalFile = os.path.join(srcDir,'dwi',"sub-"+sub+"_ses-"+ses+"_acq-PA_dwi.bval") 
-        srcDwiR_bvecFile = os.path.join(srcDir,'dwi',"sub-"+sub+"_ses-"+ses+"_acq-PA_dwi.bvec") 
+        if rpe:
+            srcDwiR_niiFile  = os.path.join(srcDir,'dwi',"sub-"+sub+"_ses-"+ses+"_acq-PA_dwi.nii.gz") 
+            srcDwiR_bvalFile = os.path.join(srcDir,'dwi',"sub-"+sub+"_ses-"+ses+"_acq-PA_dwi.bval") 
+            srcDwiR_bvecFile = os.path.join(srcDir,'dwi',"sub-"+sub+"_ses-"+ses+"_acq-PA_dwi.bvec") 
         
-        # If bval and bvec do not exist because it is only b0-s, create them
-        # (it would be better if dcm2niix would output them but...)
-        img = nib.load(srcDwiR_niiFile)
-        volumes = img.shape[3]
-        if (not os.path.isfile(srcDwiR_bvalFile)) or (not os.path.isfile(srcDwiR_bvecFile)):
-            # Write bval file
-            f = open(srcDwiR_bvalFile, "x")
-            f.write(volumes * "0 ")
-            f.close()
-        
-            # Write bvec file
-            f = open(srcDwiR_bvecFile, "x")
-            f.write(volumes * "0 ")
-            f.write("\n")
-            f.write(volumes * "0 ")
-            f.write("\n")
-            f.write(volumes * "0 ")
-            f.write("\n")
-            f.close()
+            # If bval and bvec do not exist because it is only b0-s, create them
+            # (it would be better if dcm2niix would output them but...)
+            img = nib.load(srcDwiR_niiFile)
+            volumes = img.shape[3]
+            if (not os.path.isfile(srcDwiR_bvalFile)) or (not os.path.isfile(srcDwiR_bvecFile)):
+                # Write bval file
+                f = open(srcDwiR_bvalFile, "x")
+                f.write(volumes * "0 ")
+                f.close()
+            
+                # Write bvec file
+                f = open(srcDwiR_bvecFile, "x")
+                f.write(volumes * "0 ")
+                f.write("\n")
+                f.write(volumes * "0 ")
+                f.write("\n")
+                f.write(volumes * "0 ")
+                f.write("\n")
+                f.close()
         
         # Main destination  dir
         dstDir   = os.path.join(basedir, 'Nifti', 'derivatives', tool, 
@@ -133,18 +138,20 @@ for index in dt.index:
         if not os.path.exists(os.path.join(dstDir,"DIFF")): os.makedirs(os.path.join(dstDir,"DIFF")) 
         if not os.path.exists(os.path.join(dstDir,"BVAL")): os.makedirs(os.path.join(dstDir,"BVAL")) 
         if not os.path.exists(os.path.join(dstDir,"BVEC")): os.makedirs(os.path.join(dstDir,"BVEC"))
-        if not os.path.exists(os.path.join(dstDir,"RDIF")): os.makedirs(os.path.join(dstDir,"RDIF"))
-        if not os.path.exists(os.path.join(dstDir,"RBVL")): os.makedirs(os.path.join(dstDir,"RBVL"))
-        if not os.path.exists(os.path.join(dstDir,"RBVC")): os.makedirs(os.path.join(dstDir,"RBVC"))
+        if rpe:
+            if not os.path.exists(os.path.join(dstDir,"RDIF")): os.makedirs(os.path.join(dstDir,"RDIF"))
+            if not os.path.exists(os.path.join(dstDir,"RBVL")): os.makedirs(os.path.join(dstDir,"RBVL"))
+            if not os.path.exists(os.path.join(dstDir,"RBVC")): os.makedirs(os.path.join(dstDir,"RBVC"))
         # Create the destination paths
         dstT1file        = os.path.join(dstDir,'ANAT',"T1.nii.gz")
         dstMaskFile      = os.path.join(dstDir,'FSMASK',"brainmask.nii.gz")
         dstDwiF_niiFile  = os.path.join(dstDir,"DIFF","dwiF.nii.gz") 
         dstDwiF_bvalFile = os.path.join(dstDir,"BVAL","dwiF.bval") 
         dstDwiF_bvecFile = os.path.join(dstDir,"BVEC","dwiF.bvec") 
-        dstDwiR_niiFile  = os.path.join(dstDir,"RDIF","dwiR.nii.gz") 
-        dstDwiR_bvalFile = os.path.join(dstDir,"RBVL","dwiR.bval") 
-        dstDwiR_bvecFile = os.path.join(dstDir,"RBVC","dwiR.bvec") 
+        if rpe:
+            dstDwiR_niiFile  = os.path.join(dstDir,"RDIF","dwiR.nii.gz") 
+            dstDwiR_bvalFile = os.path.join(dstDir,"RBVL","dwiR.bval") 
+            dstDwiR_bvecFile = os.path.join(dstDir,"RBVC","dwiR.bvec") 
         
         # Create the symbolic links
         os.symlink(srcT1file       , dstT1file)
@@ -152,9 +159,10 @@ for index in dt.index:
         os.symlink(srcDwiF_niiFile , dstDwiF_niiFile) 
         os.symlink(srcDwiF_bvalFile, dstDwiF_bvalFile) 
         os.symlink(srcDwiF_bvecFile, dstDwiF_bvecFile) 
-        os.symlink(srcDwiR_niiFile , dstDwiR_niiFile) 
-        os.symlink(srcDwiR_bvalFile, dstDwiR_bvalFile) 
-        os.symlink(srcDwiR_bvecFile, dstDwiR_bvecFile) 
+        if rpe:
+            os.symlink(srcDwiR_niiFile , dstDwiR_niiFile) 
+            os.symlink(srcDwiR_bvalFile, dstDwiR_bvalFile) 
+            os.symlink(srcDwiR_bvecFile, dstDwiR_bvecFile) 
     
     if 'rtp-pipeline' in tool and RUN and dwi:
         # Main source dir

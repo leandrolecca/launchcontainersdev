@@ -18,25 +18,28 @@ import pandas as pd
 
 
 
+# CHOOSE TOOL
+# tool   ="fs_7.1.1-03d"
+# tool   ="rtppreproc_1.1.3"
+tool   ="rtp-pipeline_4.3.7"
 
-#tool   ="fs_7.1.1-03"
-tool   ="rtppreproc_1.1.2"
-# tool   ="rtp-pipeline_4.3.4"
+# CHOOSE ANALYSI SNUMBER
 analysis="01" 
 
-# PREVIOUS ANALYSIS
-# pretoolfs="fs_7.1.1-03"
-# preanalysisfs="01"
+# CHOOSE PROJECT
+pj = "BERTSOLARI" # possible values: BERTSOLARI, MAGNO, ThaTract
 
-# pretoolpp="rtppreproc_1.1.2"
-# preanalysispp="01"
+# CHOOSE HOST
+host ='bcbl' # possible values: dipc, bcbl
 
 
-pj = "MAGNO" # possible values: MAGNO, ThaTract
-host ='dipc' # possible values: dipc, bcbl
 
+
+# IT SHOOULD WORK BELOW
 # find the correct code dir
 if pj == "MAGNO":
+    gitdir = "paper-MAGNO"
+elif pj == "BERTSOLARI":
     gitdir = "paper-MAGNO"
 elif pj == "ThaTract":
     gitdir = "ThaTract"
@@ -55,20 +58,20 @@ if host == "dipc":
 
 elif host == "bcbl":
     
-    basedir = ""
-    codedir = ""
-    mem = "60G"     
+    basedir = f"/bcbl/home/public/Gari/{pj}"
+    codedir = f"/bcbl/home/home_g-m/glerma/GIT/{gitdir}"
+    mem = "31G"     
     que = "long.q"
-    core = ""
+    core = "6"
     tmpdir = "/scratch" # in bcbl, /scratch is writable, it's ok to use /scratch as tmp dir
     sin_ver = "singularity/3.5.2"
-    container = ""
+    container = f"/bcbl/home/home_g-m/glerma/containers/{tool}.sif"
 
 qsub="True"   # use qsub to run singualrity or not, possible values: 'True' or 'False'
 
 
 # Get the unique list of subjects and sessions
-subseslist=os.path.join(codedir,"subSesList.txt")
+subseslist=os.path.join(codedir,f"subSesList_{pj}.txt")
 os.chdir(codedir)
 
 # all arguments we need to submit the task

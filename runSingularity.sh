@@ -21,9 +21,12 @@ echo "Starting singularity, using:"
 echo "Tool: ${tool}"
 echo "Path: ${path2subderivatives}"
 echo "Config: ${path2config}"
+echo "Container: ${container}"
 date;
 singularity run -e --no-home \
-    --bind /scratch:/scratch \
+        --bind /bcbl:/bcbl \
+        --bind /tmp:/tmp \
+        --bind /scratch:/scratch \
 	--bind ${path2subderivatives}/input:/flywheel/v0/input:ro \
 	--bind ${path2subderivatives}/output:/flywheel/v0/output \
 	--bind ${path2config}:/flywheel/v0/config.json \
