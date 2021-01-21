@@ -6,6 +6,7 @@ import subprocess as sp
 import numpy as np
 # import nibabel as nib
 import pandas as pd
+import json
 
 
 # qsub -q bcbl -l mem=64G,nodes=1:ppn=6 -N TEST -o "$HOME"/logs/TEST.o
@@ -14,68 +15,56 @@ import pandas as pd
 
 # tool   ="fs_7.1.1-03d"
 # tool   ="rtppreproc_1.1.3"
-tool   ="rtp-pipeline_4.3.7"
-analysis="02" 
 
+with open('config_launchcontainer.json','r') as v:
+    vars=json.load(v)
 
+tool =vars["config"]["tool"]
+analysis=vars["config"]["analysis"]
 
+pj = vars["config"]["pj"] # possible values: MAGNO, ThaTract
+host =vars["config"]["host"] # possible values: dipc, bcbl
+basedir=vars["config"]["basedir"]
+codedir=vars["config"]["codedir"]
+tmpdir=vars["config"]["tmpdir"]
+mem=vars["config"]["mem"]
+que=vars["config"]["que"]
+core=vars["config"]["core"]
+tmpdir=vars["config"]["tmpdir"]
+sin_ver=vars["config"]["sin_ver"]
+container=vars["config"]["container"]
+qsub=vars["config"]["qsub"]
 
-
-
-
-# CHOOSE TOOL
-# tool   ="fs_7.1.1-03d"
-# tool   ="rtppreproc_1.1.3"
-tool   ="rtp-pipeline_4.3.7"
-
-# CHOOSE ANALYSI SNUMBER
-analysis="01" 
-
-# CHOOSE PROJECT
-pj = "BERTSOLARI" # possible values: BERTSOLARI, MAGNO, ThaTract
-
-# CHOOSE HOST
-host ='bcbl' # possible values: dipc, bcbl
-
-
-pj = "KSHIPRA" # possible values: MAGNO, ThaTract
-host ="dipc" # possible values: dipc, bcbl
-
-
-# IT SHOOULD WORK BELOW
 # find the correct code dir
-if pj == "MAGNO":
-    gitdir = "paper-MAGNO"
-elif pj == "KSHIPRA":
-    gitdir = "paper-MAGNO"
-elif pj == "ThaTract":
-    gitdir = "ThaTract"
+# if pj == "MAGNO":
+#     gitdir = "paper-MAGNO"
+# elif pj == "KSHIPRA":
+#     gitdir = "paper-MAGNO"
+# elif pj == "ThaTract":
+#     gitdir = "ThaTract"
 
 
-if host == "dipc":
-    basedir = f"/scratch/glerma/DATA/{pj}"
-    codedir = f"/dipc/glerma/soft/{gitdir}"
-    mem = "100G"  # memory to use for each qsub task
-    que = "bcbl"  # in dipc cluster, we can only submit tasks to bcbl queue
-    core = 6      # use 6 cores to compute one single task
-    tmpdir = "/scratch/glerma" # this will pass to SINGULARITYENV_TMPDIR for matlab use.
-    sin_ver = "Singularity/3.5.3-GCC-8.3.0" 
-    container = f"/scratch/glerma/containers/{tool}.sif"
-
-elif host == "bcbl":
-    basedir = f"/bcbl/home/public/Gari/{pj}"
-    codedir = f"/bcbl/home/home_g-m/glerma/GIT/{gitdir}"
-    mem = "31G"     
-    basedir = ""
-    codedir = ""
-    mem = "60G"     
-    que = "long.q"
-    core = "6"
-    tmpdir = "/scratch" # in bcbl, /scratch is writable, it's ok to use /scratch as tmp dir
-    sin_ver = "singularity/3.5.2"
-    container = f"/bcbl/home/home_g-m/glerma/containers/{tool}.sif"
-
-qsub="True"   # use qsub to run singualrity or not, possible values: 'True' or 'False'
+# if host == "dipc":
+#     basedir = f"/scratch/glerma/DATA/{pj}"
+#     codedir = f"/dipc/glerma/soft/{gitdir}"
+#     mem = "100G"  # memory to use for each qsub task
+#     que = "bcbl"  # in dipc cluster, we can only submit tasks to bcbl queue
+#     core = 6      # use 6 cores to compute one single task
+#     tmpdir = "/scratch/glerma" # this will pass to SINGULARITYENV_TMPDIR for matlab use.
+#     sin_ver = "Singularity/3.5.3-GCC-8.3.0"
+#     container = f"/scratch/glerma/containers/{tool}.sif"
+#
+# elif host == "bcbl":
+#     basedir = ""
+#     codedir = ""
+#     mem = "60G"
+#     que = "long.q"
+#     core = ""
+#     tmpdir = "/scratch" # in bcbl, /scratch is writable, it's ok to use /scratch as tmp dir
+#     sin_ver = "singularity/3.5.2"
+#     container = ""
+#
+# qsub="True"   # use qsub to run singualrity or not, possible values: 'True' or 'False'
 
 
 # Get the unique list of subjects and sessions
@@ -109,18 +98,18 @@ for row in dt.itertuples(index=True, name='Pandas'):
     dwi  = row.dwi
     func = row.func
     if RUN and dwi:
-        cmdstr = (f"{codedir}/qsub_generic.sh " + 
+        cmdstr = (f"{codedir}/qsub_generic.sh " +
                   f"-t {tool} " +
 		  f"-s {sub} " +
-		  f"-e {ses} " + 
+		  f"-e {ses} " +
                   f"-a {analysis} "              +
                   f"-b {basedir} " +
-		  f"-o {codedir} " + 
+		  f"-o {codedir} " +
                   f"-m {mem} " +
 		  f"-q {que} " +
-		  f"-c {core} " + 
+		  f"-c {core} " +
                   f"-p {tmpdir} " +
-		  f"-i {sin_ver} " + 
+		  f"-i {sin_ver} " +
                   f"-n {container} " +
 		  f"-u {qsub} ")
         print(cmdstr)
