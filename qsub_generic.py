@@ -86,6 +86,7 @@ os.chdir(codedir)
 -i sin_ver    # singularity version
 -n container  # the location of the container to run
 -u noqsub     # use qsub or not
+-h host       # host where to run
 """
 
 # READ THE FILE
@@ -111,6 +112,7 @@ for row in dt.itertuples(index=True, name='Pandas'):
                   f"-p {tmpdir} " +
 		  f"-i {sin_ver} " +
                   f"-n {container} " +
-		  f"-u {qsub} ")
+		  f"-u {qsub} " +
+          f"-h {host} ")
         print(cmdstr)
         sp.call(cmdstr, shell=True)
