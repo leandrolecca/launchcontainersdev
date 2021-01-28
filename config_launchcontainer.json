@@ -1,22 +1,22 @@
 {
   "config": {
     "basedir": "/export/home/llecca/public/DB/curated_DB",
-    "rpe": false,
+    "rpe": "false",
     "tool": "anatrois_4.0.2-7.1.1",
-    "analysis": "02",
+    "analysis": "01",
     "pretoolfs":"fs_7.1.1-03d",
     "preanalysisfs":"01",
     "pretoolpp":"rtppreproc_1.1.3",
     "preanalysispp":"01",
-    "codedir":"/export/home/llecca/lecca/launchcontainers",
+    "codedir":"/export/home/llecca/llecca/launchcontainers",
     "pj":"KSHIPRA",
-    "host": "dipc",
-    "mem":"100G",
-    "que":"bcbl",
+    "host": "BCBL",
+    "mem":"60G",
+    "que":"long.q",
     "core":6,
-    "tmpdir":"/scratch/glerma",
-    "sin_ver":"Singularity/3.5.3-GCC-8.3.0",
+    "tmpdir":"/export/home/llecca",
+    "sin_ver":"singularity/3.5.2",
     "container":"/export/home/llecca/llecca/containers/anatrois_4.0.2-7.1.1.sif",
-    "qsub":true
+    "qsub":"true"
   }
 }
