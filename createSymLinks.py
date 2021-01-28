@@ -77,10 +77,10 @@ for index in dt.index:
         # Create folders if they do not exist
         if not os.path.exists(dstDirIn): os.makedirs(dstDirIn)
         if not os.path.exists(dstDirOp): os.makedirs(dstDirOp)
-        if not os.path.exists(os.path.join(dstDirIn,"anatomical")):
-            os.makedirs(os.path.join(dstDirIn,"anatomical"))
+        if not os.path.exists(os.path.join(dstDirIn,"anat")):
+            os.makedirs(os.path.join(dstDirIn,"anat"))
        # Create the destination paths
-        dstAnatomicalFile = os.path.join(dstDirIn,'anatomical',"T1.nii.gz")
+        dstAnatomicalFile = os.path.join(dstDirIn,'anat',"T1.nii.gz")
         # Create the symbolic links
         if os.path.isfile(dstAnatomicalFile):
             os.unlink(dstAnatomicalFile)
@@ -190,8 +190,8 @@ for index in dt.index:
         # Create folders if they do not exist
         if not os.path.exists(dstDirIn): os.makedirs(dstDirIn)
         if not os.path.exists(dstDirOp): os.makedirs(dstDirOp)
-        if not os.path.exists(os.path.join(dstDirIn,"anatomical")):
-            os.makedirs(os.path.join(dstDirIn,"anatomical"))
+        if not os.path.exists(os.path.join(dstDirIn,"anat")):
+            os.makedirs(os.path.join(dstDirIn,"anat"))
         if not os.path.exists(os.path.join(dstDirIn,"fs")): os.makedirs(os.path.join(dstDirIn,"fs"))
         if not os.path.exists(os.path.join(dstDirIn,"dwi")): os.makedirs(os.path.join(dstDirIn,"dwi"))
         if not os.path.exists(os.path.join(dstDirIn,"bval")): os.makedirs(os.path.join(dstDirIn,"bval"))
@@ -199,7 +199,7 @@ for index in dt.index:
         if not os.path.exists(os.path.join(dstDirIn,"tractparams")):
             os.makedirs(os.path.join(dstDirIn,"tractparams"))
         # Create the destination paths
-        dstAnatomicalFile = os.path.join(dstDirIn,'anatomical',"T1.nii.gz")
+        dstAnatomicalFile = os.path.join(dstDirIn,'anat',"T1.nii.gz")
         dstFsfile         = os.path.join(dstDirIn,'fs',"fs.zip")
         dstDwi_dwiFile    = os.path.join(dstDirIn,"dwi","dwi.nii.gz")
         dstDwi_bvalFile   = os.path.join(dstDirIn,"bval","dwi.bval")
