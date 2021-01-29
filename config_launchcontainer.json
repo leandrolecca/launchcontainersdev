@@ -9,14 +9,20 @@
     "pretoolpp":"rtppreproc_1.1.3",
     "preanalysispp":"01",
     "codedir":"/export/home/llecca/llecca/launchcontainers",
-    "pj":"KSHIPRA",
     "host": "BCBL",
-    "mem":"60G",
-    "que":"long.q",
-    "core":6,
     "tmpdir":"/export/home/llecca",
     "sin_ver":"singularity/3.5.2",
-    "container":"/export/home/llecca/llecca/containers/anatrois_4.0.2-7.1.1.sif",
+    "container":"/export/home/llecca/llecca/containers",
     "qsub":"true"
+  },
+  "BCBL": {
+    "mem":"60G",
+    "que":"long.q",
+    "core":6
+  },
+  "DIPC": {
+    "mem":"100G",
+    "que":"bcbl",
+    "core":6
   }
 }
