@@ -47,12 +47,15 @@ if [ "$qsb" == "true" ];then
     printf "#### log directory: $logdir\n"
     printf "#### coding directory: $codedir\n"
 
+            # -N t-${tool}_a-${analysis}_s-${sub}_s-${ses} \
 # # THIS IS FOR BCBL
     if [ "$host" == "BCBL" ]; then
             cmd="qsub \
             -q $que \
-            -l mem_free=$mem \
             -N t-${tool}_a-${analysis}_s-${sub}_s-${ses} \
+            -o ${logdir}/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.o \
+            -e ${logdir}/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.e \
+            -l mem_free=$mem \
             -v
 	    tool=${tool},path2subderivatives=${path2subderivatives},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir}
 	    ${codedir}/runSingularity.sh"
