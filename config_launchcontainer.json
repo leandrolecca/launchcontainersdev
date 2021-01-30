@@ -1,6 +1,6 @@
 {
   "config": {
-    "basedir": "/scratch/llecca/curated_DB",
+    "basedir": "/export/home/glerma/public/Gari/MINI",
     "rpe": false,
     "tool": "anatrois_4.0.2-7.1.1",
     "analysis": "01",
@@ -8,16 +8,16 @@
     "preanalysisfs":"01",
     "pretoolpp":"rtppreproc_1.1.3",
     "preanalysispp":"01",
-    "codedir":"/dipc/llecca/launchcontainers",
-    "host": "DIPC",
-    "logdir":"/scratch/llecca/logdir",
-    "tmpdir":"/scratch/llecca/tmpdir",
-    "container":"/scratch/llecca/containers",
+    "codedir":"$GIT/launchcontainers",
+    "host": "BCBL",
+    "logdir":"$HOME/logdir",
+    "tmpdir":"$HOME/tmpdir",
+    "container":"$HOME/glerma/containers",
     "qsub":"true"
   },
   "BCBL": {
     "mem":"60G",
-    "que":"long.q",
+    "que":"veryshort.q",
     "core":6,
     "sin_ver":"singularity/3.5.2"
   },
