@@ -20,6 +20,10 @@ qsub=vars["config"]["qsub"]
 tmpdir=vars["config"]["tmpdir"]
 logdir=vars["config"]["logdir"]
 
+# If tmpdir and logdir do not exist, create them
+if not os.path.isdir(tmpdir): os.mkdir(tmpdir)
+if not os.path.isdir(logdir): os.mkdir(logdir)
+
 if host == "BCBL":
     mem=vars["BCBL"]["mem"]
     que=vars["BCBL"]["que"]
