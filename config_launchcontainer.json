@@ -10,9 +10,9 @@
     "preanalysispp":"01",
     "codedir":"/dipc/llecca/launchcontainers",
     "host": "DIPC",
-    "logdir":"/dipc/llecca/logdir",
-    "tmpdir":"/dipc/llecca/tmpdir",
-    "container":"/dipc/llecca/containers",
+    "logdir":"/scratch/llecca/logdir",
+    "tmpdir":"/scratch/llecca/tmpdir",
+    "container":"/scratch/llecca/containers",
     "qsub":"true"
   },
   "BCBL": {
@@ -25,6 +25,6 @@
     "mem":"100G",
     "que":"bcbl",
     "core":6,
-    "sin_ver":"Singularity/3.5.2-GCC-8.3.0"
+    "sin_ver":"Singularity/3.5.3-GCC-8.3.0"
   }
 }
