@@ -57,7 +57,7 @@ if [ "$qsb" == "true" ];then
             -e ${logdir}/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.e \
             -l mem_free=$mem \
             -v
-	    tool=${tool},path2subderivatives=${path2subderivatives},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir}
+	    tool=${tool},path2subderivatives=${path2subderivatives},host=${host},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir}
 	    ${codedir}/runSingularity.sh"
     elif [ "$host" == "DIPC" ]; then
             cmd="qsub \
