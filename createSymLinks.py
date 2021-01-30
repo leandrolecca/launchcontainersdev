@@ -10,10 +10,10 @@ import pandas as pd
 import json
 
 
-# parser = argparse.ArgumentParser(description='''createSymLinks.py 'subdir' 'wildcard' 'fullPathFile' 'separator' ''')
+parser = argparse.ArgumentParser(description='''createSymLinks.py 'pathTo/config_launchcontainers.json' ''')
 #
 # # Required positional argument
-# parser.add_argument('subdir', type=str, help='subdir where the data is')
+parser.add_argument('configFile', type=str, help='path to the config file')
 # parser.add_argument('wildcard', type=str, help='wildcard to select folders')
 # parser.add_argument('fullPathFile', type=str, help='path and file name to write')
 # parser.add_argument('separator', type=str, help='separator to use')
@@ -30,14 +30,18 @@ import json
 # parser.add_argument('--switch', action='store_true',
 #                             help='A boolean switch')
 
-# args = parser.parse_args()
+args = parser.parse_args()
+print('Read config file: ')
+print(args.configFile)
+
 
 # read the variables from json file:
-with open('config_launchcontainer.json','r') as v:
+with open(args.configFile,'r') as v:
     vars=json.load(v)
 
-# basedir="/bcbl/home/public/Gari/MAGNO2/"
 basedir=vars["config"]["basedir"]
+print('Basedir: ')
+print(basedir)
 rpe=vars["config"]["rpe"]
 # THIS ANALYSIS
 # tool   ="fs_7.1.1-03d"
