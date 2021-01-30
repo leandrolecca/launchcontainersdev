@@ -49,20 +49,26 @@ if [ "$qsb" == "true" ];then
 
 # # THIS IS FOR BCBL
     if [ "$host" == "BCBL" ]; then
-            qsub \
+            cmd="qsub \
             -q $que \
             -l mem_free=$mem \
             -N t-${tool}_a-${analysis}_s-${sub}_s-${ses} \
-            -v tool=${tool},path2subderivatives=${path2subderivatives},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir} ${codedir}/runSingularity.sh
+            -v
+	    tool=${tool},path2subderivatives=${path2subderivatives},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir}
+	    ${codedir}/runSingularity.sh"
     elif [ "$host" == "DIPC" ]; then
-            qsub \
+            cmd="qsub \
             -q $que -l mem=$mem,nodes=1:ppn=$core \
             -N t-${tool}_a-${analysis}_s-${sub}_s-${ses} \
             -o ${logdir}/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.o${JOB_ID} \
             -e ${logdir}/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.e${JOB_ID} \
-            -v tool=${tool},path2subderivatives=${path2subderivatives},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir} \
-            ${codedir}/runSingularity.sh
-    fi
+            -v
+	    tool=${tool},path2subderivatives=${path2subderivatives},host=${host},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir} \
+            ${codedir}/runSingularity.sh"
+   fi
+   printf "#### runnig qsubs in $host server:\n"
+   echo $cmd
+   eval $cmd
 fi
 
 if [ "$qsb" == "false" ];then
