@@ -4,7 +4,6 @@ import shutil as sh
 import glob
 import subprocess as sp
 import numpy as np
-import nibabel as nib
 import pandas as pd
 import json
 
@@ -16,19 +15,21 @@ tool =vars["config"]["tool"]
 analysis=vars["config"]["analysis"]
 host =vars["config"]["host"] # possible values: dipc, bcbl
 codedir=vars["config"]["codedir"]
-tmpdir=vars["config"]["tmpdir"]
-sin_ver=vars["config"]["sin_ver"]
 container=vars["config"]["container"]+'/'+tool+'.sif'
 qsub=vars["config"]["qsub"]
+tmpdir=vars["config"]["tmpdir"]
+logdir=vars["config"]["logdir"]
 
 if host == "BCBL":
     mem=vars["BCBL"]["mem"]
     que=vars["BCBL"]["que"]
     core=vars["BCBL"]["core"]
-elif host == "DIPC"
+    sin_ver=vars["BCBL"]["sin_ver"]
+elif host == "DIPC":
     mem=vars["DIPC"]["mem"]
     que=vars["DIPC"]["que"]
     core=vars["DIPC"]["core"]
+    sin_ver=vars["DIPC"]["sin_ver"]
 
 # Get the unique list of subjects and sessions
 subseslist=os.path.join(basedir,"Nifti","subSesList.txt")
@@ -46,6 +47,7 @@ os.chdir(codedir)
 -q que        # queue to submit the tasks
 -c core       # core numbers to request for qsub
 -p tmpdir     # tmp dir for singularity containers
+-g logdir     # log dir for error and output runs
 -i sin_ver    # singularity version
 -n container  # the location of the container to run
 -u noqsub     # use qsub or not
@@ -73,6 +75,7 @@ for row in dt.itertuples(index=True, name='Pandas'):
 		  f"-q {que} " +
 		  f"-c {core} " +
                   f"-p {tmpdir} " +
+		  f"-g {logdir} " +
 		  f"-i {sin_ver} " +
                   f"-n {container} " +
 		  f"-u {qsub} " +

@@ -1,7 +1,7 @@
 #!/bin/bash
 printf "[qsub_generic.sh] "
 # get the arguments from the command line
-while getopts "t:s:e:a:b:o:m:q:c:p:i:n:u:h:" opt; do
+while getopts "t:s:e:a:b:o:m:q:c:p:g:i:n:u:h:" opt; do
     case $opt in
         t) tool="$OPTARG";;
         s) sub="$OPTARG";;
@@ -13,6 +13,7 @@ while getopts "t:s:e:a:b:o:m:q:c:p:i:n:u:h:" opt; do
         q) que="$OPTARG";;
         c) core="$OPTARG";;
         p) tmpdir="$OPTARG";;
+	g) logdir="$OPTARG";;
         i) sin_ver="$OPTARG";;
         n) container="$OPTARG";;
         u) qsb="$OPTARG";;
@@ -43,6 +44,7 @@ if [ "$qsb" == "true" ];then
     printf "#### singularity version: $sin_ver\n"
     printf "#### container: $container\n"
     printf "#### temporal directory: $tmpdir\n"
+    printf "#### log directory: $logdir\n"
     printf "#### coding directory: $codedir\n"
 
 # # THIS IS FOR BCBL
@@ -53,10 +55,11 @@ if [ "$qsb" == "true" ];then
             -N t-${tool}_a-${analysis}_s-${sub}_s-${ses} \
             -v tool=${tool},path2subderivatives=${path2subderivatives},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir} ${codedir}/runSingularity.sh
     elif [ "$host" == "DIPC" ]; then
+            qsub \
             -q $que -l mem=$mem,nodes=1:ppn=$core \
             -N t-${tool}_a-${analysis}_s-${sub}_s-${ses} \
-            -o "$HOME"/logs/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.o${JOB_ID} \
-            -e "$HOME"/logs/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.e${JOB_ID} \
+            -o ${logdir}/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.o${JOB_ID} \
+            -e ${logdir}/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.e${JOB_ID} \
             -v tool=${tool},path2subderivatives=${path2subderivatives},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir} \
             ${codedir}/runSingularity.sh
     fi
