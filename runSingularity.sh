@@ -11,9 +11,6 @@
 # $path2subderivatives      input and output dir location
 # $path2config              config file location
     
-export SINGULARITYENV_TMPDIR=$tmpdir
-export SINGULARITY_BIND=""
-TMPDIR=
 module load $sin_ver
 
 echo $sub
@@ -23,15 +20,28 @@ echo "Path: ${path2subderivatives}"
 echo "Config: ${path2config}"
 echo "Container: ${container}"
 date;
-singularity run -e --no-home \
-        --bind /bcbl:/bcbl \
-        --bind /tmp:/tmp \
-        --bind /scratch:/scratch \
+echo "Running: ${sin_ver}"
+
+if [ "$host" == "BCBL" ];then 
+ cmd="singularity run -e --no-home \
+ 	--bind /bcbl:/bcbl \
+	--bind /tmp:/tmp \
+	--bind /scratch:/scratch \
+	--bind ${path2subderivatives}/input:/flywheel/v0/input:ro \
+	--bind ${path2subderivatives}/otuput:/flywheel/v0/output \
+	--bind ${path2config}:/flywheel/v0/config.json \
+	$container"
+elif [ "$host" == "DIPC" ];then
+ cmd="singularity run -e --no-home \
+ 	--bind /scratch:/scratch \
 	--bind ${path2subderivatives}/input:/flywheel/v0/input:ro \
 	--bind ${path2subderivatives}/output:/flywheel/v0/output \
 	--bind ${path2config}:/flywheel/v0/config.json \
-	$container
+	$container"
+fi
 
+echo $cmd
+eval $cmd
 echo "ended singularity"
 
 date;
