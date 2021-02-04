@@ -7,7 +7,19 @@ import numpy as np
 import pandas as pd
 import json
 
-with open('config_launchcontainer.json','r') as v:
+
+
+
+parser = argparse.ArgumentParser(description='''createSymLinks.py 'pathTo/config_launchcontainers.json' ''')
+# # Required positional argument
+parser.add_argument('configFile', type=str, help='path to the config file')
+
+args = parser.parse_args()
+print('Read config file: ')
+print(args.configFile)
+
+# read the variables from json file:
+with open(args.configFile,'r') as v:
     vars=json.load(v)
 
 basedir=vars["config"]["basedir"]
