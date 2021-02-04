@@ -28,7 +28,7 @@ if [ "$host" == "BCBL" ];then
 	--bind /tmp:/tmp \
 	--bind /scratch:/scratch \
 	--bind ${path2subderivatives}/input:/flywheel/v0/input:ro \
-	--bind ${path2subderivatives}/otuput:/flywheel/v0/output \
+	--bind ${path2subderivatives}/output:/flywheel/v0/output \
 	--bind ${path2config}:/flywheel/v0/config.json \
 	$container"
 elif [ "$host" == "DIPC" ];then
