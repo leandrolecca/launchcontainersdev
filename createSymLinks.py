@@ -5,7 +5,7 @@ import glob
 import subprocess as sp
 import numpy as np
 # !{sys.executable} -m pip install nibabel  # inside jupyter console
-# import nibabel as nib
+import nibabel as nib
 import pandas as pd
 import json
 
