@@ -12,7 +12,12 @@
 # $path2config              config file location
     
 module load $sin_ver
-
+# we need following lines for running fixAllSegmentations.m
+# (from thalamus segmentation) successfully in DIPC
+export SINGULARITYENV_TMPDIR=$tmpdir
+export SINGULARITY_BIND=""
+TMPDIR=
+echo $SINGULARITYENV_TMPDIR
 echo $sub
 echo "Starting singularity, using:"
 echo "Tool: ${tool}"
