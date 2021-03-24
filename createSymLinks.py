@@ -228,7 +228,7 @@ for index in dt.index:
                                 'analysis-'+preanalysispp, 'sub-'+sub, 'ses-'+ses, 'output')
 
         src_anatomical=os.path.join(srcDirpp, 't1.nii.gz')
-        src_fs=os.path.join(srcDirfs, 'fs')
+        src_fs=os.path.join(srcDirfs, 'fs.zip')
         src_bval=os.path.join(srcDirpp, 'dwi.bvals')
         src_bvec=os.path.join(srcDirpp, 'dwi.bvecs')
         src_dwi=os.path.join(srcDirpp, 'b0_dwi.nii.gz')
