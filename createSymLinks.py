@@ -51,14 +51,17 @@ rpe = vars["config"]["rpe"]
 tool = vars["config"]["tool"]
 analysis = vars["config"]["analysis"]
 
+
+annotfile = vars["config"]["annotfile"]
+mniroizip = vars["config"]["mniroizip"]
+
+
 # PREVIOUS ANALYSIS
 pretoolfs = vars["config"]["pretoolfs"]
 preanalysisfs = vars["config"]["preanalysisfs"]
 
 pretoolpp = vars["config"]["pretoolpp"]
 preanalysispp = vars["config"]["preanalysispp"]
-
-annotfile = vars["config"]["annotfile"]
 
 # Get the unique list of subjects and sessions
 codedir = vars["config"]["codedir"]
@@ -80,11 +83,27 @@ for index in dt.index:
         # Main source dir
         src_anatomical = os.path.join(
             basedir, 'Nifti', 'sub-'+sub, 'ses-'+ses, 'anat', 'sub-'+sub+'_ses-'+ses+'_T1w.nii.gz')
+        
         # Main destination  dir
         dstDirIn = os.path.join(basedir, 'Nifti', 'derivatives', tool,
                                 'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'input')
         dstDirOp = os.path.join(basedir, 'Nifti', 'derivatives', tool,
                                 'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'output')
+        dstDirAn = os.path.join(basedir, 'Nifti', 'derivatives', tool,
+                                'analysis-'+analysis)
+
+
+       # Add two new variables to the config_launchcontainer.json file,
+       # with the name and the location of the annot and mniroi zip
+       # files
+       # If it is an empty string, do nothing, otherwise, copy the file
+       # to the analysis folder and create a symlink to the input folder
+       # of the subject.
+
+
+
+
+
         # Create folders if they do not exist
         if not os.path.exists(dstDirIn):
             os.makedirs(dstDirIn)
@@ -92,8 +111,27 @@ for index in dt.index:
             os.makedirs(dstDirOp)
         if not os.path.exists(os.path.join(dstDirIn, "anat")):
             os.makedirs(os.path.join(dstDirIn, "anat"))
-       # Create the destination paths
+        if annotfile:    
+            if os.path.isfile(annotfile):
+                shutil.copyfile(annotfile,os.path.join(dstDirAn,'annotfile.zip'))
+            else:
+                print(annotfile + ' does not exist')
+                srcAnnotfile = os.path.join(dstDirAn,'annotfile.zip')
+            if not os.path.exists(os.path.join(dstDirIn, "annotfile")):
+                os.makedirs(os.path.join(dstDirIn, "annotfile"))
+        if mniroizip:    
+            if os.path.isfile(mniroizip):
+                shutil.copyfile(mniroizip,os.path.join(dstDirAn,'mniroizip.zip'))
+            else:
+                print(mniroizip + ' does not exist')
+                srcMniroizip = os.path.join(dstDirAn,'mniroizip.zip')
+            if not os.path.exists(os.path.join(dstDirIn, "mniroizip")):
+                os.makedirs(os.path.join(dstDirIn, "mniroizip"))
+        # Create the destination paths
         dstAnatomicalFile = os.path.join(dstDirIn, 'anat', "T1.nii.gz")
+        dstAnnotfile      = os.path.join(dstDirIn, 'annotfile',"annots.zip")
+        dstMniroizip      = os.path.join(dstDirIn, 'mniroizip',"mniroizip.zip")
+
         # Create the symbolic links
         if os.path.isfile(dstAnatomicalFile):
             os.unlink(dstAnatomicalFile)
@@ -102,27 +140,20 @@ for index in dt.index:
         else:
             print(src_anatomical+' does not exist')
 
-        if annotfile is True:
-            AnalysisDir = os.path.join(basedir, 'Nifti', 'derivatives', tool, 'analysis-'+analysis)
-            
-            AnnotDir = os.path.join(AnalysisDir,'annotfile')
-            if not os.path.exists(AnnotDir):
-                os.makedirs(AnnotDir)
-                
-            OrigAnnot = basedir+'/annotfile/annots.zip'
-            DestAnnot = AnnotDir+'/annots.zip'
+        if os.path.isfile(dstAnnotfile):
+            os.unlink(dstAnnotfile)
+        if os.path.isfile(srcAnnotfile):
+            os.symlink(srcAnnotfile, dstAnnotfile)
+        else:
+            print(srcAnnotfile+' does not exist')
 
-            shutil.copyfile(OrigAnnot,DestAnnot)
-            annotfile_src=os.path.join(
-                basedir, 'Nifti', 'derivatives', tool, 'analysis-'+analysis, 'annotfile', "annots.zip")
+        if os.path.isfile(dstMniroizip):
+            os.unlink(dstMniroizip)
+        if os.path.isfile(srcMniroizip):
+            os.symlink(srcMniroizip, dstMniroizip)
+        else:
+            print(srcMniroizip+' does not exist')
 
-            if not os.path.exists(os.path.join(dstDirIn, "annotfile")):
-                os.makedirs(os.path.join(dstDirIn, "annotfile"))
-            annotfile_dstfile=os.path.join(dstDirIn, 'annotfile', "annots.zip")
-            if os.path.isfile(annotfile_src):
-                os.symlink(annotfile_src, annotfile_dstfile)
-            else:
-                print(annotfile_src + ' does not exist')
 
     if 'rtppreproc' in tool and RUN and dwi:
         print(f"{sub}")
