@@ -1,11 +1,18 @@
 import argparse
 import os
 import shutil as sh
-import glob
+import glob 
 import subprocess as sp
 import numpy as np
+import pip
+package='nibabel'
 # !{sys.executable} -m pip install nibabel  # inside jupyter console
-import nibabel as nib
+def import_or_install(package):
+    try:
+        __import__(package)
+    except ImportError:
+        pip.main(['install', package])
+import_or_install(package)
 import pandas as pd
 import json
 import shutil
@@ -52,8 +59,10 @@ tool = vars["config"]["tool"]
 analysis = vars["config"]["analysis"]
 
 
-annotfile = vars["config"]["annotfile"]
-mniroizip = vars["config"]["mniroizip"]
+annotfile     = vars["config"]["annotfile"]
+mniroizip     = vars["config"]["mniroizip"]
+pre_fs        = vars["config"]["pre_fs"]
+prefs_zipname = vars["config"]["prefs_zipname"]
 
 
 # PREVIOUS ANALYSIS
@@ -81,8 +90,14 @@ for index in dt.index:
     func = dt.loc[index, 'func']
     if 'anatrois' in tool and RUN:
         # Main source dir
-        src_anatomical = os.path.join(
-            basedir, 'Nifti', 'sub-'+sub, 'ses-'+ses, 'anat', 'sub-'+sub+'_ses-'+ses+'_T1w.nii.gz')
+        if pre_fs
+            srcAnatPath = os.path.join(basedir,'Nifti','derivatives',pretoolfs,'analysis-'+preanalysisfs,
+                                       'sub-'+sub, 'ses-'+ses,'output')
+            zips = sorted(glob.glob(os.path.join(srcAnatPath,prefs_zipname+'*')),key=os.path.getmtime)
+            src_anatomical = zips[-1]
+        else:
+            src_anatomical = os.path.join(
+                basedir, 'Nifti', 'sub-'+sub, 'ses-'+ses, 'anat', 'sub-'+sub+'_ses-'+ses+'_T1w.nii.gz')
         
         # Main destination  dir
         dstDirIn = os.path.join(basedir, 'Nifti', 'derivatives', tool,
@@ -109,26 +124,36 @@ for index in dt.index:
             os.makedirs(dstDirIn)
         if not os.path.exists(dstDirOp):
             os.makedirs(dstDirOp)
-        if not os.path.exists(os.path.join(dstDirIn, "anat")):
-            os.makedirs(os.path.join(dstDirIn, "anat"))
+        if pre_fs:
+            if not os.path.exists(os.path.join(dstDirIn, "pre_fs")):
+                os.makedirs(os.path.join(dstDirIn, "pre_fs"))
+        else:
+            if not os.path.exists(os.path.join(dstDirIn, "anat")):
+                os.makedirs(os.path.join(dstDirIn, "anat"))
         if annotfile:    
             if os.path.isfile(annotfile):
+                print('Passed '+annotfile+', copying to '+dstDirAn)
                 shutil.copyfile(annotfile,os.path.join(dstDirAn,'annotfile.zip'))
+                srcAnnotfile = os.path.join(dstDirAn,'annotfile.zip')
             else:
                 print(annotfile + ' does not exist')
-                srcAnnotfile = os.path.join(dstDirAn,'annotfile.zip')
             if not os.path.exists(os.path.join(dstDirIn, "annotfile")):
                 os.makedirs(os.path.join(dstDirIn, "annotfile"))
         if mniroizip:    
             if os.path.isfile(mniroizip):
+                print('Passed '+mniroizip+', copying to '+dstDirAn)
                 shutil.copyfile(mniroizip,os.path.join(dstDirAn,'mniroizip.zip'))
+                srcMniroizip = os.path.join(dstDirAn,'mniroizip.zip')
             else:
                 print(mniroizip + ' does not exist')
-                srcMniroizip = os.path.join(dstDirAn,'mniroizip.zip')
             if not os.path.exists(os.path.join(dstDirIn, "mniroizip")):
                 os.makedirs(os.path.join(dstDirIn, "mniroizip"))
+
         # Create the destination paths
-        dstAnatomicalFile = os.path.join(dstDirIn, 'anat', "T1.nii.gz")
+        if pre_fs:
+            dstAnatomicalFile = os.path.join(dstDirIn, 'pre_fs',"existingFS.zip")
+        else:
+            dstAnatomicalFile = os.path.join(dstDirIn, 'anat', "T1.nii.gz")
         dstAnnotfile      = os.path.join(dstDirIn, 'annotfile',"annots.zip")
         dstMniroizip      = os.path.join(dstDirIn, 'mniroizip',"mniroizip.zip")
 
@@ -138,25 +163,26 @@ for index in dt.index:
         if os.path.isfile(src_anatomical):
             os.symlink(src_anatomical, dstAnatomicalFile)
         else:
-            print(src_anatomical+' does not exist')
+            print(src_anatomical + ' does not exist')
 
-        if os.path.isfile(dstAnnotfile):
-            os.unlink(dstAnnotfile)
-        if os.path.isfile(srcAnnotfile):
-            os.symlink(srcAnnotfile, dstAnnotfile)
-        else:
-            print(srcAnnotfile+' does not exist')
-
-        if os.path.isfile(dstMniroizip):
-            os.unlink(dstMniroizip)
-        if os.path.isfile(srcMniroizip):
-            os.symlink(srcMniroizip, dstMniroizip)
-        else:
-            print(srcMniroizip+' does not exist')
+        if annotfile:
+            if os.path.isfile(dstAnnotfile):
+                os.unlink(dstAnnotfile)
+            if os.path.isfile(srcAnnotfile):
+                os.symlink(srcAnnotfile, dstAnnotfile)
+            else:
+                print(srcAnnotfile + ' does not exist')
+        
+        if mniroizip:
+            if os.path.isfile(dstMniroizip):
+                os.unlink(dstMniroizip)
+            if os.path.isfile(srcMniroizip):
+                os.symlink(srcMniroizip, dstMniroizip)
+            else:
+                print(srcMniroizip + ' does not exist')
 
 
     if 'rtppreproc' in tool and RUN and dwi:
-        print(f"{sub}")
         # Main source dir
         srcDir=os.path.join(basedir, 'Nifti', 'sub-'+sub, 'ses-'+ses)
         # FS source dir

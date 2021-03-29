@@ -1,0 +1,34 @@
+{
+  "config": {
+    "basedir": "/scratch/glerma/DATA/MINI",
+    "rpe": true,
+    "tool": "anatrois_4.2.1-7.1.1",
+    "analysis": "01",
+    "annotfile": "/scratch/glerma/DATA/MINI/Nifti/annots.zip",
+    "mniroizip": "",
+    "pre_fs":true,
+    "pretoolfs":"fs_7.1.1-03",
+    "preanalysisfs":"01",
+    "prefs_zipname":"freesurfer-recon-all_",
+    "pretoolpp":"rtppreproc_1.1.3",
+    "preanalysispp":"01",
+    "codedir":"/dipc/glerma/soft/launchcontainers",
+    "host": "DIPC",
+    "logdir":"/scratch/glerma/logs",
+    "tmpdir":"/scratch/glerma/singtmp",
+    "container":"/scratch/glerma/containers",
+    "qsub":"true"
+  },
+  "BCBL": {
+    "mem":"32G",
+    "que":"long.q",
+    "core":6,
+    "sin_ver":"singularity/3.5.2"
+  },
+  "DIPC": {
+    "mem":"100G",
+    "que":"bcbl",
+    "core":6,
+    "sin_ver":"Singularity/3.5.3-GCC-8.3.0"
+  }
+}
