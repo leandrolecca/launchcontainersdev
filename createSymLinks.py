@@ -133,8 +133,11 @@ for index in dt.index:
         if annotfile:    
             if os.path.isfile(annotfile):
                 print('Passed '+annotfile+', copying to '+dstDirAn)
-                shutil.copyfile(annotfile,os.path.join(dstDirAn,'annotfile.zip'))
                 srcAnnotfile = os.path.join(dstDirAn,'annotfile.zip')
+                if os.path.isfile(srcAnnotfile):
+                    print(srcAnnotfile+' exists, if you want it new, delete it first')
+                else:
+                    shutil.copyfile(annotfile,os.path.join(dstDirAn,'annotfile.zip'))
             else:
                 print(annotfile + ' does not exist')
             if not os.path.exists(os.path.join(dstDirIn, "annotfile")):
@@ -142,8 +145,11 @@ for index in dt.index:
         if mniroizip:    
             if os.path.isfile(mniroizip):
                 print('Passed '+mniroizip+', copying to '+dstDirAn)
-                shutil.copyfile(mniroizip,os.path.join(dstDirAn,'mniroizip.zip'))
                 srcMniroizip = os.path.join(dstDirAn,'mniroizip.zip')
+                if os.path.isfile(srcMniroizip):
+                    print(srcMniroizip+' exists, if you want it new, delete it first')
+                else:
+                    shutil.copyfile(mniroizip,os.path.join(dstDirAn,'mniroizip.zip'))
             else:
                 print(mniroizip + ' does not exist')
             if not os.path.exists(os.path.join(dstDirIn, "mniroizip")):
