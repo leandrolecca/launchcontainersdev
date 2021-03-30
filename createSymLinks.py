@@ -90,11 +90,15 @@ for index in dt.index:
     func = dt.loc[index, 'func']
     if 'anatrois' in tool and RUN:
         # Main source dir
-        if pre_fs
+        if pre_fs:
             srcAnatPath = os.path.join(basedir,'Nifti','derivatives',pretoolfs,'analysis-'+preanalysisfs,
                                        'sub-'+sub, 'ses-'+ses,'output')
             zips = sorted(glob.glob(os.path.join(srcAnatPath,prefs_zipname+'*')),key=os.path.getmtime)
-            src_anatomical = zips[-1]
+            try:
+                src_anatomical = zips[-1]
+            except:
+                print(f"{sub} doesn't have pre_fs, skipping")
+                continue
         else:
             src_anatomical = os.path.join(
                 basedir, 'Nifti', 'sub-'+sub, 'ses-'+ses, 'anat', 'sub-'+sub+'_ses-'+ses+'_T1w.nii.gz')
