@@ -178,6 +178,8 @@ for index in dt.index:
         if annotfile:
             if os.path.isfile(dstAnnotfile):
                 os.unlink(dstAnnotfile)
+            if os.path.islink(dstAnnotfile):
+                os.unlink(dstAnnotfile)
             if os.path.isfile(srcAnnotfile):
                 os.symlink(srcAnnotfile, dstAnnotfile)
             else:
@@ -185,6 +187,8 @@ for index in dt.index:
         
         if mniroizip:
             if os.path.isfile(dstMniroizip):
+                os.unlink(dstMniroizip)
+            if os.path.islink(dstMniroizip):
                 os.unlink(dstMniroizip)
             if os.path.isfile(srcMniroizip):
                 os.symlink(srcMniroizip, dstMniroizip)
