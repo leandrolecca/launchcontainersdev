@@ -29,7 +29,7 @@ host =vars["config"]["host"] # possible values: dipc, bcbl
 codedir=vars["config"]["codedir"]
 container=vars["config"]["container"]+'/'+tool+'.sif'
 qsub=vars["config"]["qsub"]
-tmpdir=vars["config"]["tmpdir"]
+roottmpdir=vars["config"]["tmpdir"]
 logdir=vars["config"]["logdir"]
 
 # If logdir do not exist, create them
@@ -79,7 +79,7 @@ for row in dt.itertuples(index=True, name='Pandas'):
     dwi  = row.dwi
     func = row.func
     # Assign a differnt tmpdir per subject
-    tmpdir = tmpdir+'_'+tool+'_'+sub+'_'+ses
+    tmpdir = roottmpdir+'_'+tool+'_'+sub+'_'+ses
     # If tmpdir and logdir do not exist, create them
     if not os.path.isdir(tmpdir): os.mkdir(tmpdir)
 
