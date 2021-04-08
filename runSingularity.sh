@@ -27,6 +27,7 @@ echo "Container: ${container}"
 date;
 echo "Running: ${sin_ver}"
 
+echo "PSD_ID: ${PBS_JOBID}"
 if [ "$host" == "BCBL" ];then 
  cmd="singularity run -e --no-home \
  	--bind /bcbl:/bcbl \
@@ -36,18 +37,32 @@ if [ "$host" == "BCBL" ];then
 	--bind ${path2subderivatives}/output:/flywheel/v0/output \
 	--bind ${path2config}:/flywheel/v0/config.json \
 	$container"
+    echo $cmd
+    eval $cmd
+    echo "ended singularity"
+
 elif [ "$host" == "DIPC" ];then
+    # use LSCRATCH_DIR as temporary dir to do the computation
+    # once finished, move the content back to /scratch
+    export LSCRATCH_DIR=/lscratch/$USER/jobs/$PBS_JOBID
+    mkdir -p $LSCRATCH_DIR
+    export SINGULARITYENV_TMPDIR=$LSCRATCH_DIR
+
  cmd="singularity run -e --no-home \
  	--bind /scratch:/scratch \
 	--bind ${path2subderivatives}/input:/flywheel/v0/input:ro \
-	--bind ${path2subderivatives}/output:/flywheel/v0/output \
+	--bind ${LSCRATCH_DIR}:/flywheel/v0/output \
 	--bind ${path2config}:/flywheel/v0/config.json \
 	$container"
+    echo $cmd
+    eval $cmd
+    echo "ended singularity"
+    export RESULTS_DIR=${path2subderivatives}/output
+    echo "### copying from $LSCRATCH_DIR to $RESULTS_DIR/ ###"
+    cp -r $LSCRATCH_DIR/* $RESULTS_DIR/
+    rm -rf  $LSCRATCH_DIR
+
+
 fi
-
-echo $cmd
-eval $cmd
-echo "ended singularity"
-
 date;
 
