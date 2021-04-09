@@ -14,7 +14,17 @@
 module load $sin_ver
 # we need following lines for running fixAllSegmentations.m
 # (from thalamus segmentation) successfully in DIPC
+
+
+# SELECT THE TMP DIR 
 export SINGULARITYENV_TMPDIR=$tmpdir
+# Neuropythy (maybe others) fail when using lscratch as TMPDIR
+# export SINGULARITYENV_TMPDIR=/lscratch/$USER/tmp/jobs/$PBS_JOBID
+
+
+
+
+
 export SINGULARITY_BIND=""
 TMPDIR=
 echo $SINGULARITYENV_TMPDIR
@@ -29,14 +39,14 @@ echo "Running: ${sin_ver}"
 
 echo "PSD_ID: ${PBS_JOBID}"
 if [ "$host" == "BCBL" ];then 
- cmd="singularity run -e --no-home \
- 	--bind /bcbl:/bcbl \
-	--bind /tmp:/tmp \
-	--bind /scratch:/scratch \
-	--bind ${path2subderivatives}/input:/flywheel/v0/input:ro \
-	--bind ${path2subderivatives}/output:/flywheel/v0/output \
-	--bind ${path2config}:/flywheel/v0/config.json \
-	$container"
+    cmd="singularity run -e --no-home \
+        --bind /bcbl:/bcbl \
+        --bind /tmp:/tmp \
+        --bind /scratch:/scratch \
+        --bind ${path2subderivatives}/input:/flywheel/v0/input:ro \
+        --bind ${path2subderivatives}/output:/flywheel/v0/output \
+        --bind ${path2config}:/flywheel/v0/config.json \
+        $container"
     echo $cmd
     eval $cmd
     echo "ended singularity"
@@ -49,17 +59,15 @@ elif [ "$host" == "DIPC" ];then
     # CReate a tmpdir in local scratch as well, no need to move it back
     # later on, it is emptied automatically (but delete it nonetheless,
     # the folder will remain although empty
-    export LSCRATCH_TMP_DIR=/lscrach/$USER/tmp/jobs/$PBS_JOBID
-    mkdir -p LSCRATCH_TMP_DIR 
-    export SINGULARITYENV_TMPDIR=$LSCRATCH_TMP_DIR
+    mkdir -p $SINGULARITYENV_TMPDIR 
 
 
- cmd="singularity run -e --no-home \
- 	--bind /scratch:/scratch \
-	--bind ${path2subderivatives}/input:/flywheel/v0/input:ro \
-	--bind ${LSCRATCH_DIR}:/flywheel/v0/output \
-	--bind ${path2config}:/flywheel/v0/config.json \
-	$container"
+    cmd="singularity run -e --no-home \
+        --bind /scratch:/scratch \
+        --bind ${path2subderivatives}/input:/flywheel/v0/input:ro \
+        --bind ${LSCRATCH_DIR}:/flywheel/v0/output \
+        --bind ${path2config}:/flywheel/v0/config.json \
+        $container"
     echo $cmd
     eval $cmd
     echo "ended singularity"
@@ -67,9 +75,7 @@ elif [ "$host" == "DIPC" ];then
     echo "### copying from $LSCRATCH_DIR to $RESULTS_DIR/ ###"
     cp -r $LSCRATCH_DIR/* $RESULTS_DIR/
     rm -rf  $LSCRATCH_DIR
-    rm -rf  $LSCRATCH_TMP_DIR
-
-
+    rm -rf  $SINGULARITYENV_TMPDIR
 fi
 date;
 
