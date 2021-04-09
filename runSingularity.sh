@@ -46,7 +46,13 @@ elif [ "$host" == "DIPC" ];then
     # once finished, move the content back to /scratch
     export LSCRATCH_DIR=/lscratch/$USER/jobs/$PBS_JOBID
     mkdir -p $LSCRATCH_DIR
-    export SINGULARITYENV_TMPDIR=$LSCRATCH_DIR
+    # CReate a tmpdir in local scratch as well, no need to move it back
+    # later on, it is emptied automatically (but delete it nonetheless,
+    # the folder will remain although empty
+    export LSCRATCH_TMP_DIR=/lscrach/$USER/tmp/jobs/$PBS_JOBID
+    mkdir -p LSCRATCH_TMP_DIR 
+    export SINGULARITYENV_TMPDIR=$LSCRATCH_TMP_DIR
+
 
  cmd="singularity run -e --no-home \
  	--bind /scratch:/scratch \
@@ -61,6 +67,7 @@ elif [ "$host" == "DIPC" ];then
     echo "### copying from $LSCRATCH_DIR to $RESULTS_DIR/ ###"
     cp -r $LSCRATCH_DIR/* $RESULTS_DIR/
     rm -rf  $LSCRATCH_DIR
+    rm -rf  $LSCRATCH_TMP_DIR
 
 
 fi
