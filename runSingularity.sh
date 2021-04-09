@@ -55,19 +55,21 @@ elif [ "$host" == "DIPC" ];then
     # use LSCRATCH_DIR as temporary dir to do the computation
     # once finished, move the content back to /scratch
     export LSCRATCH_DIR=/lscratch/$USER/jobs/$PBS_JOBID
-    mkdir -p $LSCRATCH_DIR
+    mkdir -p $LSCRATCH_DIR/input $LSCRATCH_DIR/output
     # CReate a tmpdir in local scratch as well, no need to move it back
     # later on, it is emptied automatically (but delete it nonetheless,
     # the folder will remain although empty
-    mkdir -p $SINGULARITYENV_TMPDIR 
+    
+    export SINGULARITYENV_TMPDIR=/flywheel/v0/output
 
 
     cmd="singularity run -e --no-home \
         --bind /scratch:/scratch \
-        --bind ${path2subderivatives}/input:/flywheel/v0/input:ro \
+        --bind ${LSCRATCH_DIR}/input:/flywheel/v0/input:ro \
         --bind ${LSCRATCH_DIR}:/flywheel/v0/output \
         --bind ${path2config}:/flywheel/v0/config.json \
         $container"
+    cp -r ${path2subderivatives}/input/* ${LSCRATCH_DIR}/input
     echo $cmd
     eval $cmd
     echo "ended singularity"
@@ -75,7 +77,9 @@ elif [ "$host" == "DIPC" ];then
     echo "### copying from $LSCRATCH_DIR to $RESULTS_DIR/ ###"
     cp -r $LSCRATCH_DIR/* $RESULTS_DIR/
     rm -rf  $LSCRATCH_DIR
-    rm -rf  $SINGULARITYENV_TMPDIR
+    # If there is a folder that it is not empty, find a solution for
+    # this 
+    # rm -rf  $SINGULARITYENV_TMPDIR
 fi
 date;
 
