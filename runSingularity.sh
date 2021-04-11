@@ -62,6 +62,17 @@ elif [ "$host" == "DIPC" ];then
     
     export SINGULARITYENV_TMPDIR=/flywheel/v0/output
 
+    # This is copied from the ~/.bashrc in the bcbl: 
+    # MATLAB Definition of the tmp folder 
+
+    TMP=/scratch/glerma
+    export TMP
+    
+    # MATLAB Definition of Matlab Log Folder
+    
+    MATLAB_LOG_DIR=/scratch/glerma
+    export MATLAB_LOG_DIR
+
 
     cmd="singularity run -e --no-home \
         --bind /scratch:/scratch \
