@@ -75,7 +75,7 @@ elif [ "$host" == "DIPC" ];then
     echo "ended singularity"
     export RESULTS_DIR=${path2subderivatives}/output
     echo "### copying from $LSCRATCH_DIR to $RESULTS_DIR/ ###"
-    cp -r $LSCRATCH_DIR/* $RESULTS_DIR/
+    cp -r $LSCRATCH_DIR/output/* $RESULTS_DIR/
     rm -rf  $LSCRATCH_DIR
     # If there is a folder that it is not empty, find a solution for
     # this 
