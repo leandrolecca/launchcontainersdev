@@ -64,15 +64,9 @@ elif [ "$host" == "DIPC" ];then
 
     # This is copied from the ~/.bashrc in the bcbl: 
     # MATLAB Definition of the tmp folder 
-
-    TMP=/scratch/glerma
-    export TMP
-    
+    export TMP=/scratch/glerma
     # MATLAB Definition of Matlab Log Folder
-    
-    MATLAB_LOG_DIR=/scratch/glerma
-    export MATLAB_LOG_DIR
-
+    export MATLAB_LOG_DIR=/scratch/glerma
 
     cmd="singularity run -e --no-home \
         --bind /scratch:/scratch \

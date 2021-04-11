@@ -62,9 +62,9 @@ if [ "$qsb" == "true" ];then
     elif [ "$host" == "DIPC" ]; then
             cmd="qsub \
             -q $que -l mem=$mem,nodes=1:ppn=$core \
-            -N s-${sub}_s-${ses}_t-${tool}_a-${analysis} \
-            -o ${logdir}/s-${sub}_s-${ses}_t-${tool}_a-${analysis}.o${$PBS_JOBID} \
-            -e ${logdir}/s-${sub}_s-${ses}_t-${tool}_a-${analysis}.e${$PBS_JOBID} \
+            -N ${sub}-${ses}-${tool}-${analysis} \
+            -o ${logdir}/s-${sub}_s-${ses}_t-${tool}_a-${analysis}.o${PBS_JOBID} \
+            -e ${logdir}/s-${sub}_s-${ses}_t-${tool}_a-${analysis}.e${PBS_JOBID} \
             -v
 	    tool=${tool},path2subderivatives=${path2subderivatives},host=${host},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir} \
             ${codedir}/runSingularity.sh"
