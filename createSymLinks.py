@@ -303,7 +303,7 @@ for index in dt.index:
         src_fs=os.path.join(srcDirfs, 'fs.zip')
         src_bval=os.path.join(srcDirpp, 'dwi.bvals')
         src_bvec=os.path.join(srcDirpp, 'dwi.bvecs')
-        src_dwi=os.path.join(srcDirpp, 'b0_dwi.nii.gz')
+        src_dwi=os.path.join(srcDirpp, 'dwi.nii.gz')
         # We want to use the same tractparams.csv for all subjects, define later
 
         # Main destination  dir
