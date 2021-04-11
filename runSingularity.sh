@@ -69,7 +69,7 @@ elif [ "$host" == "DIPC" ];then
         --bind ${LSCRATCH_DIR}:/flywheel/v0/output \
         --bind ${path2config}:/flywheel/v0/config.json \
         $container"
-    cp -r ${path2subderivatives}/input/* ${LSCRATCH_DIR}/input
+    cp -r ${path2subderivatives}/input/* ${LSCRATCH_DIR}/input/
     echo $cmd
     eval $cmd
     echo "ended singularity"

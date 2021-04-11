@@ -13,6 +13,7 @@ def import_or_install(package):
     except ImportError:
         pip.main(['install', package])
 import_or_install(package)
+import nibabel as nib
 import pandas as pd
 import json
 import shutil
