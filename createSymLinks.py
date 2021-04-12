@@ -98,7 +98,7 @@ for index in dt.index:
             try:
                 src_anatomical = zips[-1]
             except:
-                print(f"{sub} doesn't have pre_fs, skipping")
+                print("{sub} doesn't have pre_fs, skipping")
                 continue
         else:
             src_anatomical = os.path.join(

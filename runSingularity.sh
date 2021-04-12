@@ -55,7 +55,8 @@ elif [ "$host" == "DIPC" ];then
     # use LSCRATCH_DIR as temporary dir to do the computation
     # once finished, move the content back to /scratch
     export LSCRATCH_DIR=/lscratch/$USER/jobs/$PBS_JOBID
-    mkdir -p $LSCRATCH_DIR/input $LSCRATCH_DIR/output
+    mkdir -p $LSCRATCH_DIR/input 
+    mkdir -p $LSCRATCH_DIR/output
     # CReate a tmpdir in local scratch as well, no need to move it back
     # later on, it is emptied automatically (but delete it nonetheless,
     # the folder will remain although empty
@@ -64,9 +65,9 @@ elif [ "$host" == "DIPC" ];then
 
     # This is copied from the ~/.bashrc in the bcbl: 
     # MATLAB Definition of the tmp folder 
-    export TMP=/scratch/glerma
+    # export TMP=/scratch/glerma
     # MATLAB Definition of Matlab Log Folder
-    export MATLAB_LOG_DIR=/scratch/glerma
+    # export MATLAB_LOG_DIR=/scratch/glerma
 
     cmd="singularity run -e --no-home \
         --bind /scratch:/scratch \
