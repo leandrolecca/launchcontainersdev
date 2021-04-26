@@ -41,11 +41,15 @@ if host == "BCBL":
     que=vars["BCBL"]["que"]
     core=vars["BCBL"]["core"]
     sin_ver=vars["BCBL"]["sin_ver"]
+    manager="qsub"
+    system="scratch"
 elif host == "DIPC":
     mem=vars["DIPC"]["mem"]
     que=vars["DIPC"]["que"]
     core=vars["DIPC"]["core"]
     sin_ver=vars["DIPC"]["sin_ver"]
+    manager=vars["DIPC"]["manager"]
+    system=vars["DIPC"]["system"]
 
 # Get the unique list of subjects and sessions
 subseslist=os.path.join(basedir,"Nifti","subSesList.txt")
@@ -68,6 +72,8 @@ os.chdir(codedir)
 -n container  # the location of the container to run
 -u noqsub     # use qsub or not
 -h host       # host where to run
+-d manager    # workload manager to submit tasks, possible value: qsub/slurm
+-f system     # space system to do computations, possible value: scratch/lscratch
 """
 
 # READ THE FILE
@@ -82,19 +88,22 @@ for row in dt.itertuples(index=True, name='Pandas'):
     if RUN and dwi:
         cmdstr = (f"{codedir}/qsub_generic.sh " +
                   f"-t {tool} " +
-		  f"-s {sub} " +
-		  f"-e {ses} " +
-                  f"-a {analysis} "              +
+		          f"-s {sub} " +
+        		  f"-e {ses} " +
+                  f"-a {analysis} " +
                   f"-b {basedir} " +
-		  f"-o {codedir} " +
+		          f"-o {codedir} " +
                   f"-m {mem} " +
-		  f"-q {que} " +
-		  f"-c {core} " +
+		          f"-q {que} " +
+        		  f"-c {core} " +
                   f"-p {tmpdir} " +
-		  f"-g {logdir} " +
-		  f"-i {sin_ver} " +
+		          f"-g {logdir} " +
+        		  f"-i {sin_ver} " +
                   f"-n {container} " +
-		  f"-u {qsub} " +
-          f"-h {host} ")
+		          f"-u {qsub} " +
+                  f"-h {host} " +
+                  f"-d {manager} " +
+                  f"-f {system} ")
+          
         print(cmdstr)
         sp.call(cmdstr, shell=True)

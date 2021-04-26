@@ -298,7 +298,7 @@ for index in dt.index:
         src_fs=os.path.join(srcDirfs, 'fs.zip')
         src_bval=os.path.join(srcDirpp, 'dwi.bvals')
         src_bvec=os.path.join(srcDirpp, 'dwi.bvecs')
-        src_dwi=os.path.join(srcDirpp, 'b0_dwi.nii.gz')
+        src_dwi=os.path.join(srcDirpp, 'dwi.nii.gz')
         # We want to use the same tractparams.csv for all subjects, define later
 
         # Main destination  dir
@@ -311,8 +311,8 @@ for index in dt.index:
             os.makedirs(dstDirIn)
         if not os.path.exists(dstDirOp):
             os.makedirs(dstDirOp)
-        if not os.path.exists(os.path.join(dstDirIn, "anat")):
-            os.makedirs(os.path.join(dstDirIn, "anat"))
+        if not os.path.exists(os.path.join(dstDirIn, "anatomical")):
+            os.makedirs(os.path.join(dstDirIn, "anatomical"))
         if not os.path.exists(os.path.join(dstDirIn, "fs")):
             os.makedirs(os.path.join(dstDirIn, "fs"))
         if not os.path.exists(os.path.join(dstDirIn, "dwi")):
@@ -324,7 +324,7 @@ for index in dt.index:
         if not os.path.exists(os.path.join(dstDirIn, "tractparams")):
             os.makedirs(os.path.join(dstDirIn, "tractparams"))
         # Create the destination paths
-        dstAnatomicalFile=os.path.join(dstDirIn, 'anat', "T1.nii.gz")
+        dstAnatomicalFile=os.path.join(dstDirIn, 'anatomical', "T1.nii.gz")
         dstFsfile=os.path.join(dstDirIn, 'fs', "fs.zip")
         dstDwi_dwiFile=os.path.join(dstDirIn, "dwi", "dwi.nii.gz")
         dstDwi_bvalFile=os.path.join(dstDirIn, "bval", "dwi.bval")

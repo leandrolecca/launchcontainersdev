@@ -28,6 +28,7 @@ date;
 echo "Running: ${sin_ver}"
 
 echo "PSD_ID: ${PBS_JOBID}"
+echo "SLURM_JOB_ID: ${SLURM_JOB_ID}"
 if [ "$host" == "BCBL" ];then 
  cmd="singularity run -e --no-home \
  	--bind /bcbl:/bcbl \
@@ -42,26 +43,49 @@ if [ "$host" == "BCBL" ];then
     echo "ended singularity"
 
 elif [ "$host" == "DIPC" ];then
-    # use LSCRATCH_DIR as temporary dir to do the computation
-    # once finished, move the content back to /scratch
-    export LSCRATCH_DIR=/lscratch/$USER/jobs/$PBS_JOBID
-    mkdir -p $LSCRATCH_DIR
-    export SINGULARITYENV_TMPDIR=$LSCRATCH_DIR
 
- cmd="singularity run -e --no-home \
- 	--bind /scratch:/scratch \
-	--bind ${path2subderivatives}/input:/flywheel/v0/input:ro \
-	--bind ${LSCRATCH_DIR}:/flywheel/v0/output \
-	--bind ${path2config}:/flywheel/v0/config.json \
-	$container"
-    echo $cmd
-    eval $cmd
-    echo "ended singularity"
-    export RESULTS_DIR=${path2subderivatives}/output
-    echo "### copying from $LSCRATCH_DIR to $RESULTS_DIR/ ###"
-    cp -r $LSCRATCH_DIR/* $RESULTS_DIR/
-    rm -rf  $LSCRATCH_DIR
-
+    if [ "$system" == "scratch" ]; then
+       cmd="singularity run -e --no-home \
+            --bind /scratch:/scratch \
+            --bind ${path2subderivatives}/input:/flywheel/v0/input:ro \
+            --bind ${path2subderivatives}/output:/flywheel/v0/output \
+            --bind ${path2config}:/flywheel/v0/config.json \
+            $container" 
+        echo $cmd
+        eval $cmd
+        echo "ended singularity"
+ 
+    
+    elif [ "$system" == "lscratch" ]; then
+ 
+        if [ "$manager" == "qsub" ] ; then
+            # using TORQUE to submit
+            # use LSCRATCH_DIR as temporary dir to do the computation
+            # once finished, move the content back to /scratch
+            export LSCRATCH_DIR=/lscratch/$USER/jobs/$PBS_JOBID
+            mkdir -p $LSCRATCH_DIR/input $LSCRATCH_DIR/output
+            export SINGULARITYENV_TMPDIR=/flywheel/v0/output
+        elif [ "$manager" == "slurm" ]; then
+            # use SLURM to submit
+            export LSCRATCH_DIR=/lscratch/$USER/jobs/${SLURM_JOB_ID}
+            mkdir -p $LSCRATCH_DIR/input $LSCRATCH_DIR/output
+            export SINGULARITYENV_TMPDIR=/flywheel/v0/output
+        fi
+        cmd="singularity run -e --no-home \
+     	    --bind /scratch:/scratch \
+	        --bind ${LSCRATCH_DIR}/input:/flywheel/v0/input:ro \
+    	    --bind ${LSCRATCH_DIR}/output:/flywheel/v0/output \
+    	    --bind ${path2config}:/flywheel/v0/config.json \
+    	    $container"
+        cp -r ${path2subderivatives}/input/* $LSCRATCH_DIR/input/
+        echo $cmd
+        eval $cmd
+        echo "ended singularity"
+        export RESULTS_DIR=${path2subderivatives}/output
+        echo "### copying from $LSCRATCH_DIR to $RESULTS_DIR/ ###"
+        cp -r $LSCRATCH_DIR/output/* $RESULTS_DIR/
+        rm -rf  $LSCRATCH_DIR
+    fi
 
 fi
 date;
