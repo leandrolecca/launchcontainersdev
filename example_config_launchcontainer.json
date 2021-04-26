@@ -6,6 +6,8 @@
     "analysis": "01",
     "annotfile": "/scratch/lmx/ThaTract/Nifti/annots.zip",
     "mniroizip": "",
+    "basetractparams": "",
+    "basetractparams": "",
     "pre_fs":true,
     "pretoolfs":"fs_7.1.1-03",
     "preanalysisfs":"01",

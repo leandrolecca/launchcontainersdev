@@ -66,9 +66,9 @@ if [ "$qsb" == "true" ];then
         if [ "$manager" == "qsub" ] ; then
             cmd="qsub \
             -q $que -l mem=$mem,nodes=1:ppn=$core \
-            -N s-${sub}-t-${tool}_a-${analysis}_s-${sub}_s-${ses} \
-            -o ${logdir}/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.o${JOB_ID} \
-            -e ${logdir}/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.e${JOB_ID} \
+            -N ${sub}-${ses}-${tool}-${analysis} \
+            -o ${logdir}/s-${sub}_s-${ses}_t-${tool}_a-${analysis}.o \
+            -e ${logdir}/s-${sub}_s-${ses}_t-${tool}_a-${analysis}.e \
             -v
 	    tool=${tool},path2subderivatives=${path2subderivatives},host=${host},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir},manager=${manager},system=${system} \
             ${codedir}/runSingularity.sh"
