@@ -72,7 +72,7 @@ elif [ "$host" == "DIPC" ];then
     cmd="singularity run -e --no-home \
         --bind /scratch:/scratch \
         --bind ${LSCRATCH_DIR}/input:/flywheel/v0/input:ro \
-        --bind ${LSCRATCH_DIR}:/flywheel/v0/output \
+        --bind ${LSCRATCH_DIR}/output:/flywheel/v0/output \
         --bind ${path2config}:/flywheel/v0/config.json \
         $container"
     cp -r ${path2subderivatives}/input/* ${LSCRATCH_DIR}/input/
