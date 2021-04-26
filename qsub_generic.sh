@@ -1,7 +1,7 @@
 #!/bin/bash
 printf "[qsub_generic.sh] "
 # get the arguments from the command line
-while getopts "t:s:e:a:b:o:m:q:c:p:g:i:n:u:h:" opt; do
+while getopts "t:s:e:a:b:o:m:q:c:p:g:i:n:u:h:d:f:" opt; do
     case $opt in
         t) tool="$OPTARG";;
         s) sub="$OPTARG";;
@@ -13,11 +13,13 @@ while getopts "t:s:e:a:b:o:m:q:c:p:g:i:n:u:h:" opt; do
         q) que="$OPTARG";;
         c) core="$OPTARG";;
         p) tmpdir="$OPTARG";;
-	g) logdir="$OPTARG";;
+	    g) logdir="$OPTARG";;
         i) sin_ver="$OPTARG";;
         n) container="$OPTARG";;
         u) qsb="$OPTARG";;
         h) host="$OPTARG";;
+        d) manager="$OPTARG";;
+        f) system="$OPTARG";;
     esac
 done
 
@@ -46,6 +48,7 @@ if [ "$qsb" == "true" ];then
     printf "#### temporal directory: $tmpdir\n"
     printf "#### log directory: $logdir\n"
     printf "#### coding directory: $codedir\n"
+    printf "#### workload manager to submit: $manager\n"
 
             # -N t-${tool}_a-${analysis}_s-${sub}_s-${ses} \
 # # THIS IS FOR BCBL
@@ -57,21 +60,31 @@ if [ "$qsb" == "true" ];then
             -e ${logdir}/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.e \
             -l mem_free=$mem \
             -v
-	    tool=${tool},path2subderivatives=${path2subderivatives},host=${host},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir}
-	    ${codedir}/runSingularity.sh"
+	    tool=${tool},path2subderivatives=${path2subderivatives},host=${host},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir},manager=${manager},system=${system} \
+    	    ${codedir}/runSingularity.sh"
     elif [ "$host" == "DIPC" ]; then
+        if [ "$manager" == "qsub" ] ; then
             cmd="qsub \
             -q $que -l mem=$mem,nodes=1:ppn=$core \
             -N ${sub}-${ses}-${tool}-${analysis} \
-            -o ${logdir}/s-${sub}_s-${ses}_t-${tool}_a-${analysis}.o${PBS_JOBID} \
-            -e ${logdir}/s-${sub}_s-${ses}_t-${tool}_a-${analysis}.e${PBS_JOBID} \
+            -o ${logdir}/s-${sub}_s-${ses}_t-${tool}_a-${analysis}.o \
+            -e ${logdir}/s-${sub}_s-${ses}_t-${tool}_a-${analysis}.e \
             -v
-	    tool=${tool},path2subderivatives=${path2subderivatives},host=${host},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir} \
+	    tool=${tool},path2subderivatives=${path2subderivatives},host=${host},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir},manager=${manager},system=${system} \
             ${codedir}/runSingularity.sh"
+        elif [ "$manager" == "slurm" ]; then
+            cmd="sbatch \
+            -q serial --partition=serial --mem=$mem --nodes=1 --cpus-per-task=$core --time=1-00:00:00 \
+            --job-name=s-${sub}-t-${tool}_a-${analysis}_s-${sub}_s-${ses} \
+            -o ${logdir}/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.o \
+            -e ${logdir}/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.e \
+            --export=ALL,tool=${tool},path2subderivatives=${path2subderivatives},host=${host},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir},manager=${manager},system=${system} \
+            ${codedir}/runSingularity.sh"
+        fi
    fi
-   printf "#### runnig qsubs in $host server:\n"
+   printf "#### runnig $manager in $host server:\n"
    echo $cmd
-   eval $cmd
+   #eval $cmd
 fi
 
 if [ "$qsb" == "false" ];then

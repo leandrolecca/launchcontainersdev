@@ -2,12 +2,10 @@
   "config": {
     "basedir": "/scratch/lmx/ThaTract",
     "rpe": true,
-    "tool": "anatrois_4.2.1-7.1.1",
+    "tool": "rtp-pipeline_4.3.8d",
     "analysis": "01",
     "annotfile": "/scratch/lmx/ThaTract/Nifti/annots.zip",
     "mniroizip": "",
-    "basetractparams": "",
-    "basetractparams": "",
     "pre_fs":true,
     "pretoolfs":"fs_7.1.1-03",
     "preanalysisfs":"01",
@@ -31,6 +29,8 @@
     "mem":"32G",
     "que":"bcbl",
     "core":6,
-    "sin_ver":"Singularity/3.5.3-GCC-8.3.0"
+    "sin_ver":"Singularity/3.5.3-GCC-8.3.0",
+    "manager":"qsub",
+    "system":"scratch"
   }
 }
