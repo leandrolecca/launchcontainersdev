@@ -13,7 +13,6 @@ def import_or_install(package):
     except ImportError:
         pip.main(['install', package])
 import_or_install(package)
-import nibabel as nib
 import pandas as pd
 import json
 import shutil
@@ -98,7 +97,7 @@ for index in dt.index:
             try:
                 src_anatomical = zips[-1]
             except:
-                print("{sub} doesn't have pre_fs, skipping")
+                print(f"{sub} doesn't have pre_fs, skipping")
                 continue
         else:
             src_anatomical = os.path.join(
@@ -179,8 +178,6 @@ for index in dt.index:
         if annotfile:
             if os.path.isfile(dstAnnotfile):
                 os.unlink(dstAnnotfile)
-            if os.path.islink(dstAnnotfile):
-                os.unlink(dstAnnotfile)
             if os.path.isfile(srcAnnotfile):
                 os.symlink(srcAnnotfile, dstAnnotfile)
             else:
@@ -188,8 +185,6 @@ for index in dt.index:
         
         if mniroizip:
             if os.path.isfile(dstMniroizip):
-                os.unlink(dstMniroizip)
-            if os.path.islink(dstMniroizip):
                 os.unlink(dstMniroizip)
             if os.path.isfile(srcMniroizip):
                 os.symlink(srcMniroizip, dstMniroizip)

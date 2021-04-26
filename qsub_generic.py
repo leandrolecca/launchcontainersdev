@@ -29,10 +29,11 @@ host =vars["config"]["host"] # possible values: dipc, bcbl
 codedir=vars["config"]["codedir"]
 container=vars["config"]["container"]+'/'+tool+'.sif'
 qsub=vars["config"]["qsub"]
-roottmpdir=vars["config"]["tmpdir"]
+tmpdir=vars["config"]["tmpdir"]
 logdir=vars["config"]["logdir"]
 
-# If logdir do not exist, create them
+# If tmpdir and logdir do not exist, create them
+if not os.path.isdir(tmpdir): os.mkdir(tmpdir)
 if not os.path.isdir(logdir): os.mkdir(logdir)
 
 if host == "BCBL":
@@ -40,11 +41,15 @@ if host == "BCBL":
     que=vars["BCBL"]["que"]
     core=vars["BCBL"]["core"]
     sin_ver=vars["BCBL"]["sin_ver"]
+    manager="qsub"
+    system="scratch"
 elif host == "DIPC":
     mem=vars["DIPC"]["mem"]
     que=vars["DIPC"]["que"]
     core=vars["DIPC"]["core"]
     sin_ver=vars["DIPC"]["sin_ver"]
+    manager=vars["DIPC"]["manager"]
+    system=vars["DIPC"]["system"]
 
 # Get the unique list of subjects and sessions
 subseslist=os.path.join(basedir,"Nifti","subSesList.txt")
@@ -67,6 +72,8 @@ os.chdir(codedir)
 -n container  # the location of the container to run
 -u noqsub     # use qsub or not
 -h host       # host where to run
+-d manager    # workload manager to submit tasks, possible value: qsub/slurm
+-f system     # space system to do computations, possible value: scratch/lscratch
 """
 
 # READ THE FILE
@@ -78,28 +85,25 @@ for row in dt.itertuples(index=True, name='Pandas'):
     RUN  = row.RUN
     dwi  = row.dwi
     func = row.func
-    # Assign a differnt tmpdir per subject
-    tmpdir = roottmpdir+'_'+tool+'_'+sub+'_'+ses
-    # If tmpdir and logdir do not exist, create them
-    # RunSingularity.sh will create it if required
-    # if not os.path.isdir(tmpdir): os.mkdir(tmpdir)
-
     if RUN and dwi:
         cmdstr = (f"{codedir}/qsub_generic.sh " +
                   f"-t {tool} " +
-		  f"-s {sub} " +
-		  f"-e {ses} " +
-                  f"-a {analysis} "              +
+		          f"-s {sub} " +
+        		  f"-e {ses} " +
+                  f"-a {analysis} " +
                   f"-b {basedir} " +
-		  f"-o {codedir} " +
+		          f"-o {codedir} " +
                   f"-m {mem} " +
-		  f"-q {que} " +
-		  f"-c {core} " +
+		          f"-q {que} " +
+        		  f"-c {core} " +
                   f"-p {tmpdir} " +
-		  f"-g {logdir} " +
-		  f"-i {sin_ver} " +
+		          f"-g {logdir} " +
+        		  f"-i {sin_ver} " +
                   f"-n {container} " +
-		  f"-u {qsub} " +
-          f"-h {host} ")
+		          f"-u {qsub} " +
+                  f"-h {host} " +
+                  f"-d {manager} " +
+                  f"-f {system} ")
+          
         print(cmdstr)
         sp.call(cmdstr, shell=True)
