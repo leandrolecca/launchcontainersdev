@@ -14,17 +14,7 @@
 module load $sin_ver
 # we need following lines for running fixAllSegmentations.m
 # (from thalamus segmentation) successfully in DIPC
-
-
-# SELECT THE TMP DIR 
 export SINGULARITYENV_TMPDIR=$tmpdir
-# Neuropythy (maybe others) fail when using lscratch as TMPDIR
-# export SINGULARITYENV_TMPDIR=/lscratch/$USER/tmp/jobs/$PBS_JOBID
-
-
-
-
-
 export SINGULARITY_BIND=""
 TMPDIR=
 echo $SINGULARITYENV_TMPDIR
@@ -40,14 +30,14 @@ echo "Running: ${sin_ver}"
 echo "PSD_ID: ${PBS_JOBID}"
 echo "SLURM_JOB_ID: ${SLURM_JOB_ID}"
 if [ "$host" == "BCBL" ];then 
-    cmd="singularity run -e --no-home \
-        --bind /bcbl:/bcbl \
-        --bind /tmp:/tmp \
-        --bind /scratch:/scratch \
-        --bind ${path2subderivatives}/input:/flywheel/v0/input:ro \
-        --bind ${path2subderivatives}/output:/flywheel/v0/output \
-        --bind ${path2config}:/flywheel/v0/config.json \
-        $container"
+ cmd="singularity run -e --no-home \
+ 	--bind /bcbl:/bcbl \
+	--bind /tmp:/tmp \
+	--bind /scratch:/scratch \
+	--bind ${path2subderivatives}/input:/flywheel/v0/input:ro \
+	--bind ${path2subderivatives}/output:/flywheel/v0/output \
+	--bind ${path2config}:/flywheel/v0/config.json \
+	$container"
     echo $cmd
     eval $cmd
     echo "ended singularity"

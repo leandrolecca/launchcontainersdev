@@ -29,10 +29,11 @@ host =vars["config"]["host"] # possible values: dipc, bcbl
 codedir=vars["config"]["codedir"]
 container=vars["config"]["container"]+'/'+tool+'.sif'
 qsub=vars["config"]["qsub"]
-roottmpdir=vars["config"]["tmpdir"]
+tmpdir=vars["config"]["tmpdir"]
 logdir=vars["config"]["logdir"]
 
-# If logdir do not exist, create them
+# If tmpdir and logdir do not exist, create them
+if not os.path.isdir(tmpdir): os.mkdir(tmpdir)
 if not os.path.isdir(logdir): os.mkdir(logdir)
 
 if host == "BCBL":
@@ -84,12 +85,6 @@ for row in dt.itertuples(index=True, name='Pandas'):
     RUN  = row.RUN
     dwi  = row.dwi
     func = row.func
-    # Assign a differnt tmpdir per subject
-    tmpdir = roottmpdir+'_'+tool+'_'+sub+'_'+ses
-    # If tmpdir and logdir do not exist, create them
-    # RunSingularity.sh will create it if required
-    # if not os.path.isdir(tmpdir): os.mkdir(tmpdir)
-
     if RUN and dwi:
         cmdstr = (f"{codedir}/qsub_generic.sh " +
                   f"-t {tool} " +
