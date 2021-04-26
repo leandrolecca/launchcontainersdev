@@ -84,7 +84,7 @@ if [ "$qsb" == "true" ];then
    fi
    printf "#### runnig $manager in $host server:\n"
    echo $cmd
-   #eval $cmd
+   eval $cmd
 fi
 
 if [ "$qsb" == "false" ];then
