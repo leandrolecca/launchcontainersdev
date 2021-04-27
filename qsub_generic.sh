@@ -55,7 +55,7 @@ if [ "$qsb" == "true" ];then
     if [ "$host" == "BCBL" ]; then
             cmd="qsub \
             -q $que \
-            -N t-${tool}_a-${analysis}_s-${sub}_s-${ses} \
+            -N ${sub}_${ses}_${tool}_${analysis} \
             -o ${logdir}/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.o \
             -e ${logdir}/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.e \
             -l mem_free=$mem \
@@ -75,7 +75,7 @@ if [ "$qsb" == "true" ];then
         elif [ "$manager" == "slurm" ]; then
             cmd="sbatch \
             -q serial --partition=serial --mem=$mem --nodes=1 --cpus-per-task=$core --time=1-00:00:00 \
-            --job-name=s-${sub}-t-${tool}_a-${analysis}_s-${sub}_s-${ses} \
+            --job-name=${sub}_${ses}_${tool}_${analysis} \
             -o ${logdir}/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.o \
             -e ${logdir}/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.e \
             --export=ALL,tool=${tool},path2subderivatives=${path2subderivatives},host=${host},path2config=${path2config},sin_ver=${sin_ver},container=${container},tmpdir=${tmpdir},manager=${manager},system=${system} \
@@ -84,7 +84,7 @@ if [ "$qsb" == "true" ];then
    fi
    printf "#### runnig $manager in $host server:\n"
    echo $cmd
-   #eval $cmd
+   eval $cmd
 fi
 
 if [ "$qsb" == "false" ];then
