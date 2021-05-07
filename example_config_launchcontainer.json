@@ -1,12 +1,12 @@
 {
   "config": {
-    "basedir": "/scratch/lmx/ThaTract",
+    "basedir": "/scratch/lmx/THALOC",
     "rpe": true,
-    "tool": "rtp-pipeline_4.3.8d",
+    "tool": "anatrois_4.2.1-7.1.1",
     "analysis": "01",
-    "annotfile": "/scratch/lmx/ThaTract/Nifti/annots.zip",
+    "annotfile": "/scratch/lmx/THALOC/Nifti/annots.zip",
     "mniroizip": "",
-    "pre_fs":true,
+    "pre_fs":false,
     "pretoolfs":"fs_7.1.1-03",
     "preanalysisfs":"01",
     "prefs_zipname":"freesurfer-recon-all_",
@@ -30,7 +30,7 @@
     "que":"bcbl",
     "core":6,
     "sin_ver":"Singularity/3.5.3-GCC-8.3.0",
-    "manager":"qsub",
+    "manager":"slurm",
     "system":"scratch"
   }
 }
