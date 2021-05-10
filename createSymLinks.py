@@ -13,6 +13,7 @@ def import_or_install(package):
     except ImportError:
         pip.main(['install', package])
 import_or_install(package)
+import nibabel as nib
 import pandas as pd
 import json
 import shutil
@@ -88,7 +89,7 @@ for index in dt.index:
     RUN = dt.loc[index, 'RUN']
     dwi = dt.loc[index, 'dwi']
     func = dt.loc[index, 'func']
-    if 'anatrois' in tool and RUN:
+    if ('fs' in tool or 'anatrois' in tool) and RUN:
         # Main source dir
         if pre_fs:
             srcAnatPath = os.path.join(basedir,'Nifti','derivatives',pretoolfs,'analysis-'+preanalysisfs,
