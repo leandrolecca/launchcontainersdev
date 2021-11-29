@@ -85,9 +85,9 @@ for index in dt.index:
    # if isinstance(sub.item(),int):
    #     sub=str(sub)
 
-    ses = dt.loc[index, 'ses']
-    RUN = dt.loc[index, 'RUN']
-    dwi = dt.loc[index, 'dwi']
+    ses  = dt.loc[index, 'ses']
+    RUN  = dt.loc[index, 'RUN']
+    dwi  = dt.loc[index, 'dwi']
     func = dt.loc[index, 'func']
     if ('fs' in tool or 'anatrois' in tool) and RUN:
         # Main source dir
