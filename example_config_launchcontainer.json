@@ -4,8 +4,8 @@
     "rpe": true,
     "tool": "lmx/ThaTract",
     "rpe": true,
-    "tool": "rtp-pipeline_4.3.9",
-    "analysis": "15",
+    "tool": "rtp-pipeline_4.4.0",
+    "analysis": "AL_01",
     "annotfile": "/scratch/lmx/ThaTract/Nifti/annotfile.zip",
     "mniroizip": "/scratch/lmx/ThaTract/MNI_ROIS_FOR_FSL.zip",
     "pre_fs":true,
@@ -33,6 +33,7 @@
     "core":12,
     "sin_ver":"Singularity/3.5.3-GCC-8.3.0",
     "manager":"slurm",
-    "system":"lscratch"
+    "system":"lscratch",
+    "maxwall":1
   }
 }
