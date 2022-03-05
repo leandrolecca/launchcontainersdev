@@ -336,9 +336,10 @@ for index in dt.index:
                                        'analysis-'+analysis, 'tractparams.csv')
 
         # Create the symbolic links
-        os.symlink(src_anatomical, dstAnatomicalFile)
-        os.symlink(src_fs, dstFsfile)
-        os.symlink(src_dwi, dstDwi_dwiFile)
-        os.symlink(src_bvec, dstDwi_bvecFile)
-        os.symlink(src_bval, dstDwi_bvalFile)
-        os.symlink(src_tractparams, dst_tractparams)
+        if not os.path.exists(dstAnatomicalFile):
+            os.symlink(src_anatomical, dstAnatomicalFile)
+            os.symlink(src_fs, dstFsfile)
+            os.symlink(src_dwi, dstDwi_dwiFile)
+            os.symlink(src_bvec, dstDwi_bvecFile)
+            os.symlink(src_bval, dstDwi_bvalFile)
+            os.symlink(src_tractparams, dst_tractparams)
