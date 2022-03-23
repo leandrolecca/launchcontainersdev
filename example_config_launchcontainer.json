@@ -2,8 +2,6 @@
   "config": {
     "basedir": "/scratch/mibarbia/ThaTract",
     "rpe": true,
-    "tool": "mibarbia/ThaTract",
-    "rpe": true,
     "tool": "rtp-pipeline_4.4.0",
     "analysis": "AL_01",
     "annotfile": "/scratch/mibarbia/ThaTract/Nifti/annotfile.zip",
