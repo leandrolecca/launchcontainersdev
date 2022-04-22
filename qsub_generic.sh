@@ -1,7 +1,7 @@
 #!/bin/bash
 printf "[qsub_generic.sh] "
 # get the arguments from the command line
-while getopts "t:s:e:a:b:o:m:q:c:p:g:i:n:u:h:d:f:" opt; do
+while getopts "t:s:e:a:b:o:m:q:c:p:g:i:n:u:h:d:f:j:" opt; do
     case $opt in
         t) tool="$OPTARG";;
         s) sub="$OPTARG";;
@@ -20,6 +20,7 @@ while getopts "t:s:e:a:b:o:m:q:c:p:g:i:n:u:h:d:f:" opt; do
         h) host="$OPTARG";;
         d) manager="$OPTARG";;
         f) system="$OPTARG";;
+        j) maxwall="$OPTARG";;
     esac
 done
 
@@ -49,6 +50,7 @@ if [ "$qsb" == "true" ];then
     printf "#### log directory: $logdir\n"
     printf "#### coding directory: $codedir\n"
     printf "#### workload manager to submit: $manager\n"
+    printf "#### maxwall: computaiton duration: $maxwall\n"
 
             # -N t-${tool}_a-${analysis}_s-${sub}_s-${ses} \
 # # THIS IS FOR BCBL
@@ -74,7 +76,8 @@ if [ "$qsb" == "true" ];then
             ${codedir}/runSingularity.sh"
         elif [ "$manager" == "slurm" ]; then
             cmd="sbatch \
-            -q $que --partition=regular --mem=$mem --nodes=1 --cpus-per-task=$core --time=1-00:00:00 \
+            -q $que --partition=${que} --mem=$mem --nodes=1 --cpus-per-task=$core 
+            --time=${maxwall}-00:00:00 \
             --ntasks-per-node=1 \
             --job-name=${sub}_${ses}_${tool}_${analysis} \
             -o ${logdir}/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.o \

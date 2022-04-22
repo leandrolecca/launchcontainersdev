@@ -364,4 +364,4 @@ for index in dt.index:
         if os.path.exists(dst_tractparams) and os.path.islink(dst_tractparams):
             print('WARNING: link  '+ dst_tractparams+' exists, not creating one. \n')
         else:
-            os.symlink(src_tractparams, dst_tractparams)
+           os.symlink(src_tractparams, dst_tractparams)
