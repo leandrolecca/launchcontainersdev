@@ -336,9 +336,32 @@ for index in dt.index:
                                        'analysis-'+analysis, 'tractparams.csv')
 
         # Create the symbolic links
-        os.symlink(src_anatomical, dstAnatomicalFile)
-        os.symlink(src_fs, dstFsfile)
-        os.symlink(src_dwi, dstDwi_dwiFile)
-        os.symlink(src_bvec, dstDwi_bvecFile)
-        os.symlink(src_bval, dstDwi_bvalFile)
-        os.symlink(src_tractparams, dst_tractparams)
+        if os.path.exists(dstAnatomicalFile) and os.path.islink(dstAnatomicalFile):
+            print('WARNING: link '+ dstAnatomicalFile+' exists, not creating one. \n')
+        else:
+            os.symlink(src_anatomical, dstAnatomicalFile)
+         
+        if os.path.exists(dstFsfile) and os.path.islink(dstFsfile):
+            print('WARNING: link  '+ dstFsfile+' exists, not creating one. \n')
+        else:
+            os.symlink(src_fs, dstFsfile)
+            
+        if os.path.exists(dstDwi_dwiFile) and os.path.islink(dstDwi_dwiFile):
+            print('WARNING: link  '+ dstDwi_dwiFile+' exists, not creating one. \n')
+        else:
+            os.symlink(src_dwi, dstDwi_dwiFile)
+            
+        if os.path.exists(dstDwi_bvecFile) and os.path.islink(dstDwi_bvecFile):
+            print('WARNING: link  '+ dstDwi_bvecFile+' exists, not creating one. \n')
+        else:
+            os.symlink(src_bvec, dstDwi_bvecFile)
+            
+        if os.path.exists(dstDwi_bvalFile) and os.path.islink(dstDwi_bvalFile):
+            print('WARNING: link  '+ dstDwi_bvalFile+' exists, not creating one. \n')
+        else:
+            os.symlink(src_bval, dstDwi_bvalFile)
+            
+        if os.path.exists(dst_tractparams) and os.path.islink(dst_tractparams):
+            print('WARNING: link  '+ dst_tractparams+' exists, not creating one. \n')
+        else:
+            os.symlink(src_tractparams, dst_tractparams)
