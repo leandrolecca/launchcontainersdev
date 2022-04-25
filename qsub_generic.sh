@@ -32,8 +32,8 @@ export path2config="${basedir}/Nifti/derivatives/${tool}/analysis-${analysis}/co
 printf "\n\n [qsub_generic.sh] It will use basedir:$basedir and tool:$tool \n\n"
 
 if [ "$qsb" == "true" ];then
-		printf "#########################################\n"
- 		printf "######### $sub, session $ses ##########\n"
+	printf "#########################################\n"
+ 	printf "######### $sub, session $ses ##########\n"
    	printf "#########################################\n"
 
     printf "#### running subject $sub, session $ses, analysis $analysis\n"
@@ -50,8 +50,8 @@ if [ "$qsb" == "true" ];then
     printf "#### coding directory: $codedir\n"
     printf "#### workload manager to submit: $manager\n"
 
-            # -N t-${tool}_a-${analysis}_s-${sub}_s-${ses} \
-# # THIS IS FOR BCBL
+    # -N t-${tool}_a-${analysis}_s-${sub}_s-${ses} \
+    # # THIS IS FOR BCBL
     if [ "$host" == "BCBL" ]; then
             cmd="qsub \
             -q $que \
@@ -89,11 +89,15 @@ fi
 
 if [ "$qsb" == "false" ];then
   printf "\n\nNO-QSUB MODE DETECTED\n\n"
-  printf "Starting singularity, using:\n"
+  printf "\n\nLoading Module Singularity\n\n"
+  printf "Starting singularity, using ${sin_ver}:\n"
+  
+
   printf "Tool: ~/containers/${tool}.sif\n"
   printf "Path: ${path2subderivatives}\n"
   printf "Config: ${path2config}\n"
   set -x
+  module load ${sin_ver}  
   singularity run -e --no-home \
           --bind /scratch:/scratch \
           --bind ${path2subderivatives}/input:/flywheel/v0/input:ro \
