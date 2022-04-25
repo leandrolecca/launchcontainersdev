@@ -1,9 +1,9 @@
 {
   "config": {
-    "basedir": "/scratch/mibarbia/ThaTract",
-    "rpe": true,
-    "tool": "rtp-pipeline_4.4.0",
-    "analysis": "AL_01",
+    "basedir": "/scratch/glerma/DATA/VWFA_FOV_HEB",
+    "rpe": false,
+    "tool": "fmriprep_21.0.2",
+    "analysis": "01",
     "annotfile": "/scratch/mibarbia/ThaTract/Nifti/annotfile.zip",
     "mniroizip": "/scratch/mibarbia/ThaTract/MNI_ROIS_FOR_FSL.zip",
     "pre_fs":true,
@@ -12,11 +12,11 @@
     "prefs_zipname":"freesurfer-recon-all",
     "pretoolpp":"rtppreproc_1.1.3",
     "preanalysispp":"01",
-    "codedir":"/dipc/mibarbia/GIT/launchcontainers",
+    "codedir":"/dipc/glerma/soft/launchcontainers",
     "host": "DIPC",
-    "logdir":"/scratch/mibarbia/logs",
-    "tmpdir":"/scratch/mibarbia/singtmp",
-    "container":"/scratch/mibarbia/containers",
+    "logdir":"/scratch/glerma/logs",
+    "tmpdir":"/scratch/glerma/singtmp",
+    "container":"/scratch/glerma/containers",
     "qsub":"true"
   },
   "BCBL": {
