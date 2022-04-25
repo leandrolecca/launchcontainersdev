@@ -50,6 +50,7 @@ elif host == "DIPC":
     sin_ver=vars["DIPC"]["sin_ver"]
     manager=vars["DIPC"]["manager"]
     system=vars["DIPC"]["system"]
+    maxwall=vars["DIPC"]["maxwall"]
 
 # Get the unique list of subjects and sessions
 subseslist=os.path.join(basedir,"Nifti","subSesList.txt")
@@ -74,6 +75,7 @@ os.chdir(codedir)
 -h host       # host where to run
 -d manager    # workload manager to submit tasks, possible value: qsub/slurm
 -f system     # space system to do computations, possible value: scratch/lscratch
+-j maxwall    # the compute time limit, possible value: 1 for regulre, 2 for long, 3 for xlong
 """
 
 # READ THE FILE
@@ -103,7 +105,8 @@ for row in dt.itertuples(index=True, name='Pandas'):
 		          f"-u {qsub} " +
                   f"-h {host} " +
                   f"-d {manager} " +
-                  f"-f {system} ")
+                  f"-f {system} " +
+                  f"-j {maxwall} ")
           
         print(cmdstr)
         sp.call(cmdstr, shell=True)
