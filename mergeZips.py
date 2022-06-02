@@ -1,8 +1,12 @@
 # I am usuing it pasted in jupyter
 
 import zipfile as z
+import os
+# import glob as glob
 
-zips = ['z1.zip', 'z2.zip', 'z3.zip']
+os.chdir('/Users/glerma/soft/anatROIs/templates')
+
+zips = ['example_MORI_ROIs.zip', 'MORIROI_withCC.zip', 'MNI_ROIS_FOR_SLF.zip']
 
 """
 Open the first zip file as append and then read all
