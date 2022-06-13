@@ -77,7 +77,7 @@ if [ "$qsb" == "true" ];then
         elif [ "$manager" == "slurm" ]; then
             cmd="sbatch \
             -q $que --partition=${que} --mem=$mem --nodes=1 --cpus-per-task=$core 
-            --time=${maxwall}-00:00:00 \
+            --time=00-${maxwall}:00:00 \
             --ntasks-per-node=1 \
             --job-name=${sub}_${ses}_${tool}_${analysis} \
             -o ${logdir}/t-${tool}_a-${analysis}_s-${sub}_s-${ses}.o \
