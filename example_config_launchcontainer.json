@@ -23,7 +23,8 @@
     "mem":"32G",
     "que":"long.q",
     "core":6,
-    "sin_ver":"singularity/3.5.2"
+    "sin_ver":"singularity/3.5.2",
+    "maxwall":10
   },
   "DIPC": {
     "mem":"8G",
@@ -32,6 +33,6 @@
     "sin_ver":"Singularity/3.5.3-GCC-8.3.0",
     "manager":"slurm",
     "system":"lscratch",
-    "maxwall":1
+    "maxwall":24
   }
 }
