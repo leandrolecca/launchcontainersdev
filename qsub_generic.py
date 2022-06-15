@@ -43,6 +43,7 @@ if host == "BCBL":
     sin_ver=vars["BCBL"]["sin_ver"]
     manager="qsub"
     system="scratch"
+    maxwall=vars["BCBL"]["maxwall"]
 elif host == "DIPC":
     mem=vars["DIPC"]["mem"]
     que=vars["DIPC"]["que"]
@@ -75,7 +76,7 @@ os.chdir(codedir)
 -h host       # host where to run
 -d manager    # workload manager to submit tasks, possible value: qsub/slurm
 -f system     # space system to do computations, possible value: scratch/lscratch
--j maxwall    # the compute time limit, possible value: 1 for regulre, 2 for long, 3 for xlong
+-j maxwall    # the compute time limit, possible value: 24:00:00 for regulre, 48:00:00 for long, 72:00:00 for xlong
 """
 
 # READ THE FILE
