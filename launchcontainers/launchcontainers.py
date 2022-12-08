@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import json
 import sys
+from launchcontainers import __version__
 
 # *** OLD delete
 # def _get_parser()
@@ -62,15 +63,22 @@ def _get_parser():
         help="The path to the log directory. ",
         default="~/log/"
     )
+    optional.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version=("%(prog)s " + __version__)
+    )
+    parser._action_groups.append(optional)
+    return parser
 
-
-def rtp_pipeline(
+def launchcontainers(
     list_path,
     config_path,
     tmp_path,
     log_path,
 ):
-    """rtp_pipeline is a Python programm for the RTP tractography and metrics pipeline.
+    """launchcontainers is a Python programm for the RTP tractography and metrics pipeline.
     Parameters
     ----------
     list_path : str
@@ -127,9 +135,9 @@ def rtp_pipeline(
 
 def _main():
     """rtp_pipeline entry point"""
-    command_str = "rtp_pipeline " + " ".join(sys.argv[1:])
+    command_str = "launchcontainers " + " ".join(sys.argv[1:])
     options = _get_parser().parse_args()
-    rtp_pipeline(**vars(options), command_str=command_str)
+    launchcontainers(**vars(options), command_str=command_str)
 
 
 if __name__ == "__main__":
