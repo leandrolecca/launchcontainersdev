@@ -16,6 +16,8 @@ import_or_install(package)
 import nibabel as nib
 import pandas as pd
 import json
+import yaml
+from yaml.loader import SafeLoader 
 import shutil
 
 

@@ -9,76 +9,98 @@ import numpy as np
 import pandas as pd
 import json
 import sys
-from launchcontainers import __version__
+#from launchcontainers import __version__
+import yaml
+from yaml.loader import SafeLoader
+import pip
+package='nibabel'
+# !{sys.executable} -m pip install nibabel  # inside jupyter console
+def import_or_install(package):
+    try:
+        __import__(package)
+    except ImportError:
+        pip.main(['install', package])
+import_or_install(package)
+import nibabel as nib
+import createsymlinks as csl
 
-# *** OLD delete
-# def _get_parser()
-# parser = argparse.ArgumentParser()
-# # # Required positional argument
-# parser.add_argument('configFile', type=str, help='path to the config file')
-# args = parser.parse_args()
-# print('Read config file: ')
-# print(args.configFile)
-# *** end OLD delete
-
+"""
+TODO: 
+    4./ Add the check in launchcontainers.py, that only in some cases we wiill need to use createSymLinks, and for the anatrois, rtppreproc and rtp-pipeline, we will need to do it
+    5./ Edit createSymLinks again and make one function per every container
+        createSymLinks_anatrois.py
+        createSymLinks_rtppreproc.py
+        createSymLinks_rtp-pipeline.py
+"""
+#%% parser
 def _get_parser():
     """
-    Parse command line inputs for this function.
-    Returns
-    -------
-    parser.parse_args() : argparse dict
-    Notes
-    -----
+    Input: 
+    Parse command line inputs
+    
+    Returns:
+    a dict stores information about the configFile and subSesList
+    
+    
+    Notes:
     # Argument parser follow template provided by RalphyZ.
     # https://stackoverflow.com/a/43456577
     """
-    parser = argparse.ArgumentParser()
-    optional = parser._action_groups.pop()
-    required = parser.add_argument_group("Required Argument:")
-    required.add_argument(
-        "--list",
-        dest="list_path",
-        type=str,
-        help="The path to the subject list (.txt). ",
-        required=True,
-    )
-    required.add_argument(
-        "--config",
-        dest="config_path",
-        type=str,
-        help="The path to the configuration file. ",
-        required=True,
-    )
-    optional.add_argument(
-        "--tmp",
-        dest="tmp_path",
-        type=str,
-        help="The path to the temporary directory. ",
-        default="~/tmp/"
-    )
-    optional.add_argument(
-        "--log",
-        dest="log_path",
-        type=str,
-        help="The path to the log directory. ",
-        default="~/log/"
-    )
-    optional.add_argument(
-        "-v",
-        "--version",
-        action="version",
-        version=("%(prog)s " + __version__)
-    )
-    parser._action_groups.append(optional)
-    return parser
+    parser = argparse.ArgumentParser(
+        description='''createSymLinks.py 'pathTo/config_launchcontainers.yaml' ''')
+    parser.add_argument('configFile', type=str, help='path to the config file')
+    parser.add_argument('subSesList', type=str, help='path to the config file')
+    parse_result  = vars(parser.parse_args())
+    return parse_result
 
+#%% funciton to read config file, yaml
+def _read_config(path_to_config_file):
+    ''' 
+    Input:
+    the path to the config file 
+    
+    Returns
+    a dictionary that contains all the config info
+    
+    '''
+    print(f'Read the config file {path_to_config_file} ')
+
+    with open(path_to_config_file, 'r') as v:
+        config = yaml.load(v, Loader=SafeLoader)
+    
+    container = config["config"]["container"]
+
+    print(f'\nBasedir is: {config["config"]["basedir"]}')
+    print(f'\nContainer is: {container}_{config["container_options"][container]["container_version"]}')
+    print(f'\nAnalysis is: analysis-{config["config"]["analysis"]}')
+
+    return config
+
+#%% function to read subSesList. txt
+def _read_subSesList(path_to_subSesList_file):
+    ''' 
+    Input:
+    path to the subject and session list txt file 
+    
+    Returns
+    a dataframe
+    
+    '''
+    subSesList  = pd.readcsv(path_to_subSesList_file, sep=",", header=0)
+
+    return subSesList
+
+#%%
 def launchcontainers(
-    list_path,
-    config_path,
+    df_subSes,
+    dict_onfig,
     tmp_path,
     log_path,
 ):
-    """launchcontainers is a Python programm for the RTP tractography and metrics pipeline.
+    """
+    This function launches containers generically in different Docker/Singularity HPCs
+    This function is going to assume that all files are where they need to be. 
+
     Parameters
     ----------
     list_path : str
@@ -97,48 +119,66 @@ def launchcontainers(
     #*** OLD delete
     #subseslist=os.path.join(basedir,"Nifti","subSesList.txt")
     #*** end OLD delete
-
-    subseslist=os.path.join(list_path)
-
-    # READ THE FILE
-    dt = pd.read_csv(subseslist, sep=",", header=0)
-
-    for row in dt.itertuples(index=True, name='Pandas'):
+    
+    
+    for row in df_subSes.itertuples(index=True, name='Pandas'):
         sub  = row.sub
         ses  = row.ses
         RUN  = row.RUN
         dwi  = row.dwi
         func = row.func
-        # if RUN and dwi:
-            # cmdstr = (f"{codedir}/qsub_generic.sh " +
-            #         f"-t {tool} " +
-            #         f"-s {sub} " +
-            #         f"-e {ses} " +
-            #         f"-a {analysis} " +
-            #         f"-b {basedir} " +
-            #         f"-o {codedir} " +
-            #         f"-m {mem} " +
-            #         f"-q {que} " +
-            #         f"-c {core} " +
-            #         f"-p {tmpdir} " +
-            #         f"-g {logdir} " +
-            #         f"-i {sin_ver} " +
-            #         f"-n {container} " +
-            #         f"-u {qsub} " +
-            #         f"-h {host} " +
-            #         f"-d {manager} " +
-            #         f"-f {system} " +
-            #         f"-j {maxwall} ")
+        if RUN and dwi:
+            cmdstr = (f"{codedir}/qsub_generic.sh " +
+                    f"-t {tool} " +
+                    f"-s {sub} " +
+                    f"-e {ses} " +
+                    f"-a {analysis} " +
+                    f"-b {basedir} " +
+                    f"-o {codedir} " +
+                    f"-m {mem} " +
+                    f"-q {que} " +
+                    f"-c {core} " +
+                    f"-p {tmpdir} " +
+                    f"-g {logdir} " +
+                    f"-i {sin_ver} " +
+                    f"-n {container} " +
+                    f"-u {qsub} " +
+                    f"-h {host} " +
+                    f"-d {manager} " +
+                    f"-f {system} " +
+                    f"-j {maxwall} ")
             
-            # print(cmdstr)
-            # sp.call(cmdstr, shell=True)
+            print(cmdstr)
+            sp.call(cmdstr, shell=True)
 
-def _main():
-    """rtp_pipeline entry point"""
-    command_str = "launchcontainers " + " ".join(sys.argv[1:])
-    options = _get_parser().parse_args()
-    launchcontainers(**vars(options), command_str=command_str)
+def main():
+    """launch_container entry point"""
+    inputs       = _get_parser()
+    config       = _read_config(inputs['configFile'])
+    subSesList   = _read_subSesList(inputs['subSesList'])
+    
+    codedir = config["config"]["codedir"]
+    # this will make the import csl success
+    os.chdir(codedir)
+
+    check_input(config, subSesList)
+    
+    launchcontainers(, command_str=command_str)
 
 
+
+#%%
+'''
+One of the TODO:
+    make a function, when this file was runned, create a copy of the original yaml file
+    then rename it , add the date and time in the end
+    stored the new yaml file under the output folder
+'''
+
+# #%%
 if __name__ == "__main__":
-    _main()
+    main()
+    
+    
+    
+    
