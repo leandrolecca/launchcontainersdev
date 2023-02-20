@@ -23,7 +23,6 @@ def import_or_install(package):
 import_or_install(package)
 import nibabel as nib
 import createsymlinks as csl
-
 """
 TODO: 
     4./ Add the check in launchcontainers.py, that only in some cases we wiill need to use createSymLinks, and for the anatrois, rtppreproc and rtp-pipeline, we will need to do it
@@ -32,6 +31,7 @@ TODO:
         createSymLinks_rtppreproc.py
         createSymLinks_rtp-pipeline.py
 """
+sys.path.insert(0,'/Users/tiger/Documents/GitHub/launchcontainers/launchcontainers')
 #%% parser
 def _get_parser():
     """
@@ -41,19 +41,24 @@ def _get_parser():
     Returns:
     a dict stores information about the configFile and subSesList
     
-    
     Notes:
     # Argument parser follow template provided by RalphyZ.
     # https://stackoverflow.com/a/43456577
     """
-    parser = argparse.ArgumentParser(
-        description='''createSymLinks.py 'pathTo/config_launchcontainers.yaml' ''')
-    parser.add_argument('configFile', type=str, help='path to the config file')
-    parser.add_argument('subSesList', type=str, help='path to the config file')
+    parser = argparse.ArgumentParser(description='''createSymLinks.py 'pathTo/config_launchcontainers.yaml' ''')
+    parser.add_argument('--configFile', 
+                        type=str, 
+                        default="/Users/tiger/TESTDATA/PROJ01/nifti/config_launchcontainer_copy.yaml",
+                        help='path to the config file')
+    parser.add_argument('--subSesList', 
+                        type=str,
+                        default="/Users/tiger/TESTDATA/PROJ01/nifti/subSesList.txt",
+                        help='path to the config file')
     parse_result  = vars(parser.parse_args())
+
     return parse_result
 
-#%% funciton to read config file, yaml
+#%% function to read config file, yaml
 def _read_config(path_to_config_file):
     ''' 
     Input:
@@ -71,7 +76,7 @@ def _read_config(path_to_config_file):
     container = config["config"]["container"]
 
     print(f'\nBasedir is: {config["config"]["basedir"]}')
-    print(f'\nContainer is: {container}_{config["container_options"][container]["container_version"]}')
+    print(f'\nContainer is: {container}_{config["container_options"][container]["version"]}')
     print(f'\nAnalysis is: analysis-{config["config"]["analysis"]}')
 
     return config
@@ -86,14 +91,47 @@ def _read_subSesList(path_to_subSesList_file):
     a dataframe
     
     '''
-    subSesList  = pd.readcsv(path_to_subSesList_file, sep=",", header=0)
+    subSesList  = pd.read_csv(path_to_subSesList_file, sep=",", header=0)
 
     return subSesList
 
-#%%
+#%% Launchcontainer
+'''
+TODO this function is not generic, needs to modify it
+
+'''
+def prepare_input_file(config_dict, df_subSes):
+    for row in df_subSes.itertuples(index= True, name = "Pandas"):
+        sub = row.sub
+        ses = row.ses
+        RUN = row.RUN
+        dwi = row.dwi
+        func = row.func
+        container = config_dict['config']['container']
+        cont_version = config_dict['container_options'][container]['version']
+        print(f"{sub}_{ses}_RUN-{RUN}_{container}_{cont_version}")
+        
+        if not RUN: 
+            continue
+        
+        if "rtppreproc" in container:
+            csl.rtppreproc(config_dict, sub, ses)
+        elif "rtppipeline" in container:
+            print('rtppipeline')
+        elif "rtppipeline" in container:
+            print('rtppipeline')
+        elif "rtppipeline" in container:
+            print('rtppipeline')
+        elif "rtppipeline" in container:
+            print('rtppipeline')
+        else:
+            print(f"{container} is not created, check for typos or if it is a new container create it in launchcontainers.py")
+   
+    return 
+
 def launchcontainers(
-    df_subSes,
-    dict_onfig,
+    subSes_df,
+    config_dict,
     tmp_path,
     log_path,
 ):
@@ -121,7 +159,7 @@ def launchcontainers(
     #*** end OLD delete
     
     
-    for row in df_subSes.itertuples(index=True, name='Pandas'):
+    for row in subSes_df.itertuples(index=True, name='Pandas'):
         sub  = row.sub
         ses  = row.ses
         RUN  = row.RUN
@@ -150,27 +188,27 @@ def launchcontainers(
             
             print(cmdstr)
             sp.call(cmdstr, shell=True)
-
+#%% main()
 def main():
     """launch_container entry point"""
     inputs       = _get_parser()
-    config       = _read_config(inputs['configFile'])
-    subSesList   = _read_subSesList(inputs['subSesList'])
+    config_dict  = _read_config(inputs['configFile'])
+    subSes_df    = _read_subSesList(inputs['subSesList'])
     
-    codedir = config["config"]["codedir"]
-    # this will make the import csl success
-    os.chdir(codedir)
+    codedir = config_dict["config"]["codedir"]
 
-    check_input(config, subSesList)
+    prepare_input_file(config_dict, subSes_df)
     
-    launchcontainers(, command_str=command_str)
+    # launchcontainers('kk', command_str=command_str)
+    
+    # backup_configinfo()
 
 
 
-#%%
+#%% Run main()
 '''
 One of the TODO:
-    make a function, when this file was runned, create a copy of the original yaml file
+    make a function, when this file was run, create a copy of the original yaml file
     then rename it , add the date and time in the end
     stored the new yaml file under the output folder
 '''
@@ -178,7 +216,4 @@ One of the TODO:
 # #%%
 if __name__ == "__main__":
     main()
-    
-    
-    
     

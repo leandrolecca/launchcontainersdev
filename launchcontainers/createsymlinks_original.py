@@ -285,6 +285,7 @@ for index in dt.index:
         os.symlink(srcDwiF_niiFile, dstDwiF_niiFile)
         os.symlink(srcDwiF_bvalFile, dstDwiF_bvalFile)
         os.symlink(srcDwiF_bvecFile, dstDwiF_bvecFile)
+        
         if rpe:
             os.symlink(srcDwiR_niiFile, dstDwiR_niiFile)
             os.symlink(srcDwiR_bvalFile, dstDwiR_bvalFile)

@@ -16,10 +16,14 @@ Some documentation here
 
 
 #%%
-check_input(configFile, subSesList)
+def input_file_overwritte(dict_config):
+    force = dict_config["config"]["force"]
+    
+    if force == True:
+        #overwritte
 
-
-def check_rtppreproc_input(config, sub, ses):
+#%%
+def check_rtppreproc(config, sub, ses):
     """
     take the config file info to search the file name
     
@@ -27,14 +31,14 @@ def check_rtppreproc_input(config, sub, ses):
     
     Returns
     -------
-    Nono
+    None
 
     """
-    return 
-
-
-
-def check_input_file_is_there (dict_config, df_subSes):
+    
+    
+    return #something, should be true of false
+#%%
+def check_input_file_is_there(dict_config, df_subSes):
     """
     the two inputs: config is a dict, 
     
@@ -49,24 +53,28 @@ def check_input_file_is_there (dict_config, df_subSes):
         dwi  = row.dwi
         func = row.func
         if RUN and ("rtppreproc" in container):
-            check_rtppreproc_input(dict_config, sub, ses)
+            check_rtppreproc(dict_config, sub, ses)
         #if RUN and ("anatrois" in container):
             # check_anatrois(dict_config, sub, ses)
 
-    return True or False, container 
+    return is_there, container 
 
 
 
-def prepare_input_file():
-    if check_file_is_there() == True :
+
+def prepare_input_file(dict_config, df_subSes):
+    
+    if check_input_file_is_there()[0] == True :
         print ("\n the input file is there, if you want to overwrite, change force to ture in config.yaml")
+        input_file_overwritte()
     else:
-        if "rtppreproc" in container:
-            csl.rtppreproc(config, sub, ses)
+        for row in df_subSesList.itertuples(index=True, name='Pandas'):
+            sub  = row.sub
+            ses  = row.ses
+            RUN  = row.RUN
+            dwi  = row.dwi
+            func = row.func
+            if RUN and ("rtppreproc" in container):
+                csl.rtppreproc(config, sub, ses)
         
-    
-    
     return 
-
-if __name__ == "__main__":
-    main()
