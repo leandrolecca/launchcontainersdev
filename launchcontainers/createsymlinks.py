@@ -111,7 +111,7 @@ def anatrois(config, sub, ses):
     
     # ????????
      if pre_fs:
-         srcAnatPath = os.path.join(basedir,'Nifti','derivatives',pretoolfs,'analysis-'+preanalysisfs,
+         srcAnatPath = os.path.join(basedir,'Nifti','derivatives',precontainerfs,'analysis-'+preanalysisfs,
                                     'sub-'+sub, 'ses-'+ses,'output')
          zips = sorted(glob.glob(os.path.join(srcAnatPath,prefs_zipname+'*')),key=os.path.getmtime)
          try:
@@ -124,24 +124,24 @@ def anatrois(config, sub, ses):
              basedir, 'Nifti', 'sub-'+sub, 'ses-'+ses, 'anat', 'sub-'+sub+'_ses-'+ses+'_T1w.nii.gz')
      
      # Main destination  dir
-     dstDirIn = os.path.join(basedir, 'Nifti', 'derivatives', tool,
+     dir_input = os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
                              'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'input')
-     dstDirOp = os.path.join(basedir, 'Nifti', 'derivatives', tool,
+     dir_output = os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
                              'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'output')
-     dstDirAn = os.path.join(basedir, 'Nifti', 'derivatives', tool,
+     dstDirAn = os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
                              'analysis-'+analysis)
      
      # Create folders if they do not exist
-     if not os.path.exists(dstDirIn):
-         os.makedirs(dstDirIn)
-     if not os.path.exists(dstDirOp):
-         os.makedirs(dstDirOp)
+     if not os.path.exists(dir_input):
+         os.makedirs(dir_input)
+     if not os.path.exists(dir_output):
+         os.makedirs(dir_output)
      if pre_fs:
-         if not os.path.exists(os.path.join(dstDirIn, "pre_fs")):
-             os.makedirs(os.path.join(dstDirIn, "pre_fs"))
+         if not os.path.exists(os.path.join(dir_input, "pre_fs")):
+             os.makedirs(os.path.join(dir_input, "pre_fs"))
      else:
-         if not os.path.exists(os.path.join(dstDirIn, "anat")):
-             os.makedirs(os.path.join(dstDirIn, "anat"))
+         if not os.path.exists(os.path.join(dir_input, "anat")):
+             os.makedirs(os.path.join(dir_input, "anat"))
      if annotfile:    
          if os.path.isfile(annotfile):
              print('Passed '+annotfile+', copying to '+dstDirAn)
@@ -152,8 +152,8 @@ def anatrois(config, sub, ses):
                  shutil.copyfile(annotfile,os.path.join(dstDirAn,'annotfile.zip'))
          else:
              print(annotfile + ' does not exist')
-         if not os.path.exists(os.path.join(dstDirIn, "annotfile")):
-             os.makedirs(os.path.join(dstDirIn, "annotfile"))
+         if not os.path.exists(os.path.join(dir_input, "annotfile")):
+             os.makedirs(os.path.join(dir_input, "annotfile"))
      if mniroizip:    
          if os.path.isfile(mniroizip):
              print('Passed '+mniroizip+', copying to '+dstDirAn)
@@ -164,40 +164,21 @@ def anatrois(config, sub, ses):
                  shutil.copyfile(mniroizip,os.path.join(dstDirAn,'mniroizip.zip'))
          else:
              print(mniroizip + ' does not exist')
-         if not os.path.exists(os.path.join(dstDirIn, "mniroizip")):
-             os.makedirs(os.path.join(dstDirIn, "mniroizip"))
+         if not os.path.exists(os.path.join(dir_input, "mniroizip")):
+             os.makedirs(os.path.join(dir_input, "mniroizip"))
 
      # Create the destination paths
      if pre_fs:
-         dstAnatomicalFile = os.path.join(dstDirIn, 'pre_fs',"existingFS.zip")
+         dstAnatomicalFile = os.path.join(dir_input, 'pre_fs',"existingFS.zip")
      else:
-         dstAnatomicalFile = os.path.join(dstDirIn, 'anat', "T1.nii.gz")
-     dstAnnotfile      = os.path.join(dstDirIn, 'annotfile',"annots.zip")
-     dstMniroizip      = os.path.join(dstDirIn, 'mniroizip',"mniroizip.zip")
+         dstAnatomicalFile = os.path.join(dir_input, 'anat', "T1.nii.gz")
+     dstAnnotfile      = os.path.join(dir_input, 'annotfile',"annots.zip")
+     dstMniroizip      = os.path.join(dir_input, 'mniroizip',"mniroizip.zip")
 
      # Create the symbolic links
-     if os.path.isfile(dstAnatomicalFile):
-         os.unlink(dstAnatomicalFile)
-     if os.path.isfile(src_anatomical):
-         os.symlink(src_anatomical, dstAnatomicalFile)
-     else:
-         print(src_anatomical + ' does not exist')
-
-     if annotfile:
-         if os.path.isfile(dstAnnotfile):
-             os.unlink(dstAnnotfile)
-         if os.path.isfile(srcAnnotfile):
-             os.symlink(srcAnnotfile, dstAnnotfile)
-         else:
-             print(srcAnnotfile + ' does not exist')
-     
-     if mniroizip:
-         if os.path.isfile(dstMniroizip):
-             os.unlink(dstMniroizip)
-         if os.path.isfile(srcMniroizip):
-             os.symlink(srcMniroizip, dstMniroizip)
-         else:
-             print(srcMniroizip + ' does not exist')
+     force_symlink(src_anatomical, dstAnatomicalFile,force)
+     force_symlink(srcAnnotfile, dstAnnotfile,force)
+     force_symlink(srcMniroizip, dstMniroizip,force)
     return
 #%%    
 def rtppreproc(config, sub, ses):    
@@ -368,11 +349,58 @@ def rtppipeline(config, sub, ses):
     preanalysispp     = config["container_options"][container]["preanalysispp"]
     
     # the source directory
+    srcDirfs=os.path.join(basedir, 'Nifti', 'derivatives', precontainerfs,
+                            'analysis-'+preanalysisfs, 'sub-'+sub, 'ses-'+'T01', 'output')
+    srcDirpp=os.path.join(basedir, 'Nifti', 'derivatives', precontainerpp,
+                            'analysis-'+preanalysispp, 'sub-'+sub, 'ses-'+ses, 'output')
     # the source file
+    srcFileT1=os.path.join(srcDirpp, 't1.nii.gz')
+    srcFileFs=os.path.join(srcDirfs, 'fs.zip')
+    srcFileDwi_bvals=os.path.join(srcDirpp, 'dwi.bvals')
+    srcFileDwi_bvec=os.path.join(srcDirpp, 'dwi.bvecs')
+    srcFileDwi_nii=os.path.join(srcDirpp, 'dwi.nii.gz')
     
-    # the destination directory
-    # the destination file
     
-    # create symlink
+    # creat input and output directory for this container, the dir_output should be empty, the dir_input should contains all the symlinks
+    dir_input=os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
+                            'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'input')
+    dir_output=os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
+                            'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'output')
+    # under dir_input there are a lot of dir also needs to be there to have symlinks
+    if not os.path.exists(dir_input):
+        os.makedirs(dir_input)
+    if not os.path.exists(dir_output):
+        os.makedirs(dir_output)
+    if not os.path.exists(os.path.join(dir_input, "anatomical")):
+        os.makedirs(os.path.join(dir_input, "anatomical"))
+    if not os.path.exists(os.path.join(dir_input, "fs")):
+        os.makedirs(os.path.join(dir_input, "fs"))
+    if not os.path.exists(os.path.join(dir_input, "dwi")):
+        os.makedirs(os.path.join(dir_input, "dwi"))
+    if not os.path.exists(os.path.join(dir_input, "bval")):
+        os.makedirs(os.path.join(dir_input, "bval"))
+    if not os.path.exists(os.path.join(dir_input, "bvec")):
+        os.makedirs(os.path.join(dir_input, "bvec"))
+    if not os.path.exists(os.path.join(dir_input, "tractparams")):
+        os.makedirs(os.path.join(dir_input, "tractparams"))
+
+    # Create the destination file
+    dstAnatomicalFile=os.path.join(dstDirIn, 'anatomical', "T1.nii.gz")
+    dstFsfile=os.path.join(dstDirIn, 'fs', "fs.zip")
+    dstDwi_niiFile=os.path.join(dstDirIn, "dwi", "dwi.nii.gz")
+    dstDwi_bvalFile=os.path.join(dstDirIn, "bval", "dwi.bval")
+    dstDwi_bvecFile=os.path.join(dstDirIn, "bvec", "dwi.bvec")
+    dst_tractparams=os.path.join(
+        dstDirIn, "tractparams", "tractparams.csv")
+    src_tractparams=os.path.join(basedir, 'Nifti', 'derivatives', tool,
+                                   'analysis-'+analysis, 'tractparams.csv')
+
+    # Create the symbolic links
+    force_symlink(src_anatomical, dstAnatomicalFile, force)
+    force_symlink(src_fs, dstFsfile,force) 
+    force_symlink(src_dwi, dstDwi_niiFile,force)
+    force_symlink(src_bvec, dstDwi_bvecFile,force)
+    force_symlink(src_bval, dstDwi_bvalFile,force)
+    force_symlink(src_tractparams, dst_tractparams,force)
     
     return 
