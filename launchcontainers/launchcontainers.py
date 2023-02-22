@@ -127,7 +127,7 @@ def prepare_input_file(config_dict, df_subSes):
         
         if "rtppreproc" in container:
             csl.rtppreproc(config_dict, sub, ses)
-        elif "rtppipeline" in container:
+        elif "rtp-pipeline" in container:
             csl.rtppipeline(config_dict, sub, ses)
         elif "anatrois" in container:
             csl.anatrois(config_dict, sub, ses)
