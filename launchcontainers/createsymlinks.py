@@ -385,22 +385,22 @@ def rtppipeline(config, sub, ses):
         os.makedirs(os.path.join(dir_input, "tractparams"))
 
     # Create the destination file
-    dstAnatomicalFile=os.path.join(dstDirIn, 'anatomical', "T1.nii.gz")
-    dstFsfile=os.path.join(dstDirIn, 'fs', "fs.zip")
-    dstDwi_niiFile=os.path.join(dstDirIn, "dwi", "dwi.nii.gz")
-    dstDwi_bvalFile=os.path.join(dstDirIn, "bval", "dwi.bval")
-    dstDwi_bvecFile=os.path.join(dstDirIn, "bvec", "dwi.bvec")
+    dstAnatomicalFile=os.path.join(dir_input, 'anatomical', "T1.nii.gz")
+    dstFsfile=os.path.join(dir_input, 'fs', "fs.zip")
+    dstDwi_niiFile=os.path.join(dir_input, "dwi", "dwi.nii.gz")
+    dstDwi_bvalFile=os.path.join(dir_input, "bval", "dwi.bval")
+    dstDwi_bvecFile=os.path.join(dir_input, "bvec", "dwi.bvec")
     dst_tractparams=os.path.join(
-        dstDirIn, "tractparams", "tractparams.csv")
+        dir_input, "tractparams", "tractparams.csv")
     src_tractparams=os.path.join(basedir, 'Nifti', 'derivatives', container,
                                     'analysis-'+analysis, 'tractparams.csv')
 
     # Create the symbolic links
-    force_symlink(src_anatomical, dstAnatomicalFile, force)
-    force_symlink(src_fs, dstFsfile,force) 
-    force_symlink(src_dwi, dstDwi_niiFile,force)
-    force_symlink(src_bvec, dstDwi_bvecFile,force)
-    force_symlink(src_bval, dstDwi_bvalFile,force)
+    force_symlink(srcFileT1, dstAnatomicalFile, force)
+    force_symlink(srcFileFs, dstFsfile,force) 
+    force_symlink(srcFileDwi_nii, dstDwi_niiFile,force)
+    force_symlink(srcFileDwi_bvec, dstDwi_bvecFile,force)
+    force_symlink(srcFileDwi_bvals, dstDwi_bvalFile,force)
     force_symlink(src_tractparams, dst_tractparams,force)
     
     return 
