@@ -1,5 +1,7 @@
 #%% import libraries
 import os, errno
+import glob
+import sys
 #%%
 def force_symlink(file1, file2, force):
     '''
@@ -54,30 +56,10 @@ def force_symlink(file1, file2, force):
             else:
                 raise e
     return
-#%%
-def rtppreproc_force_rpe(force,rpe,reverse_bvec, reverse_bval):
-    '''
-    Parameters
-    ----------
-    force : bool
-        determine if we want to overwrite
-    rpe : bool
-        determine if we do reverse phase encoding
-    reverse_bvec : str
-        the path to reverse direction .bvec file
-    reverse_bval : str
-        the path to reverse direction .bval file
 
-    Returns
-    -------
-    None.
-
-    '''
-    
-    
-    return
 #%%
 def anatrois(config, sub, ses):
+    
     """
     Parameters
     ----------
@@ -104,82 +86,88 @@ def anatrois(config, sub, ses):
     prefs_zipname     = config["container_options"][container]["prefs_zipname"]
     # I added this line, shall we modify config yaml
     precontainerfs    = config["container_options"][container]["precontainerfs"]
-    prenanlysisfs     = config["container_options"][container]["prenanlysisfs"]
+    preanalysisfs     = config["container_options"][container]["preanalysisfs"]
     annotfile         = config["container_options"][container]["annotfile"]
     mniroizip         = config["container_options"][container]["mniroizip"]
-    version           = config ["container_options"][container]["version"]
+    version           = config["container_options"][container]["version"]
     
-    # ????????
-     if pre_fs:
-         srcAnatPath = os.path.join(basedir,'Nifti','derivatives',precontainerfs,'analysis-'+preanalysisfs,
-                                    'sub-'+sub, 'ses-'+ses,'output')
-         zips = sorted(glob.glob(os.path.join(srcAnatPath,prefs_zipname+'*')),key=os.path.getmtime)
-         try:
-             src_anatomical = zips[-1]
-         except:
-             print(f"{sub} doesn't have pre_fs, skipping")
-             continue
-     else:
-         src_anatomical = os.path.join(
-             basedir, 'Nifti', 'sub-'+sub, 'ses-'+ses, 'anat', 'sub-'+sub+'_ses-'+ses+'_T1w.nii.gz')
-     
-     # Main destination  dir
-     dir_input = os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
-                             'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'input')
-     dir_output = os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
-                             'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'output')
-     dstDirAn = os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
-                             'analysis-'+analysis)
-     
-     # Create folders if they do not exist
-     if not os.path.exists(dir_input):
-         os.makedirs(dir_input)
-     if not os.path.exists(dir_output):
-         os.makedirs(dir_output)
-     if pre_fs:
-         if not os.path.exists(os.path.join(dir_input, "pre_fs")):
-             os.makedirs(os.path.join(dir_input, "pre_fs"))
-     else:
-         if not os.path.exists(os.path.join(dir_input, "anat")):
-             os.makedirs(os.path.join(dir_input, "anat"))
-     if annotfile:    
-         if os.path.isfile(annotfile):
-             print('Passed '+annotfile+', copying to '+dstDirAn)
-             srcAnnotfile = os.path.join(dstDirAn,'annotfile.zip')
-             if os.path.isfile(srcAnnotfile):
-                 print(srcAnnotfile+' exists, if you want it new, delete it first')
-             else:
-                 shutil.copyfile(annotfile,os.path.join(dstDirAn,'annotfile.zip'))
-         else:
-             print(annotfile + ' does not exist')
-         if not os.path.exists(os.path.join(dir_input, "annotfile")):
-             os.makedirs(os.path.join(dir_input, "annotfile"))
-     if mniroizip:    
-         if os.path.isfile(mniroizip):
-             print('Passed '+mniroizip+', copying to '+dstDirAn)
-             srcMniroizip = os.path.join(dstDirAn,'mniroizip.zip')
-             if os.path.isfile(srcMniroizip):
-                 print(srcMniroizip+' exists, if you want it new, delete it first')
-             else:
-                 shutil.copyfile(mniroizip,os.path.join(dstDirAn,'mniroizip.zip'))
-         else:
-             print(mniroizip + ' does not exist')
-         if not os.path.exists(os.path.join(dir_input, "mniroizip")):
-             os.makedirs(os.path.join(dir_input, "mniroizip"))
+    # if we run freesurfer before:
+    if pre_fs:
+        srcAnatPath = os.path.join(basedir,'Nifti','derivatives',precontainerfs,'analysis-'+preanalysisfs,
+                                   'sub-'+sub, 'ses-'+ses,'output')
+        zips = sorted(glob.glob(os.path.join(srcAnatPath,prefs_zipname+'*')),key=os.path.getmtime)
+        print(len(zips))
+        if len(zips)==0:
+            print(f'There are no zips in {srcAnatPath}, aborting. Check prefs_zipname in the yaml file')
+            sys.exit()
+        elif len(zips)>1:
+            print(f'There are more than one zip file in {srcAnatPath}, selecting the last one')
+            srcFileT1 = zips[-1]
+        else:
+            srcFileT1 = zips[0]
 
-     # Create the destination paths
-     if pre_fs:
-         dstAnatomicalFile = os.path.join(dir_input, 'pre_fs',"existingFS.zip")
-     else:
-         dstAnatomicalFile = os.path.join(dir_input, 'anat', "T1.nii.gz")
-     dstAnnotfile      = os.path.join(dir_input, 'annotfile',"annots.zip")
-     dstMniroizip      = os.path.join(dir_input, 'mniroizip',"mniroizip.zip")
+    else:
+        srcFileT1 = os.path.join(
+            basedir, 'Nifti', 'sub-'+sub, 'ses-'+ses, 'anat', 'sub-'+sub+'_ses-'+ses+'_T1w.nii.gz')  
 
-     # Create the symbolic links
-     force_symlink(src_anatomical, dstAnatomicalFile,force)
-     force_symlink(srcAnnotfile, dstAnnotfile,force)
-     force_symlink(srcMniroizip, dstMniroizip,force)
-    return
+ 
+    # define input output folder for this container
+    dir_input = os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
+                            'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'input')
+    dir_output = os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
+                            'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'output')
+    dir_analysis = os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
+                            'analysis-'+analysis)
+    # create corresponding folder 
+    if not os.path.exists(dir_input):
+        os.makedirs(dir_input)
+    if not os.path.exists(dir_output):
+        os.makedirs(dir_output)
+    if pre_fs:
+        if not os.path.exists(os.path.join(dir_input, "pre_fs")):
+            os.makedirs(os.path.join(dir_input, "pre_fs"))
+    else:
+        if not os.path.exists(os.path.join(dir_input, "anat")):
+            os.makedirs(os.path.join(dir_input, "anat"))
+    if annotfile:    
+        if os.path.isfile(annotfile):
+            print('Passed '+annotfile+', copying to '+dir_analysis)
+            srcFileAnnot = os.path.join(dir_analysis,'annotfile.zip')
+            if os.path.isfile(srcFileAnnot):
+                print(srcFileAnnot+' exists, if you want it new, delete it first')
+            else:
+                shutil.copyfile(annotfile,os.path.join(dir_analysis,'annotfile.zip'))
+        else:
+            print(annotfile + ' does not exist')
+        if not os.path.exists(os.path.join(dir_input, "annotfile")):
+            os.makedirs(os.path.join(dir_input, "annotfile"))
+    if mniroizip:    
+        if os.path.isfile(mniroizip):
+            print('Passed '+mniroizip+', copying to '+dir_analysis)
+            srcFileMiniroizip = os.path.join(dir_analysis,'mniroizip.zip')
+            if os.path.isfile(srcFileMiniroizip):
+                print(srcFileMiniroizip+' exists, if you want it new, delete it first')
+            else:
+                shutil.copyfile(mniroizip,os.path.join(dir_analysis,'mniroizip.zip'))
+        else:
+            print(mniroizip + ' does not exist')
+        if not os.path.exists(os.path.join(dir_input, "mniroizip")):
+            os.makedirs(os.path.join(dir_input, "mniroizip"))
+    
+    # Create the destination path
+    if pre_fs:
+        dstFileT1 = os.path.join(dir_input, 'pre_fs',"existingFS.zip")
+    else:
+        dstFileT1 = os.path.join(dir_input, 'anat', "T1.nii.gz")
+    
+    dstFileAnnot      = os.path.join(dir_input, 'annotfile',"annots.zip")
+    dstFileMniroizip  = os.path.join(dir_input, 'mniroizip',"mniroizip.zip")
+    # Create the symbolic links
+    force_symlink(srcFileT1, dstFileT1, force)
+    if annotfile:
+        force_symlink(srcFileAnnot, dstFileAnnot,force)
+    if mniroizip:
+        force_symlink(srcFileMniroizip , dstFileMniroizip ,force)       
 #%%    
 def rtppreproc(config, sub, ses):    
     """
@@ -207,7 +195,7 @@ def rtppreproc(config, sub, ses):
     precontainerfs    = config["container_options"][container]["precontainerfs"]
     preanalysisfs     = config["container_options"][container]["preanalysisfs"]
     rpe               = config["container_options"][container]["rpe"]
-    version           = config ["container_options"][container]["version"]
+    version           = config["container_options"][container]["version"]
     
     # define base directory for particular subject and session
     basedir_subses=os.path.join(basedir, 'Nifti', 'sub-'+sub, 'ses-'+ses)
@@ -319,88 +307,88 @@ def rtppreproc(config, sub, ses):
     return 
 
 #%%
-def rtppipeline(config, sub, ses):
-    """
-    Parameters
-    ----------
-    config : dict
-        the config dictionary from _read_config
-    sub : str
-        the subject name looping from df_subSes
-    ses : str
-        the session name looping from df_subSes.
+# def rtppipeline(config, sub, ses):
+#     """
+#     Parameters
+#     ----------
+#     config : dict
+#         the config dictionary from _read_config
+#     sub : str
+#         the subject name looping from df_subSes
+#     ses : str
+#         the session name looping from df_subSes.
 
-    Returns
-    -------
-    none, create symbolic links 
+#     Returns
+#     -------
+#     none, create symbolic links 
 
-    """
-    # define local variables from config dict
-    # general level variables:
-    basedir           = config["config"]["basedir"]
-    container         = config["config"]["container"]
-    force             = config['config']['force']
-    analysis          = config["config"]["analysis"]
-    # rtppipeline specefic variables
-    version           = config ["container_options"][container]["version"]
-    precontainerfs    = config["container_options"][container]["precontainerfs"]
-    preanalysisfs     = config["container_options"][container]["preanalysisfs"]
-    precontainerpp    = config["container_options"][container]["precontainerpp"]
-    preanalysispp     = config["container_options"][container]["preanalysispp"]
+#     """
+#     # define local variables from config dict
+#     # general level variables:
+#     basedir           = config["config"]["basedir"]
+#     container         = config["config"]["container"]
+#     force             = config['config']['force']
+#     analysis          = config["config"]["analysis"]
+#     # rtppipeline specefic variables
+#     version           = config ["container_options"][container]["version"]
+#     precontainerfs    = config["container_options"][container]["precontainerfs"]
+#     preanalysisfs     = config["container_options"][container]["preanalysisfs"]
+#     precontainerpp    = config["container_options"][container]["precontainerpp"]
+#     preanalysispp     = config["container_options"][container]["preanalysispp"]
     
-    # the source directory
-    srcDirfs=os.path.join(basedir, 'Nifti', 'derivatives', precontainerfs,
-                            'analysis-'+preanalysisfs, 'sub-'+sub, 'ses-'+'T01', 'output')
-    srcDirpp=os.path.join(basedir, 'Nifti', 'derivatives', precontainerpp,
-                            'analysis-'+preanalysispp, 'sub-'+sub, 'ses-'+ses, 'output')
-    # the source file
-    srcFileT1=os.path.join(srcDirpp, 't1.nii.gz')
-    srcFileFs=os.path.join(srcDirfs, 'fs.zip')
-    srcFileDwi_bvals=os.path.join(srcDirpp, 'dwi.bvals')
-    srcFileDwi_bvec=os.path.join(srcDirpp, 'dwi.bvecs')
-    srcFileDwi_nii=os.path.join(srcDirpp, 'dwi.nii.gz')
+#     # the source directory
+#     srcDirfs=os.path.join(basedir, 'Nifti', 'derivatives', precontainerfs,
+#                             'analysis-'+preanalysisfs, 'sub-'+sub, 'ses-'+'T01', 'output')
+#     srcDirpp=os.path.join(basedir, 'Nifti', 'derivatives', precontainerpp,
+#                             'analysis-'+preanalysispp, 'sub-'+sub, 'ses-'+ses, 'output')
+#     # the source file
+#     srcFileT1=os.path.join(srcDirpp, 't1.nii.gz')
+#     srcFileFs=os.path.join(srcDirfs, 'fs.zip')
+#     srcFileDwi_bvals=os.path.join(srcDirpp, 'dwi.bvals')
+#     srcFileDwi_bvec=os.path.join(srcDirpp, 'dwi.bvecs')
+#     srcFileDwi_nii=os.path.join(srcDirpp, 'dwi.nii.gz')
     
     
-    # creat input and output directory for this container, the dir_output should be empty, the dir_input should contains all the symlinks
-    dir_input=os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
-                            'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'input')
-    dir_output=os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
-                            'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'output')
-    # under dir_input there are a lot of dir also needs to be there to have symlinks
-    if not os.path.exists(dir_input):
-        os.makedirs(dir_input)
-    if not os.path.exists(dir_output):
-        os.makedirs(dir_output)
-    if not os.path.exists(os.path.join(dir_input, "anatomical")):
-        os.makedirs(os.path.join(dir_input, "anatomical"))
-    if not os.path.exists(os.path.join(dir_input, "fs")):
-        os.makedirs(os.path.join(dir_input, "fs"))
-    if not os.path.exists(os.path.join(dir_input, "dwi")):
-        os.makedirs(os.path.join(dir_input, "dwi"))
-    if not os.path.exists(os.path.join(dir_input, "bval")):
-        os.makedirs(os.path.join(dir_input, "bval"))
-    if not os.path.exists(os.path.join(dir_input, "bvec")):
-        os.makedirs(os.path.join(dir_input, "bvec"))
-    if not os.path.exists(os.path.join(dir_input, "tractparams")):
-        os.makedirs(os.path.join(dir_input, "tractparams"))
+#     # creat input and output directory for this container, the dir_output should be empty, the dir_input should contains all the symlinks
+#     dir_input=os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
+#                             'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'input')
+#     dir_output=os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
+#                             'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'output')
+#     # under dir_input there are a lot of dir also needs to be there to have symlinks
+#     if not os.path.exists(dir_input):
+#         os.makedirs(dir_input)
+#     if not os.path.exists(dir_output):
+#         os.makedirs(dir_output)
+#     if not os.path.exists(os.path.join(dir_input, "anatomical")):
+#         os.makedirs(os.path.join(dir_input, "anatomical"))
+#     if not os.path.exists(os.path.join(dir_input, "fs")):
+#         os.makedirs(os.path.join(dir_input, "fs"))
+#     if not os.path.exists(os.path.join(dir_input, "dwi")):
+#         os.makedirs(os.path.join(dir_input, "dwi"))
+#     if not os.path.exists(os.path.join(dir_input, "bval")):
+#         os.makedirs(os.path.join(dir_input, "bval"))
+#     if not os.path.exists(os.path.join(dir_input, "bvec")):
+#         os.makedirs(os.path.join(dir_input, "bvec"))
+#     if not os.path.exists(os.path.join(dir_input, "tractparams")):
+#         os.makedirs(os.path.join(dir_input, "tractparams"))
 
-    # Create the destination file
-    dstAnatomicalFile=os.path.join(dstDirIn, 'anatomical', "T1.nii.gz")
-    dstFsfile=os.path.join(dstDirIn, 'fs', "fs.zip")
-    dstDwi_niiFile=os.path.join(dstDirIn, "dwi", "dwi.nii.gz")
-    dstDwi_bvalFile=os.path.join(dstDirIn, "bval", "dwi.bval")
-    dstDwi_bvecFile=os.path.join(dstDirIn, "bvec", "dwi.bvec")
-    dst_tractparams=os.path.join(
-        dstDirIn, "tractparams", "tractparams.csv")
-    src_tractparams=os.path.join(basedir, 'Nifti', 'derivatives', tool,
-                                   'analysis-'+analysis, 'tractparams.csv')
+#     # Create the destination file
+#     dstAnatomicalFile=os.path.join(dstDirIn, 'anatomical', "T1.nii.gz")
+#     dstFsfile=os.path.join(dstDirIn, 'fs', "fs.zip")
+#     dstDwi_niiFile=os.path.join(dstDirIn, "dwi", "dwi.nii.gz")
+#     dstDwi_bvalFile=os.path.join(dstDirIn, "bval", "dwi.bval")
+#     dstDwi_bvecFile=os.path.join(dstDirIn, "bvec", "dwi.bvec")
+#     dst_tractparams=os.path.join(
+#         dstDirIn, "tractparams", "tractparams.csv")
+#     src_tractparams=os.path.join(basedir, 'Nifti', 'derivatives', container,
+#                                    'analysis-'+analysis, 'tractparams.csv')
 
-    # Create the symbolic links
-    force_symlink(src_anatomical, dstAnatomicalFile, force)
-    force_symlink(src_fs, dstFsfile,force) 
-    force_symlink(src_dwi, dstDwi_niiFile,force)
-    force_symlink(src_bvec, dstDwi_bvecFile,force)
-    force_symlink(src_bval, dstDwi_bvalFile,force)
-    force_symlink(src_tractparams, dst_tractparams,force)
+#     # Create the symbolic links
+#     force_symlink(src_anatomical, dstAnatomicalFile, force)
+#     force_symlink(src_fs, dstFsfile,force) 
+#     force_symlink(src_dwi, dstDwi_niiFile,force)
+#     force_symlink(src_bvec, dstDwi_bvecFile,force)
+#     force_symlink(src_bval, dstDwi_bvalFile,force)
+#     force_symlink(src_tractparams, dst_tractparams,force)
     
-    return 
+#     return 

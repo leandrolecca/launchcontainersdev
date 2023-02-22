@@ -23,6 +23,7 @@ def import_or_install(package):
 import_or_install(package)
 import nibabel as nib
 import createsymlinks as csl
+import glob
 """
 TODO: 
     4./ Add the check in launchcontainers.py, that only in some cases we wiill need to use createSymLinks, and for the anatrois, rtppreproc and rtp-pipeline, we will need to do it
@@ -96,11 +97,21 @@ def _read_subSesList(path_to_subSesList_file):
     return subSesList
 
 #%% Launchcontainer
-'''
-TODO this function is not generic, needs to modify it
-
-'''
 def prepare_input_file(config_dict, df_subSes):
+    """
+    
+    Parameters
+    ----------
+    config_dict : TYPE
+        DESCRIPTION.
+    df_subSes : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
     for row in df_subSes.itertuples(index= True, name = "Pandas"):
         sub = row.sub
         ses = row.ses
@@ -108,8 +119,8 @@ def prepare_input_file(config_dict, df_subSes):
         dwi = row.dwi
         func = row.func
         container = config_dict['config']['container']
-        cont_version = config_dict['container_options'][container]['version']
-        print(f"{sub}_{ses}_RUN-{RUN}_{container}_{cont_version}")
+        version = config_dict['container_options'][container]['version']
+        print(f"{sub}_{ses}_RUN-{RUN}_{container}_{version}")
         
         if not RUN: 
             continue
@@ -117,13 +128,10 @@ def prepare_input_file(config_dict, df_subSes):
         if "rtppreproc" in container:
             csl.rtppreproc(config_dict, sub, ses)
         elif "rtppipeline" in container:
-            print('rtppipeline')
-        elif "rtppipeline" in container:
-            print('rtppipeline')
-        elif "rtppipeline" in container:
-            print('rtppipeline')
-        elif "rtppipeline" in container:
-            print('rtppipeline')
+            csl.rtppipeline(config_dict, sub, ses)
+        elif "anatrois" in container:
+            csl.anatrois(config_dict, sub, ses)
+        #future container
         else:
             print(f"{container} is not created, check for typos or if it is a new container create it in launchcontainers.py")
    
@@ -195,8 +203,6 @@ def main():
     config_dict  = _read_config(inputs['configFile'])
     subSes_df    = _read_subSesList(inputs['subSesList'])
     
-    codedir = config_dict["config"]["codedir"]
-
     prepare_input_file(config_dict, subSes_df)
     
     # launchcontainers('kk', command_str=command_str)
