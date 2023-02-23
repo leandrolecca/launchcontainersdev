@@ -120,15 +120,15 @@ def anatrois(config, sub, ses):
 
     else:
         srcFileT1 = os.path.join(
-            basedir, 'Nifti', 'sub-'+sub, 'ses-'+ses, 'anat', 'sub-'+sub+'_ses-'+ses+'_T1w.nii.gz')  
+            basedir, 'nifti', 'sub-'+sub, 'ses-'+ses, 'anat', 'sub-'+sub+'_ses-'+ses+'_T1w.nii.gz')  
 
  
     # define input output folder for this container
-    dir_input = os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
+    dir_input = os.path.join(basedir, 'nifti', 'derivatives', f'{container}_{version}',
                             'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'input')
-    dir_output = os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
+    dir_output = os.path.join(basedir, 'nifti', 'derivatives', f'{container}_{version}',
                             'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'output')
-    dir_analysis = os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
+    dir_analysis = os.path.join(basedir, 'nifti', 'derivatives', f'{container}_{version}',
                             'analysis-'+analysis)
     # create corresponding folder 
     if not os.path.exists(dir_input):
@@ -210,10 +210,10 @@ def rtppreproc(config, sub, ses):
     version           = config["container_options"][container]["version"]
     
     # define base directory for particular subject and session
-    basedir_subses=os.path.join(basedir, 'Nifti', 'sub-'+sub, 'ses-'+ses)
+    basedir_subses=os.path.join(basedir, 'nifti', 'sub-'+sub, 'ses-'+ses)
     
     # the source directory that stores the output of previous anatorois analysis
-    srcDirFs=os.path.join(basedir, 'Nifti', 'derivatives', precontainerfs,
+    srcDirFs=os.path.join(basedir, 'nifti', 'derivatives', precontainerfs,
                             'analysis-'+preanalysisfs, 'sub-'+sub, 'ses-'+ses, 'output')
     
     # define the source file, this is where symlink will point to
@@ -266,9 +266,9 @@ def rtppreproc(config, sub, ses):
             f.close()
 
     # creat input and output directory for this container, the dir_output should be empty, the dir_input should contains all the symlinks
-    dir_input=os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}', 
+    dir_input=os.path.join(basedir, 'nifti', 'derivatives', f'{container}_{version}', 
                           'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'input')
-    dir_output=os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
+    dir_output=os.path.join(basedir, 'nifti', 'derivatives', f'{container}_{version}',
                             'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'output')
     if not os.path.exists(dir_input):
         os.makedirs(dir_input)
@@ -349,9 +349,9 @@ def rtppipeline(config, sub, ses):
     preanalysispp     = config["container_options"][container]["preanalysispp"]
     
     # the source directory
-    srcDirfs=os.path.join(basedir, 'Nifti', 'derivatives', precontainerfs,
+    srcDirfs=os.path.join(basedir, 'nifti', 'derivatives', precontainerfs,
                             'analysis-'+preanalysisfs, 'sub-'+sub, 'ses-'+'T01', 'output')
-    srcDirpp=os.path.join(basedir, 'Nifti', 'derivatives', precontainerpp,
+    srcDirpp=os.path.join(basedir, 'nifti', 'derivatives', precontainerpp,
                             'analysis-'+preanalysispp, 'sub-'+sub, 'ses-'+ses, 'output')
     # the source file
     srcFileT1=os.path.join(srcDirpp, 't1.nii.gz')
@@ -362,9 +362,9 @@ def rtppipeline(config, sub, ses):
     
     
     # creat input and output directory for this container, the dir_output should be empty, the dir_input should contains all the symlinks
-    dir_input=os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
+    dir_input=os.path.join(basedir, 'nifti', 'derivatives', f'{container}_{version}',
                             'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'input')
-    dir_output=os.path.join(basedir, 'Nifti', 'derivatives', f'{container}_{version}',
+    dir_output=os.path.join(basedir, 'nifti', 'derivatives', f'{container}_{version}',
                             'analysis-'+analysis, 'sub-'+sub, 'ses-'+ses, 'output')
     # under dir_input there are a lot of dir also needs to be there to have symlinks
     if not os.path.exists(dir_input):
@@ -392,7 +392,7 @@ def rtppipeline(config, sub, ses):
     dstDwi_bvecFile=os.path.join(dir_input, "bvec", "dwi.bvec")
     dst_tractparams=os.path.join(
         dir_input, "tractparams", "tractparams.csv")
-    src_tractparams=os.path.join(basedir, 'Nifti', 'derivatives', container,
+    src_tractparams=os.path.join(basedir, 'nifti', 'derivatives', container,
                                     'analysis-'+analysis, 'tractparams.csv')
 
     # Create the symbolic links

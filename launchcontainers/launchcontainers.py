@@ -47,13 +47,11 @@ def _get_parser():
     # https://stackoverflow.com/a/43456577
     """
     parser = argparse.ArgumentParser(description='''createSymLinks.py 'pathTo/config_launchcontainers.yaml' ''')
-    parser.add_argument('--configFile', 
+    parser.add_argument('configFile', 
                         type=str, 
-                        default="/Users/tiger/TESTDATA/PROJ01/nifti/config_launchcontainer_copy.yaml",
                         help='path to the config file')
-    parser.add_argument('--subSesList', 
+    parser.add_argument('subSesList', 
                         type=str,
-                        default="/Users/tiger/TESTDATA/PROJ01/nifti/subSesList.txt",
                         help='path to the config file')
     parse_result  = vars(parser.parse_args())
 
