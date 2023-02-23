@@ -32,7 +32,8 @@ TODO:
         createSymLinks_rtppreproc.py
         createSymLinks_rtp-pipeline.py
 """
-sys.path.insert(0,'/Users/tiger/Documents/GitHub/launchcontainers/launchcontainers')
+sys.path.insert(0,'/export/home/tlei/tlei/soft/launchcontainers/launchcontainers')
+# needs to make this generic with server
 #%% parser
 def _get_parser():
     """
