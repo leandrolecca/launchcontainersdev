@@ -24,7 +24,7 @@ import_or_install(package)
 import nibabel as nib
 import createsymlinks as csl
 import glob
-"""
+"""s
 TODO: 
     4./ Add the check in launchcontainers.py, that only in some cases we wiill need to use createSymLinks, and for the anatrois, rtppreproc and rtp-pipeline, we will need to do it
     5./ Edit createSymLinks again and make one function per every container
@@ -46,13 +46,18 @@ def _get_parser():
     # https://stackoverflow.com/a/43456577
     """
     parser = argparse.ArgumentParser(description='''createSymLinks.py 'pathTo/config_launchcontainers.yaml' ''')
-    parser.add_argument('configFile', 
+    parser.add_argument('-lc','--lc_configFile', 
                         type=str, 
                         help='path to the config file')
-    parser.add_argument('subSesList', 
+    parser.add_argument('-ss', '--subSesList', 
+                        type=str,
+                        help='path to the config file')
+    parser.add_argument('-c', '--cont_configFile', 
                         type=str,
                         help='path to the config file')
     parse_result  = vars(parser.parse_args())
+	
+    print(parse_result)     
 
     return parse_result
 
@@ -197,7 +202,7 @@ def launchcontainers(
 def main():
     """launch_container entry point"""
     inputs       = _get_parser()
-    config_dict  = _read_config(inputs['configFile'])
+    config_dict  = _read_config(inputs['lc_configFile'])
     subSes_df    = _read_subSesList(inputs['subSesList'])
     
     prepare_input_file(config_dict, subSes_df)

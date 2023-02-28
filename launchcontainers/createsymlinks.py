@@ -174,6 +174,22 @@ def anatrois(config, sub, ses):
     
     dstFileAnnot      = os.path.join(dir_input, 'annotfile',"annots.zip")
     dstFileMniroizip  = os.path.join(dir_input, 'mniroizip',"mniroizip.zip")
+
+
+    # Now that the folder structure is created for this subject, now copy the config file to the analysis folder so that 
+    # when we call the Singularity container, it is at the base of the analysis folder and it can create a link
+    # First check that ht efile is there
+    if not os.path.isfile(pathtothe cont_configFile):
+        print(f'{} des not exisst, I cannot pste it to the analysis folder, aborting. ')
+        sys.error()
+    # config is there, now copy to the right folder
+    copy file to the analysis directory
+    print(f"{pathtonewlocationand filename} has been succesfult created. CHECK/EDIT TO HAVE CORRECT PARAMETERS IN THE FILE")
+
+
+
+
+
     # Create the symbolic links
     force_symlink(srcFileT1, dstFileT1, force)
     if annotfile:
