@@ -46,15 +46,18 @@ def _get_parser():
     # https://stackoverflow.com/a/43456577
     """
     parser = argparse.ArgumentParser(description='''createSymLinks.py 'pathTo/config_launchcontainers.yaml' ''')
-    parser.add_argument('-lc','--lc_config', 
-                        type=str, 
-                        help='path to the config file')
-    parser.add_argument('-ss', '--sub_ses_list', 
+    parser.add_argument('-lcc','--lc_config', 
                         type=str,
+                        default= "/Users/tiger/TESTDATA/PROJ01/nifti/config_launchcontainer_copy.yaml",
                         help='path to the config file')
-    parser.add_argument('-c', '--container_config', 
+    parser.add_argument('-ssl', '--sub_ses_list', 
                         type=str,
-                        help='path to the config file')
+                        default= "/Users/tiger/TESTDATA/PROJ01/nifti/subSesList.txt",
+                        help='path to the subSesList')
+    parser.add_argument('-cc', '--container_config', 
+                        type=str,
+                        default= "/Users/tiger/Documents/GitHub/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
+                        help='path to the container specific config file')
     parse_result  = vars(parser.parse_args())
 	
     print(parse_result)     
@@ -99,7 +102,7 @@ def _read_subSesList(path_to_subSesList_file):
     return subSesList
 
 #%% Launchcontainer
-def prepare_input_file(config_dict, df_subSes):
+def prepare_input_file(config_dict, df_subSes, path_to_container_config):
     """
     
     Parameters
@@ -128,11 +131,11 @@ def prepare_input_file(config_dict, df_subSes):
             continue
         
         if "rtppreproc" in container:
-            csl.rtppreproc(config_dict, sub, ses)
+            csl.rtppreproc(config_dict, sub, ses, path_to_container_config)
         elif "rtp-pipeline" in container:
-            csl.rtppipeline(config_dict, sub, ses)
+            csl.rtppipeline(config_dict, sub, ses, path_to_container_config)
         elif "anatrois" in container:
-            csl.anatrois(config_dict, sub, ses)
+            csl.anatrois(config_dict, sub, ses, path_to_container_config)
         #future container
         else:
             print(f"{container} is not created, check for typos or if it is a new container create it in launchcontainers.py")
@@ -202,10 +205,11 @@ def launchcontainers(
 def main():
     """launch_container entry point"""
     inputs       = _get_parser()
-    config_dict  = _read_config(inputs['lc_configFile'])
-    subSes_df    = _read_subSesList(inputs['subSesList'])
+    config_dict  = _read_config(inputs['lc_config'])
+    subses_df    = _read_subSesList(inputs['sub_ses_list'])
+    path_to_container_config  = inputs['container_config']
     
-    prepare_input_file(config_dict, subSes_df)
+    prepare_input_file(config_dict, subses_df, path_to_container_config)
     
     # launchcontainers('kk', command_str=command_str)
     

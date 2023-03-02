@@ -179,19 +179,14 @@ def anatrois(config, sub, ses, path_to_container_config):
     # Now that the folder structure is created for this subject, now copy the config file to the analysis folder so that 
     # when we call the Singularity container, it is at the base of the analysis folder and it can create a link
     # First check that the file is there
+    dstFilecontainer_config = os.path.join(dir_analysis, "config.json")
     if not os.path.isfile(path_to_container_config):
-        print(f'{} des not exisst, I cannot pste it to the analysis folder, aborting. ')
-        sys.error()
+        print(f'{path_to_container_config} des not exist, CANNOT paste it to the analysis folder, aborting. ')
+        sys.exit('file not found')
     # config is there, now copy to the right folder
-    if not os.path
-
-
-"copy file to the analysis directory
-    print(f"{pathtonewlocationand filename} has been succesfult created. CHECK/EDIT TO HAVE CORRECT PARAMETERS IN THE FILE")
-src: what comes from the variables, we don't care about the name
-dst: analysis folder/config.json"
-
-
+    else:
+        force_symlink(path_to_container_config,dstFilecontainer_config,force)
+        print(f"{path_to_container_config} has been succesfult created. CHECK/EDIT TO HAVE CORRECT PARAMETERS IN THE FILE")
 
 
     # Create the symbolic links
