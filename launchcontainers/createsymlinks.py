@@ -58,7 +58,7 @@ def force_symlink(file1, file2, force):
     return
 
 #%%
-def anatrois(config, sub, ses):
+def anatrois(config, sub, ses, path_to_container_config):
     
     """
     Parameters
@@ -178,14 +178,18 @@ def anatrois(config, sub, ses):
 
     # Now that the folder structure is created for this subject, now copy the config file to the analysis folder so that 
     # when we call the Singularity container, it is at the base of the analysis folder and it can create a link
-    # First check that ht efile is there
-    if not os.path.isfile(pathtothe cont_configFile):
+    # First check that the file is there
+    if not os.path.isfile(path_to_container_config):
         print(f'{} des not exisst, I cannot pste it to the analysis folder, aborting. ')
         sys.error()
     # config is there, now copy to the right folder
-    copy file to the analysis directory
-    print(f"{pathtonewlocationand filename} has been succesfult created. CHECK/EDIT TO HAVE CORRECT PARAMETERS IN THE FILE")
+    if not os.path
 
+
+"copy file to the analysis directory
+    print(f"{pathtonewlocationand filename} has been succesfult created. CHECK/EDIT TO HAVE CORRECT PARAMETERS IN THE FILE")
+src: what comes from the variables, we don't care about the name
+dst: analysis folder/config.json"
 
 
 
