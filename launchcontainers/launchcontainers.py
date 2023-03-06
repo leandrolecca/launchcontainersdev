@@ -77,7 +77,7 @@ def _get_parser():
         "-cc",
         "--container_config",
         type=str,
-        default="/Users/tiger/Documents/GitHub/launchcontainers/example_configs/
+        default="/Users/tiger/Documents/GitHub/launchcontainers/example_configs/ \
                 container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
         help="path to the container specific config file",
     )
@@ -247,7 +247,7 @@ def main():
     prepare_input_files(lc_config, sub_ses_list, container_config)
 
     # launchcontainers('kk', command_str=command_str)
-    launchcontainers(sub_ses_list, lc_config)
+   #  launchcontainers(sub_ses_list, lc_config)
 
 # #%%
 if __name__ == "__main__":
