@@ -1,3 +1,4 @@
+import nibabel as nib
 import argparse
 from logging import DEBUG
 import os
@@ -15,20 +16,12 @@ import sys
 import yaml
 from yaml.loader import SafeLoader
 import pip
+import numpy as np
 
-package = "nibabel"
-# !{sys.executable} -m pip install nibabel  # inside jupyter console
-def import_or_install(package):
-    try:
-        __import__(package)
-    except ImportError:
-        pip.main(["install", package])
-
-
-import_or_install(package)
-import nibabel as nib
+# My packages
+import dask_schedule_queue as dsq
 import createsymlinks as csl
-import glob
+
 
 """s
 TODO: 
@@ -40,7 +33,9 @@ TODO:
         createSymLinks_rtppreproc.py
         createSymLinks_rtp-pipeline.py
 """
-#%% parser
+# %% parser
+
+
 def _get_parser():
     """
     Input:
@@ -88,7 +83,7 @@ def _get_parser():
     return parse_result
 
 
-#%% function to read config file, yaml
+# %% function to read config file, yaml
 def _read_config(path_to_config_file):
     """
     Input:
@@ -106,13 +101,14 @@ def _read_config(path_to_config_file):
     container = config["config"]["container"]
 
     print(f'\nBasedir is: {config["config"]["basedir"]}')
-    print(f'\nContainer is: {container}_{config["container_options"][container]["version"]}')
+    print(
+        f'\nContainer is: {container}_{config["container_options"][container]["version"]}')
     print(f'\nAnalysis is: analysis-{config["config"]["analysis"]}')
 
     return config
 
 
-#%% function to read subSesList. txt
+# %% function to read subSesList. txt
 def _read_subSesList(path_to_subSesList_file):
     """
     Input:
@@ -127,7 +123,7 @@ def _read_subSesList(path_to_subSesList_file):
     return subSesList
 
 
-#%% Launchcontainer
+# %% Launchcontainer
 def prepare_input_files(lc_config, df_subSes, container_config):
     """
 
@@ -189,42 +185,40 @@ def launchcontainers(sub_ses_list, lc_config):
         os.mkdir(tmp_path)
     if not os.path.isdir(log_path):
         os.mkdir(log_path)
+    host = lc_config["config"]["host"]
+    jobqueue_config= lc_config["host_options"][host]
+    # Count how many jobs we need to launch from  sub_ses_list
+    n_jobs = np.sum(sub_ses_list.RUN == True)
+    
 
-    # Get the unique list of subjects and sessions
+
+    # Iterate between temporal and spatial regularizations
+    client, _ = dsq.dask_scheduler(jobqueue_config, n_jobs)
+
+    # Scatter data to workers if client is not None
+        
+    if client is not None:
+        results = []
+        for row in sub_ses_list.itertuples(index=True, name='Pandas'):
+            sub  = row.sub
+            ses  = row.ses
+            RUN  = row.RUN
+            dwi  = row.dwi
+            func = row.func
+            if RUN and dwi:
+                future =[
+                    delayed_dask(func_singularity) #functions we need to excute
+                    ()  #input parameters
+           
+                    ]
+                x= future.compute()
+                results.append(x)
+        
+    
+
+    
 
 
-    for row in subSes_df.itertuples(index=True, name="Pandas"):
-        sub = row.sub
-        ses = row.ses
-        RUN = row.RUN
-        dwi = row.dwi
-        func = row.func
-        if RUN and dwi:
-            cmdstr = (
-                f"{codedir}/qsub_generic.sh "
-                + f"-t {tool} "
-                + f"-s {sub} "
-                + f"-e {ses} "
-                + f"-a {analysis} "
-                + f"-b {basedir} "
-                + f"-o {codedir} "
-                + f"-m {mem} "
-                + f"-q {que} "
-                + f"-c {core} "
-                + f"-p {tmpdir} "
-                + f"-g {logdir} "
-                + f"-i {sin_ver} "
-                + f"-n {container} "
-                + f"-u {qsub} "
-                + f"-h {host} "
-                + f"-d {manager} "
-                + f"-f {system} "
-                + f"-j {maxwall} "
-            )
-
-            print(cmdstr)
-            sp.call(cmdstr, shell=True)
-            backup_config_info()
 
 def backup_config_info():
     """
@@ -236,7 +230,9 @@ def backup_config_info():
     """
     return None
 
-#%% main()
+# %% main()
+
+
 def main():
     """launch_container entry point"""
     inputs = _get_parser()
@@ -248,6 +244,7 @@ def main():
 
     # launchcontainers('kk', command_str=command_str)
    #  launchcontainers(sub_ses_list, lc_config)
+
 
 # #%%
 if __name__ == "__main__":
