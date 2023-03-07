@@ -18,10 +18,16 @@ from yaml.loader import SafeLoader
 import pip
 import numpy as np
 
+# Dask imports
+from dask import compute
+from dask import delayed as delayed_dask
+from dask import config
+from dask.distributed import Client
+from dask_jobqueue import PBSCluster, SGECluster, SLURMCluster
+
 # My packages
 import dask_schedule_queue as dsq
 import createsymlinks as csl
-
 
 """s
 TODO: 
@@ -72,8 +78,7 @@ def _get_parser():
         "-cc",
         "--container_config",
         type=str,
-        default="/Users/tiger/Documents/GitHub/launchcontainers/example_configs/ \
-                container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
+        default="/Users/tiger/Documents/GitHub/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
         help="path to the container specific config file",
     )
     parse_result = vars(parser.parse_args())
@@ -123,7 +128,7 @@ def _read_subSesList(path_to_subSesList_file):
     return subSesList
 
 
-# %% Launchcontainer
+# %% prepare_input_files
 def prepare_input_files(lc_config, df_subSes, container_config):
     """
 
@@ -166,6 +171,7 @@ def prepare_input_files(lc_config, df_subSes, container_config):
 
     return
 
+# %% launchcontainers
 
 def launchcontainers(sub_ses_list, lc_config):
     """
@@ -179,26 +185,29 @@ def launchcontainers(sub_ses_list, lc_config):
     lc_config : dict
         Dictionary with all the values in the configuracion yaml file
     """
-
+    tmp_path = lc_config["config"]["tmpdir"]
+    log_path = lc_config["config"]["logdir"]
+    
     # If tmpdir and logdir do not exist, create them
     if not os.path.isdir(tmp_path):
         os.mkdir(tmp_path)
     if not os.path.isdir(log_path):
         os.mkdir(log_path)
+   
     host = lc_config["config"]["host"]
     jobqueue_config= lc_config["host_options"][host]
+    
     # Count how many jobs we need to launch from  sub_ses_list
     n_jobs = np.sum(sub_ses_list.RUN == True)
     
 
 
     # Iterate between temporal and spatial regularizations
-    client, _ = dsq.dask_scheduler(jobqueue_config, n_jobs)
-
+    # client, _ = dsq.dask_scheduler(jobqueue_config, n_jobs)
+    client = Client(processes=False)
     # Scatter data to workers if client is not None
-        
     if client is not None:
-        results = []
+        futures = []
         for row in sub_ses_list.itertuples(index=True, name='Pandas'):
             sub  = row.sub
             ses  = row.ses
@@ -206,17 +215,21 @@ def launchcontainers(sub_ses_list, lc_config):
             dwi  = row.dwi
             func = row.func
             if RUN and dwi:
-                future =[
-                    delayed_dask(func_singularity) #functions we need to excute
-                    ()  #input parameters
-           
-                    ]
-                x= future.compute()
-                results.append(x)
+                future = client.submit(print, f"TEST1111 {sub}_{ses}")
+                futures.append(future)
+                
+                
+
+            
+        futures[0].result()
+        futures[1].result()
+        futures[2].result()
+        futures[3].result()
+            
         
-    
 
     
+
 
 
 
@@ -243,7 +256,7 @@ def main():
     prepare_input_files(lc_config, sub_ses_list, container_config)
 
     # launchcontainers('kk', command_str=command_str)
-   #  launchcontainers(sub_ses_list, lc_config)
+    launchcontainers(sub_ses_list, lc_config)
 
 
 # #%%

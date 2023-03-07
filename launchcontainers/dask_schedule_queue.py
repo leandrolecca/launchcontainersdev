@@ -37,10 +37,10 @@ def initiate_cluster(jobqueue_config, n_job):
     
     
     if "sge" in jobqueue_config["manager"]:
-        cluster_by_config = SGECluster()
+        cluster_by_config = SGECluster(cores = core, memory = memory)
         cluster_by_config.scale(n_job)
     elif "pbs" in jobqueue_config["manager"]:
-        cluster_by_config = PBSCluster()
+        cluster_by_config = PBSCluster(cores = core, memory = memory)
         cluster_by_config.scale(n_job)
     elif "slurm" in jobqueue_config["manager"]:
         cluster_by_config = SLURMCluster(cores = core, memory = memory)
