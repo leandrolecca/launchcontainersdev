@@ -24,7 +24,7 @@ from dask import delayed as delayed_dask
 from dask import config
 from dask.distributed import Client
 from dask_jobqueue import PBSCluster, SGECluster, SLURMCluster
-
+from dask.distributed import progress
 # My packages
 import dask_schedule_queue as dsq
 import createsymlinks as csl
@@ -212,14 +212,13 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
     # n_jobs = np.sum(sub_ses_list.RUN == True)
     n_jobs = 1
 
-    basedir = "/export/home/tlei/tlei/TESTDATA/PROJ01"
-    container = "anatrois" 
-    version = "7.2.1_7.3.2"
-    analysis = "01"
-    container_path="/export/home/public/Gari/singularity_images"
-    containerdir ="/bcbl/home/public/Gari/singularity_images" 
-
+    basedir = lc_config["config"]["basedir"]
+    container = lc_config["config"]["container"] 
+    version = lc_config["container_options"][container]["version"]
+    analysis = lc_config["config"]["analysis"] 
+    containerdir = lc_config["config"]["containerdir"] 
     container_path = os.path.join(containerdir, f"{container}_{version}.sif")
+    
     # Iterate between temporal and spatial regularizations
     if run_it: client, cluster = dsq.dask_scheduler(jobqueue_config, n_jobs)
     
@@ -285,7 +284,9 @@ def main():
     sub_ses_list = _read_subSesList(inputs["sub_ses_list"])
     container_config = inputs["container_config"]
     run_lc = inputs["run_lc"]
-
+    basedir = lc_config['config']["basedir"]
+    container = lc_config["config"]["container"]
+    version = lc_config["container_options"][container]
     prepare_input_files(lc_config, sub_ses_list, container_config)
 
     # launchcontainers('kk', command_str=command_str)
@@ -294,6 +295,9 @@ def main():
     else:
         launchcontainers(sub_ses_list, lc_config, False)
 
+    cmd_copy= f"scp {basedir}/nifti/config_lc.yaml {basedir}/nifti/derivatives/{container}_{version}/analysis_{analysis}"
+    sp.run(cmd_copy, Shell=True)
+   
 
 # #%%
 if __name__ == "__main__":

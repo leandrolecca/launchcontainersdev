@@ -35,11 +35,11 @@ def initiate_cluster(jobqueue_config, n_job):
         cluster_by_config = SGECluster(cores  = jobqueue_config["cores"], 
                                        memory = jobqueue_config["memory"],
                                        queue = jobqueue_config["queue"],
-                                       project = jobqueue_config["project"],
+                                       # project = jobqueue_config["project"],
                                        processes = jobqueue_config["processes"],
-                                       interface = jobqueue_config["interface"],
+                                       # interface = jobqueue_config["interface"],
                                        # nanny = None,
-                                       local_directory = jobqueue_config["local-directory"],
+                                       # local_directory = jobqueue_config["local-directory"],
                                        death_timeout = jobqueue_config["death-timeout"],
                                        # worker_extra_args = None,
                                        env_extra = jobqueue_config["env-extra"],
@@ -58,7 +58,7 @@ def initiate_cluster(jobqueue_config, n_job):
                                        # scheduler_options=None,
                                        # scheduler_cls=None,
                                        # shared_temp_directory=None,
-                                       resource_spec=jobqueue_config["resource-spec"],
+                                       # resource_spec=jobqueue_config["resource-spec"],
                                        walltime=jobqueue_config["walltime"],
                                        job_extra_directives=jobqueue_config["job-extra"])
         cluster_by_config.scale(n_job)
