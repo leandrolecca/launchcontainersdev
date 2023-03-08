@@ -120,10 +120,11 @@ def _read_config(path_to_config_file):
 
     container = config["config"]["container"]
 
+    print(f"######################reading_config_lc######################### \n\nSuccessfully read config_lc.yaml")
     print(f'\nBasedir is: {config["config"]["basedir"]}')
-    print(
-        f'\nContainer is: {container}_{config["container_options"][container]["version"]}')
+    print(f'\nContainer is: {container}_{config["container_options"][container]["version"]}')
     print(f'\nAnalysis is: analysis-{config["config"]["analysis"]}')
+    print(f"######################reading_config_lc###################### \n")
 
     return config
 
@@ -139,6 +140,14 @@ def _read_subSesList(path_to_subSesList_file):
 
     """
     subSesList = pd.read_csv(path_to_subSesList_file, sep=",", header=0)
+    num_rows = len(subSesList)
+
+    # Print the result
+    print(f"####################reading_subseslist########################### \n")
+    print(f'\nThe subseslist is successfully read. \n')
+    print(f'\nThe DataFrame has {num_rows} rows. \n')
+    print(f"####################reading_subseslist###################### \n")
+    
 
     return subSesList
 
@@ -167,6 +176,7 @@ def prepare_input_files(lc_config, df_subSes, container_config):
         func = row.func
         container = lc_config["config"]["container"]
         version = lc_config["container_options"][container]["version"]
+        
         print(f"{sub}_{ses}_RUN-{RUN}_{container}_{version}")
 
         if not RUN:
