@@ -40,52 +40,57 @@ TODO:
         createSymLinks_rtp-pipeline.py
 """
 # %% parser
-
-
 def _get_parser():
     """
     Input:
     Parse command line inputs
 
     Returns:
-    a dict stores information about the configFile and subSesList
+    a dict stores information about the cmd input
 
-    Notes:
-    # Argument parser follow template provided by RalphyZ.
-    # https://stackoverflow.com/a/43456577
     """
     parser = argparse.ArgumentParser(
-        description="""createSymLinks.py 
-                        '-lcc pathTo/config_launchcontainers.yaml 
-                        -ssl path to subSesList.txt 
-                        -cc path to container config.json'
-                        --run_lc To actually launch containers, otherwise just prints the commannds and runs createSymLinks"""
+        description=""" This is lanchcontianer.py, you need to input path to the following files after the keywords \n       
+                        '-lcc path to config_lc.yaml \n 
+                        -ssl path to subSesList.txt  \n
+                        -cc path to container_config.json \n
+                        And you also need to decide if you are sure you want to launch the container by typying
+                        --run_lc  \n
+                        if you type --run_lc, this code will actually launch containers, \n
+                        otherwise just prints all the config information for you checking and  prepare all the input files"""
     )
     parser.add_argument(
         "-lcc",
         "--lc_config",
         type=str,
-        # default="/Users/tiger/TESTDATA/PROJ01/nifti/config_launchcontainer_copy.yaml",
-        default="/export/home/tlei/tlei/TESTDATA/PROJ01/nifti/config_lc.yaml",
+        default="/Users/tiger/TESTDATA/PROJ01/nifti/config_launchcontainer_copy.yaml",
+        # default="/export/home/tlei/tlei/TESTDATA/PROJ01/nifti/config_lc.yaml",
         help="path to the config file",
     )
     parser.add_argument(
         "-ssl",
         "--sub_ses_list",
         type=str,
-        # default="/Users/tiger/TESTDATA/PROJ01/nifti/subSesList.txt",
-        default="/export/home/tlei/tlei/TESTDATA/PROJ01/nifti/subSesList.txt",
+        default="/Users/tiger/TESTDATA/PROJ01/nifti/subSesList.txt",
+        #default="/export/home/tlei/tlei/TESTDATA/PROJ01/nifti/subSesList.txt",
         help="path to the subSesList",
     )
     parser.add_argument(
         "-cc",
         "--container_config",
         type=str,
-        # default="/Users/tiger/Documents/GitHub/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
-        default="/export/home/tlei/tlei/github/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
+        default="/Users/tiger/Documents/GitHub/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
+        #default="/export/home/tlei/tlei/github/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
         help="path to the container specific config file",
     )
-    parser.add_argument('--run_lc', action='store_true')
+    parser.add_argument('--run_lc', action='store_true',
+                        help= "if you type --run_lc, the entire program will be launched, jobs will be send to \
+                        cluster and launch the corresponding container you suggest in config_lc.yaml. \
+                        We suggest that the first time you run launchcontainer.py, leave this arguement empty. \
+                        then the launchcontainer.py will preapre \
+                        all the input files for you and print the command you want to send to container, after you \
+                        check all the configurations are correct and ready, you type --run_lc to make it run"
+                        )
     parser.add_argument('--not_run_lc', dest='run_lc', action='store_false')
     parser.set_defaults(run_lc=False)
 
