@@ -58,29 +58,39 @@ def _get_parser():
         description="""createSymLinks.py 
                         '-lcc pathTo/config_launchcontainers.yaml 
                         -ssl path to subSesList.txt 
-                        -cc path to container config.json' """
+                        -cc path to container config.json'
+                        --run_lc To actually launch containers, otherwise just prints the commannds and runs createSymLinks"""
     )
     parser.add_argument(
         "-lcc",
         "--lc_config",
         type=str,
-        default="/Users/tiger/TESTDATA/PROJ01/nifti/config_launchcontainer_copy.yaml",
+        # default="/Users/tiger/TESTDATA/PROJ01/nifti/config_launchcontainer_copy.yaml",
+        default="/export/home/tlei/tlei/TESTDATA/PROJ01/nifti/config_lc.yaml",
         help="path to the config file",
     )
     parser.add_argument(
         "-ssl",
         "--sub_ses_list",
         type=str,
-        default="/Users/tiger/TESTDATA/PROJ01/nifti/subSesList.txt",
+        # default="/Users/tiger/TESTDATA/PROJ01/nifti/subSesList.txt",
+        default="/export/home/tlei/tlei/TESTDATA/PROJ01/nifti/subSesList.txt",
         help="path to the subSesList",
     )
     parser.add_argument(
         "-cc",
         "--container_config",
         type=str,
-        default="/Users/tiger/Documents/GitHub/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
+        # default="/Users/tiger/Documents/GitHub/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
+        default="/export/home/tlei/tlei/github/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
         help="path to the container specific config file",
     )
+    parser.add_argument('--run_lc', action='store_true')
+    parser.add_argument('--not_run_lc', dest='run_lc', action='store_false')
+    parser.set_defaults(run_lc=False)
+
+
+
     parse_result = vars(parser.parse_args())
 
     print(parse_result)
@@ -173,7 +183,7 @@ def prepare_input_files(lc_config, df_subSes, container_config):
 
 # %% launchcontainers
 
-def launchcontainers(sub_ses_list, lc_config):
+def launchcontainers(sub_ses_list, lc_config, run_it):
     """
     This function launches containers generically in different Docker/Singularity HPCs
     This function is going to assume that all files are where they need to be.
@@ -185,6 +195,7 @@ def launchcontainers(sub_ses_list, lc_config):
     lc_config : dict
         Dictionary with all the values in the configuracion yaml file
     """
+
     tmp_path = lc_config["config"]["tmpdir"]
     log_path = lc_config["config"]["logdir"]
     
@@ -198,34 +209,55 @@ def launchcontainers(sub_ses_list, lc_config):
     jobqueue_config= lc_config["host_options"][host]
     
     # Count how many jobs we need to launch from  sub_ses_list
-    n_jobs = np.sum(sub_ses_list.RUN == True)
-    
+    # n_jobs = np.sum(sub_ses_list.RUN == True)
+    n_jobs = 1
 
+    basedir = "/export/home/tlei/tlei/TESTDATA/PROJ01"
+    container = "anatrois" 
+    version = "7.2.1_7.3.2"
+    analysis = "01"
+    container_path="/export/home/public/Gari/singularity_images"
+    containerdir ="/bcbl/home/public/Gari/singularity_images" 
 
+    container_path = os.path.join(containerdir, f"{container}_{version}.sif")
     # Iterate between temporal and spatial regularizations
-    # client, _ = dsq.dask_scheduler(jobqueue_config, n_jobs)
-    client = Client(processes=False)
-    # Scatter data to workers if client is not None
-    if client is not None:
-        futures = []
-        for row in sub_ses_list.itertuples(index=True, name='Pandas'):
-            sub  = row.sub
-            ses  = row.ses
-            RUN  = row.RUN
-            dwi  = row.dwi
-            func = row.func
-            if RUN and dwi:
-                future = client.submit(print, f"TEST1111 {sub}_{ses}")
-                futures.append(future)
-                
-                
+    if run_it: client, cluster = dsq.dask_scheduler(jobqueue_config, n_jobs)
+    
+    futures = []
+    for row in sub_ses_list.itertuples(index=True, name='Pandas'):
+        sub  = row.sub
+        ses  = row.ses
+        RUN  = row.RUN
+        dwi  = row.dwi
+        func = row.func
+        if RUN and dwi:
+            # command for launch singularity
+            path_to_sub_derivatives=os.path.join(basedir,"nifti","derivatives",
+                                                 f"{container}_{version}",
+                                                 f"analysis-{analysis}",
+                                                 f"sub-{sub}",
+                                                 f"ses-{ses}")
+            path_to_config=os.path.join(basedir,"nifti","derivatives",
+                                                 f"{container}_{version}",
+                                                 f"analysis-{analysis}",
+                                                 "config.json")
+            cmd=f"singularity run -e --no-home "\
+                f"--bind /bcbl:/bcbl "\
+                f"--bind /tmp:/tmp "\
+                f"--bind /scratch:/scratch "\
+                f"--bind {path_to_sub_derivatives}/input:/flywheel/v0/input:ro "\
+                f"--bind {path_to_sub_derivatives}/output:/flywheel/v0/output:ro "\
+                f"--bind {path_to_config}:/flywheel/v0/config.json "\
+                f"{container_path}"
+            if run_it: 
+                print(f"run_lc is True, we will launch this command: \n" \
+                      f"{cmd}")
+                future = client.submit(sp.run, cmd, shell=True)
+            else:
+                print(f"run_lc is False, if True, we would launch this command: \n" \
+                      f"{cmd}")
 
-            
-        futures[0].result()
-        futures[1].result()
-        futures[2].result()
-        futures[3].result()
-            
+           
         
 
     
@@ -252,11 +284,15 @@ def main():
     lc_config = _read_config(inputs["lc_config"])
     sub_ses_list = _read_subSesList(inputs["sub_ses_list"])
     container_config = inputs["container_config"]
+    run_lc = inputs["run_lc"]
 
     prepare_input_files(lc_config, sub_ses_list, container_config)
 
     # launchcontainers('kk', command_str=command_str)
-    launchcontainers(sub_ses_list, lc_config)
+    if run_lc:
+        launchcontainers(sub_ses_list, lc_config, True)
+    else:
+        launchcontainers(sub_ses_list, lc_config, False)
 
 
 # #%%

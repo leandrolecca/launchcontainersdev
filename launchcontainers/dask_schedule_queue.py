@@ -31,14 +31,38 @@ def initiate_cluster(jobqueue_config, n_job):
     config.set({"distributed.scheduler.allowed-failures": 50})
     config.set(admin__tick__limit="3h")
     
-    core =  jobqueue_config["core"]
-    memory = jobqueue_config["mem"]
-    
-    
-    
     if "sge" in jobqueue_config["manager"]:
-        cluster_by_config = SGECluster(cores = core, memory = memory)
+        cluster_by_config = SGECluster(cores  = jobqueue_config["cores"], 
+                                       memory = jobqueue_config["memory"],
+                                       queue = jobqueue_config["queue"],
+                                       project = jobqueue_config["project"],
+                                       processes = jobqueue_config["processes"],
+                                       interface = jobqueue_config["interface"],
+                                       # nanny = None,
+                                       local_directory = jobqueue_config["local-directory"],
+                                       death_timeout = jobqueue_config["death-timeout"],
+                                       # worker_extra_args = None,
+                                       env_extra = jobqueue_config["env-extra"],
+                                       # job_script_prologue = None,
+                                       # header_skip=None,
+                                       # job_directives_skip=None,
+                                       log_directory=jobqueue_config["log-directory"],
+                                       shebang=jobqueue_config["shebang"],
+                                       # python=None,
+                                       # config_name=None,
+                                       name=jobqueue_config["name"],
+                                       # n_workers=None,
+                                       # silence_logs=None,
+                                       # asynchronous=None,
+                                       # security=None,
+                                       # scheduler_options=None,
+                                       # scheduler_cls=None,
+                                       # shared_temp_directory=None,
+                                       resource_spec=jobqueue_config["resource-spec"],
+                                       walltime=jobqueue_config["walltime"],
+                                       job_extra_directives=jobqueue_config["job-extra"])
         cluster_by_config.scale(n_job)
+
     elif "pbs" in jobqueue_config["manager"]:
         cluster_by_config = PBSCluster(cores = core, memory = memory)
         cluster_by_config.scale(n_job)
