@@ -295,8 +295,8 @@ def main():
     else:
         launchcontainers(sub_ses_list, lc_config, False)
 
-    cmd_copy= f"scp {basedir}/nifti/config_lc.yaml {basedir}/nifti/derivatives/{container}_{version}/analysis_{analysis}"
-    sp.run(cmd_copy, Shell=True)
+  #  cmd_copy= f"scp {basedir}/nifti/config_lc.yaml {basedir}/nifti/derivatives/{container}_{version}/analysis_{analysis}"
+  #  sp.run(cmd_copy, Shell=True)
    
 
 # #%%
