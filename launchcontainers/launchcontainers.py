@@ -5,7 +5,7 @@ import os
 import shutil as sh
 import glob
 import subprocess as sp
-
+import shutil
 # from xxlimited import Str
 # import numpy as np
 import pandas as pd
@@ -97,9 +97,12 @@ def _get_parser():
 
 
     parse_result = vars(parser.parse_args())
-
-    print(parse_result)
-
+    print("1111111111111111111111111111111111111111111111111111111111111111111111\n")
+    
+    print ("This is the result from _get_parser()\n")
+    print(parse_result,"\n")
+    
+    print("1111111111111111111111111111111111111111111111111111111111111111111111\n")
     return parse_result
 
 
@@ -113,18 +116,19 @@ def _read_config(path_to_config_file):
     a dictionary that contains all the config info
 
     """
-    print(f"Read the config file {path_to_config_file} ")
+    print("2222222222222222222222222222222222222222222222222222222222222222222222222 \n")
+    print(f"Read the config file {path_to_config_file} \n ")
 
     with open(path_to_config_file, "r") as v:
         config = yaml.load(v, Loader=SafeLoader)
 
     container = config["config"]["container"]
 
-    print(f"######################reading_config_lc######################### \n\nSuccessfully read config_lc.yaml")
+    print(f"Successfully read config_lc.yaml")
     print(f'\nBasedir is: {config["config"]["basedir"]}')
     print(f'\nContainer is: {container}_{config["container_options"][container]["version"]}')
-    print(f'\nAnalysis is: analysis-{config["config"]["analysis"]}')
-    print(f"######################reading_config_lc###################### \n")
+    print(f'\nAnalysis is: analysis-{config["config"]["analysis"]}\n')
+    print(f"22222222222222222222222222222222222222222222222222222222222222222222222\n")
 
     return config
 
@@ -143,10 +147,10 @@ def _read_subSesList(path_to_subSesList_file):
     num_rows = len(subSesList)
 
     # Print the result
-    print(f"####################reading_subseslist########################### \n")
-    print(f'\nThe subseslist is successfully read. \n')
-    print(f'\nThe DataFrame has {num_rows} rows. \n')
-    print(f"####################reading_subseslist###################### \n")
+    print(f"#333333333333333333333333333333333333333333333333333333333333333333333\n")
+    print(f'The subseslist is successfully read. \n')
+    print(f'The DataFrame has {num_rows} rows. \n')
+    print(f"33333333333333333333333333333333333333333333333333333333333333333333333\n")
     
 
     return subSesList
@@ -168,6 +172,8 @@ def prepare_input_files(lc_config, df_subSes, container_config):
     None.
 
     """
+    print ("44444444444444444444444444444started to parepare the input file for all sub and ses 444444444444444444444\n")
+    
     for row in df_subSes.itertuples(index=True, name="Pandas"):
         sub = row.sub
         ses = row.ses
@@ -176,8 +182,8 @@ def prepare_input_files(lc_config, df_subSes, container_config):
         func = row.func
         container = lc_config["config"]["container"]
         version = lc_config["container_options"][container]["version"]
-        
-        print(f"{sub}_{ses}_RUN-{RUN}_{container}_{version}")
+        print("The current run is:\n")
+        print(f"{sub}_{ses}_RUN-{RUN}_{container}_{version}\n")
 
         if not RUN:
             continue
@@ -190,10 +196,11 @@ def prepare_input_files(lc_config, df_subSes, container_config):
             csl.anatrois(lc_config, sub, ses, container_config)
         # future container
         else:
+            print(f"******************* ERROR ********************\n")
             print(
-                f"{container} is not created, check for typos or if it is a new container create it in launchcontainers.py"
+                f"{container} is not created, check for typos or contact for singularity images\n"
             )
-
+    print ("44444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444\n")
     return
 
 # %% launchcontainers
@@ -210,7 +217,7 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
     lc_config : dict
         Dictionary with all the values in the configuracion yaml file
     """
-
+    print("5555555555555555555555555555---------the real launchconatiner-----------55555555555555555555555555555555\n")
     tmp_path = lc_config["config"]["tmpdir"]
     log_path = lc_config["config"]["logdir"]
     
@@ -264,15 +271,15 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
                 f"--bind {path_to_config}:/flywheel/v0/config.json "\
                 f"{container_path}"
             if run_it: 
-                print(f"run_lc is True, we will launch this command: \n" \
-                      f"{cmd}")
+                print(f"-------run_lc is True, we will launch this command: \n" \
+                      f"-------{cmd}")
                 future = client.submit(sp.run, cmd, shell=True)
             else:
-                print(f"run_lc is False, if True, we would launch this command: \n" \
-                      f"{cmd}")
+                print(f"--------run_lc is false, if True, we would launch this command: \n" \
+                      f"--------{cmd}")
 
            
-        
+    print("5555555555555555555555555555---------the real launchconatiner-----------55555555555555555555555555555555555555\n")
 
     
 
