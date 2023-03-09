@@ -63,24 +63,24 @@ def _get_parser():
         "-lcc",
         "--lc_config",
         type=str,
-        default="/Users/tiger/TESTDATA/PROJ01/nifti/config_launchcontainer_copy.yaml",
-        # default="/export/home/tlei/tlei/TESTDATA/PROJ01/nifti/config_lc.yaml",
+        # default="/Users/tiger/TESTDATA/PROJ01/nifti/config_launchcontainer_copy.yaml",
+        default="/export/home/tlei/tlei/TESTDATA/PROJ01/nifti/config_lc.yaml",
         help="path to the config file",
     )
     parser.add_argument(
         "-ssl",
         "--sub_ses_list",
         type=str,
-        default="/Users/tiger/TESTDATA/PROJ01/nifti/subSesList.txt",
-        #default="/export/home/tlei/tlei/TESTDATA/PROJ01/nifti/subSesList.txt",
+        # default="/Users/tiger/TESTDATA/PROJ01/nifti/subSesList.txt",
+        default="/export/home/tlei/tlei/TESTDATA/PROJ01/nifti/subSesList.txt",
         help="path to the subSesList",
     )
     parser.add_argument(
         "-cc",
         "--container_config",
         type=str,
-        default="/Users/tiger/Documents/GitHub/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
-        #default="/export/home/tlei/tlei/github/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
+        # default="/Users/tiger/Documents/GitHub/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
+        default="/export/home/tlei/tlei/github/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
         help="path to the container specific config file",
     )
     parser.add_argument('--run_lc', action='store_true',
@@ -200,7 +200,7 @@ def prepare_input_files(lc_config, df_subSes, container_config):
             print(
                 f"{container} is not created, check for typos or contact for singularity images\n"
             )
-    print ("44444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444\n")
+    print("44444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444\n")
     return
 
 # %% launchcontainers
@@ -218,14 +218,14 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
         Dictionary with all the values in the configuracion yaml file
     """
     print("5555555555555555555555555555---------the real launchconatiner-----------55555555555555555555555555555555\n")
-    tmp_path = lc_config["config"]["tmpdir"]
-    log_path = lc_config["config"]["logdir"]
+    tmpdir = lc_config["config"]["tmpdir"]
+    logdir = lc_config["config"]["logdir"]
     
     # If tmpdir and logdir do not exist, create them
-    if not os.path.isdir(tmp_path):
-        os.mkdir(tmp_path)
-    if not os.path.isdir(log_path):
-        os.mkdir(log_path)
+    if not os.path.isdir(tmpdir):
+        os.mkdir(tmpdir)
+    if not os.path.isdir(logdir):
+        os.mkdir(logdir)
    
     host = lc_config["config"]["host"]
     jobqueue_config= lc_config["host_options"][host]
@@ -241,9 +241,6 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
     containerdir = lc_config["config"]["containerdir"] 
     container_path = os.path.join(containerdir, f"{container}_{version}.sif")
     
-    # Iterate between temporal and spatial regularizations
-    if run_it: client, cluster = dsq.dask_scheduler(jobqueue_config, n_jobs)
-    
     futures = []
     for row in sub_ses_list.itertuples(index=True, name='Pandas'):
         sub  = row.sub
@@ -252,6 +249,9 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
         dwi  = row.dwi
         func = row.func
         if RUN and dwi:
+            # Iterate between temporal and spatial regularizations
+            if run_it: client, cluster = dsq.dask_scheduler(jobqueue_config, n_jobs, sub, ses, analysis, container, logdir)
+            
             # command for launch singularity
             path_to_sub_derivatives=os.path.join(basedir,"nifti","derivatives",
                                                  f"{container}_{version}",
@@ -262,8 +262,7 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
                                                  f"{container}_{version}",
                                                  f"analysis-{analysis}",
                                                  "config.json")
-            cmd=f"module load singularity/3.5.2 " 
-                f"&& singularity run -e --no-home "\
+            cmd=f"singularity run -e --no-home "\
                 f"--bind /bcbl:/bcbl "\
                 f"--bind /tmp:/tmp "\
                 f"--bind /scratch:/scratch "\
@@ -275,6 +274,7 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
                 print(f"-------run_lc is True, we will launch this command: \n" \
                       f"-------{cmd}")
                 future = client.submit(sp.run, cmd, shell=True)
+                progress(future)     
             else:
                 print(f"--------run_lc is false, if True, we would launch this command: \n" \
                       f"--------{cmd}")

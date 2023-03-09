@@ -8,7 +8,7 @@ from dask_jobqueue import PBSCluster, SGECluster, SLURMCluster
 LGR = logging.getLogger("GENERAL")
 
 
-def initiate_cluster(jobqueue_config, n_job):
+def initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logdir):
     '''
     
 
@@ -32,25 +32,30 @@ def initiate_cluster(jobqueue_config, n_job):
     config.set(admin__tick__limit="3h")
     
     if "sge" in jobqueue_config["manager"]:
+        name = f"{sub}_{ses}_{container}_{analysis}"
+        job_extra_directives = [f"-o {logdir}/t-{container}_a-{analysis}_s-{sub}_s-{ses}.o",
+                                f"-e {logdir}/t-{container}_a-{analysis}_s-{sub}_s-{ses}.e",
+                                f"-N {name}"]
+        envextra = [f"module load {jobqueue_config['sin_ver']}"]
+
         cluster_by_config = SGECluster(cores  = jobqueue_config["cores"], 
                                        memory = jobqueue_config["memory"],
                                        queue = jobqueue_config["queue"],
                                        # project = jobqueue_config["project"],
-                                       processes = jobqueue_config["processes"],
+                                       # processes = jobqueue_config["processes"],
                                        # interface = jobqueue_config["interface"],
                                        # nanny = None,
                                        # local_directory = jobqueue_config["local-directory"],
-                                       death_timeout = jobqueue_config["death-timeout"],
+                                       # death_timeout = jobqueue_config["death-timeout"],
                                        # worker_extra_args = None,
-                                       env_extra = jobqueue_config["env-extra"],
+                                       job_script_prologue = envextra,
                                        # job_script_prologue = None,
                                        # header_skip=None,
                                        # job_directives_skip=None,
-                                       log_directory=jobqueue_config["log-directory"],
-                                       shebang=jobqueue_config["shebang"],
+                                       # log_directory=jobqueue_config["log-directory"],
+                                       # shebang=jobqueue_config["shebang"],
                                        # python=None,
                                        # config_name=None,
-                                       name=jobqueue_config["name"],
                                        # n_workers=None,
                                        # silence_logs=None,
                                        # asynchronous=None,
@@ -59,8 +64,8 @@ def initiate_cluster(jobqueue_config, n_job):
                                        # scheduler_cls=None,
                                        # shared_temp_directory=None,
                                        # resource_spec=jobqueue_config["resource-spec"],
-                                       walltime=jobqueue_config["walltime"],
-                                       job_extra_directives=jobqueue_config["job-extra"])
+                                       # walltime=jobqueue_config["walltime"],
+                                       job_extra_directives=job_extra_directives)
         cluster_by_config.scale(n_job)
 
     elif "pbs" in jobqueue_config["manager"]:
@@ -82,8 +87,7 @@ def initiate_cluster(jobqueue_config, n_job):
     return cluster_by_config
 
 
-def dask_scheduler(jobqueue_config ,n_job):
-
+def dask_scheduler(jobqueue_config ,n_job, sub, ses, analysis, container, logdir):
     if jobqueue_config is None:
         LGR.warning(
             "dask configuration wasn't detected, "
@@ -95,7 +99,7 @@ def dask_scheduler(jobqueue_config ,n_job):
         )
         cluster = None
     else:
-        cluster = initiate_cluster(jobqueue_config, n_job)
+        cluster = initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logdir)
     client = None if cluster is None else Client(cluster)
     return client, cluster
 
