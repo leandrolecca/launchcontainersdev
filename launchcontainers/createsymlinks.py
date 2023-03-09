@@ -2,7 +2,7 @@
 import os, errno
 import glob
 import sys
-
+import shutil
 #%%
 def force_symlink(file1, file2, force):
     """
@@ -30,14 +30,14 @@ def force_symlink(file1, file2, force):
         try:
             # try the command, if the file are correct and symlink not exist, it will create one
             os.symlink(file1, file2)
-            print("The symlink are correctly created")
+            print (f"--------------- force is {force}, file not exit, create new -----------\n ")
         # if raise [erron 2]: file not exist, print the error and pass
         except OSError as n:
             if n.errno == 2:
-                print("file and directory are missing, maybe due to wrong defination")
+                print("*********** input files are missing, please check *****************\n")
             # if raise [erron 17] the symlink exist, we don't force and print that we keep the original one
             if n.errno == errno.EEXIST:
-                print(f"the destination file {file2} exist, remain it")
+                print (f"--------------- force is {force}, destination file exit, remain ----------- \n")
             else:
                 raise n
     # if we force to overwrite
@@ -45,29 +45,31 @@ def force_symlink(file1, file2, force):
         try:
             # try the command, if the file are correct and symlink not exist, it will create one
             os.symlink(file1, file2)
+            print (f"--------------- force is {force}, file not exit, create new -----------\n ")
         # if the symlink exist, and in this case we force a overwrite
         except OSError as e:
             if e.errno == errno.EEXIST:
                 os.remove(file2)
+                print (f"--------------- force is {force}, file exit, unlink -----------\n ")
                 os.symlink(file1, file2)
-                print("The symlink is correctly created")
+                print("-----------------Overwrite success -----------------------\n")
             elif e.errno == 2:
-                print("file and directory are missing, maybe due to wrong defination")
+                print("*********** input files are missing, please check *****************\n")
                 raise e
             else:
-                print("We don't know what happend")
+                print("***********************ERROR****************We don't know what happend\n")
                 raise e
     return
 
 
 #%%
-def anatrois(config, sub, ses, path_to_container_config):
+def anatrois(lc_config, sub, ses, path_to_container_config):
 
     """
     Parameters
     ----------
-    config : dict
-        the config dictionary from _read_config
+    lc_config : dict
+        the lc_config dictionary from _read_config
     sub : str
         the subject name looping from df_subSes
     ses : str
@@ -78,21 +80,21 @@ def anatrois(config, sub, ses, path_to_container_config):
     none, create symbolic links
 
     """
-    # define local variables from config dict
+    # define local variables from lc_config dict
     # general level variables:
-    basedir = config["config"]["basedir"]
-    container = config["config"]["container"]
-    force = config["config"]["force"]
-    analysis = config["config"]["analysis"]
+    basedir = lc_config["config"]["basedir"]
+    container = lc_config["config"]["container"]
+    force = lc_config["config"]["force"]
+    analysis = lc_config["config"]["analysis"]
     # container specific:
-    pre_fs = config["container_options"][container]["pre_fs"]
-    prefs_zipname = config["container_options"][container]["prefs_zipname"]
+    pre_fs = lc_config["container_options"][container]["pre_fs"]
+    prefs_zipname = lc_config["container_options"][container]["prefs_zipname"]
     # I added this line, shall we modify config yaml
-    precontainerfs = config["container_options"][container]["precontainerfs"]
-    preanalysisfs = config["container_options"][container]["preanalysisfs"]
-    annotfile = config["container_options"][container]["annotfile"]
-    mniroizip = config["container_options"][container]["mniroizip"]
-    version = config["container_options"][container]["version"]
+    precontainerfs = lc_config["container_options"][container]["precontainerfs"]
+    preanalysisfs = lc_config["container_options"][container]["preanalysisfs"]
+    annotfile = lc_config["container_options"][container]["annotfile"]
+    mniroizip = lc_config["container_options"][container]["mniroizip"]
+    version = lc_config["container_options"][container]["version"]
 
     # if we run freesurfer before:
     if pre_fs:
@@ -226,14 +228,32 @@ def anatrois(config, sub, ses, path_to_container_config):
         )
     # config is there, now copy to the right folder
     else:
-        force_symlink(path_to_container_config, dstFilecontainer_config, force)
-        print(
-            f"{path_to_container_config} has been succesfully copied to {dstFilecontainer_config}. "
-            f"\nREMEMBER TO CHECK/EDIT TO HAVE THE CORRECT PARAMETERS IN THE FILE"
-        )
+        print(f"----------------start copying container_config.json to analysis folder---------\n")
+        try:
+            shutil.copy(path_to_container_config, dstFilecontainer_config)
+            print(
+                f" config.json has been succesfully copied to derivaitons/analysis direcory. "
+                f"\nREMEMBER TO CHECK/EDIT TO HAVE THE CORRECT PARAMETERS IN THE FILE\n"
+            )
+ 
+        # If source and destination are same
+        except shutil.SameFileError:
+            print("Source and destination represents the same file.\n")
+ 
+        # If there is any permission issue
+        except PermissionError:
+            print("Permission denied.\n")
+ 
+        # For other errors
+        except:
+            print("Error occurred while copying file.\n")
+        
+        
 
     # Create the symbolic links
+    print("------------starting the create symbolic links-----------\n")
     force_symlink(srcFileT1, dstFileT1, force)
+    print("-----------------The symlink created-----------------------\n")
     if annotfile:
         force_symlink(srcFileAnnot, dstFileAnnot, force)
     if mniroizip:
@@ -241,12 +261,12 @@ def anatrois(config, sub, ses, path_to_container_config):
 
 
 #%%
-def rtppreproc(config, sub, ses):
+def rtppreproc(lc_config, sub, ses):
     """
     Parameters
     ----------
-    config : dict
-        the config dictionary from _read_config
+    lc_config : dict
+        the lc_config dictionary from _read_config
     sub : str
         the subject name looping from df_subSes
     ses : str
@@ -259,15 +279,15 @@ def rtppreproc(config, sub, ses):
     """
     # define local variables from config dict
     # general level variables:
-    basedir = config["config"]["basedir"]
-    container = config["config"]["container"]
-    force = config["config"]["force"]
-    analysis = config["config"]["analysis"]
+    basedir = lc_config["config"]["basedir"]
+    container = lc_config["config"]["container"]
+    force = lc_config["config"]["force"]
+    analysis = lc_config["config"]["analysis"]
     # container specific:
-    precontainerfs = config["container_options"][container]["precontainerfs"]
-    preanalysisfs = config["container_options"][container]["preanalysisfs"]
-    rpe = config["container_options"][container]["rpe"]
-    version = config["container_options"][container]["version"]
+    precontainerfs = lc_config["container_options"][container]["precontainerfs"]
+    preanalysisfs = lc_config["container_options"][container]["preanalysisfs"]
+    rpe = lc_config["container_options"][container]["rpe"]
+    version = lc_config["container_options"][container]["version"]
 
     # define base directory for particular subject and session
     basedir_subses = os.path.join(basedir, "nifti", "sub-" + sub, "ses-" + ses)
@@ -410,12 +430,12 @@ def rtppreproc(config, sub, ses):
 
 
 #%%
-def rtppipeline(config, sub, ses):
+def rtppipeline(lc_config, sub, ses):
     """
     Parameters
     ----------
-    config : dict
-        the config dictionary from _read_config
+    lc_config : dict
+        the lc_config dictionary from _read_config
     sub : str
         the subject name looping from df_subSes
     ses : str
@@ -428,16 +448,16 @@ def rtppipeline(config, sub, ses):
     """
     # define local variables from config dict
     # general level variables:
-    basedir = config["config"]["basedir"]
-    container = config["config"]["container"]
-    force = config["config"]["force"]
-    analysis = config["config"]["analysis"]
+    basedir = lc_config["config"]["basedir"]
+    container = lc_config["config"]["container"]
+    force = lc_config["config"]["force"]
+    analysis = lc_config["config"]["analysis"]
     # rtppipeline specefic variables
-    version = config["container_options"][container]["version"]
-    precontainerfs = config["container_options"][container]["precontainerfs"]
-    preanalysisfs = config["container_options"][container]["preanalysisfs"]
-    precontainerpp = config["container_options"][container]["precontainerpp"]
-    preanalysispp = config["container_options"][container]["preanalysispp"]
+    version = lc_config["container_options"][container]["version"]
+    precontainerfs = lc_config["container_options"][container]["precontainerfs"]
+    preanalysisfs = lc_config["container_options"][container]["preanalysisfs"]
+    precontainerpp = lc_config["container_options"][container]["precontainerpp"]
+    preanalysispp = lc_config["container_options"][container]["preanalysispp"]
 
     # the source directory
     srcDirfs = os.path.join(
