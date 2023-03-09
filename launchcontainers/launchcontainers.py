@@ -240,14 +240,15 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
                                                  f"{container}_{version}",
                                                  f"analysis-{analysis}",
                                                  "config.json")
-            cmd=f"singularity run -e --no-home "\
+            cmd=f"module load singularity/3.5.2 " 
+                f"&& singularity run -e --no-home "\
                 f"--bind /bcbl:/bcbl "\
                 f"--bind /tmp:/tmp "\
                 f"--bind /scratch:/scratch "\
                 f"--bind {path_to_sub_derivatives}/input:/flywheel/v0/input:ro "\
                 f"--bind {path_to_sub_derivatives}/output:/flywheel/v0/output:ro "\
                 f"--bind {path_to_config}:/flywheel/v0/config.json "\
-                f"{container_path}"
+                f"{container_path} "
             if run_it: 
                 print(f"run_lc is True, we will launch this command: \n" \
                       f"{cmd}")
