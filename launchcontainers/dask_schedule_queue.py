@@ -35,15 +35,17 @@ def initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logd
         name = f"{sub}_{ses}_{container}_{analysis}"
         job_extra_directives = [f"-o {logdir}/t-{container}_a-{analysis}_s-{sub}_s-{ses}.o",
                                 f"-e {logdir}/t-{container}_a-{analysis}_s-{sub}_s-{ses}.e",
-                                f"-N {name}"]
-        envextra = [f"module load {jobqueue_config['sin_ver']}"]
+                                f"-N test_after_Mar_10_14-36"]
+        envextra = [f"module load {jobqueue_config['sin_ver']}", 
+                   #f"conda activate /export/home/tlei/tlei/conda_env/launchcontainers"
+                    ]
 
         cluster_by_config = SGECluster(cores  = jobqueue_config["cores"], 
                                        memory = jobqueue_config["memory"],
                                        queue = jobqueue_config["queue"],
                                        # project = jobqueue_config["project"],
                                        # processes = jobqueue_config["processes"],
-                                       # interface = jobqueue_config["interface"],
+                                       interface = jobqueue_config["interface"],
                                        # nanny = None,
                                        # local_directory = jobqueue_config["local-directory"],
                                        # death_timeout = jobqueue_config["death-timeout"],
@@ -84,10 +86,16 @@ def initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logd
             "You can find a jobqueue YAML example in the pySPFM/jobqueue.yaml file."
         )
         cluster_by_config = None
+    print(f"----------------------------This is the funtion that define the {jobqueue_config['manager']}cluster \n")
+    print(f"----------------------------The cluster is  {cluster_by_config.job_script()} \n")
+    print(f"----do we scale? the #of jobs is {n_job}")
+    print(f"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii cluster by this funtion is {cluster_by_config}")
     return cluster_by_config
 
 
 def dask_scheduler(jobqueue_config ,n_job, sub, ses, analysis, container, logdir):
+    print("----------------------is jobqueue_config None? \n")
+    print(f"--------------------it is {jobqueue_config is None}")
     if jobqueue_config is None:
         LGR.warning(
             "dask configuration wasn't detected, "
@@ -100,7 +108,11 @@ def dask_scheduler(jobqueue_config ,n_job, sub, ses, analysis, container, logdir
         cluster = None
     else:
         cluster = initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logdir)
+        print(f"------------!!!!!!!!!!!right after cluster was defined, what is cluster? \n {cluster}")
+    print("----------------cluster should be defined here")
+    print(f"--------------outside of the if-else loop, what is our cluster? \n----{cluster}")
     client = None if cluster is None else Client(cluster)
+   
     return client, cluster
 
 

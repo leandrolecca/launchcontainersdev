@@ -1,5 +1,6 @@
 import nibabel as nib
 import argparse
+import importlib
 from logging import DEBUG
 import os
 import shutil as sh
@@ -250,8 +251,12 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
         func = row.func
         if RUN and dwi:
             # Iterate between temporal and spatial regularizations
-            if run_it: client, cluster = dsq.dask_scheduler(jobqueue_config, n_jobs, sub, ses, analysis, container, logdir)
+            if run_it: 
+                print (f"~~~~~~~~~~~do we run it? {run_it}")
+                client, cluster = dsq.dask_scheduler(jobqueue_config, n_jobs, sub, ses, analysis, container, logdir)
             
+            print("~~~~~~~~~~~~~~~this is the cluster and client\n")
+            print(f"{client} \n cluster {cluster}")
             # command for launch singularity
             path_to_sub_derivatives=os.path.join(basedir,"nifti","derivatives",
                                                  f"{container}_{version}",
@@ -273,7 +278,9 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
             if run_it: 
                 print(f"-------run_lc is True, we will launch this command: \n" \
                       f"-------{cmd}")
-                future = client.submit(sp.run, cmd, shell=True)
+                print(f"-----------------\n-----------------\n client is {client}")
+                future = client.submit(sp.run, cmd, shell=True,pure=False)
+                print(f"------------\n----------\nfuture is {future}")
                 progress(future)     
             else:
                 print(f"--------run_lc is false, if True, we would launch this command: \n" \
