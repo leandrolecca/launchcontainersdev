@@ -6,6 +6,7 @@ from dask import config
 from dask.distributed import Client
 from dask_jobqueue import PBSCluster, SGECluster, SLURMCluster
 LGR = logging.getLogger("GENERAL")
+from dask.distributed import progress
 
 
 def initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logdir):
@@ -34,9 +35,8 @@ def initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logd
     if "sge" in jobqueue_config["manager"]:
         name = f"{sub}_{ses}_{container}_{analysis}"
         job_extra_directives = [f"-o {logdir}/t-{container}_a-{analysis}_s-{sub}_s-{ses}.o",
-                                f"-e {logdir}/t-{container}_a-{analysis}_s-{sub}_s-{ses}.e",
-                                f"-N test_after_Mar_10_14-36"]
-        envextra = [f"module load {jobqueue_config['sin_ver']}", 
+                                f"-e {logdir}/t-{container}_a-{analysis}_s-{sub}_s-{ses}.e",]
+        envextra = [#f"module load {jobqueue_config['sin_ver']}", 
                    #f"conda activate /export/home/tlei/tlei/conda_env/launchcontainers"
                     ]
 
@@ -45,7 +45,7 @@ def initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logd
                                        queue = jobqueue_config["queue"],
                                        # project = jobqueue_config["project"],
                                        # processes = jobqueue_config["processes"],
-                                       interface = jobqueue_config["interface"],
+                                       # interface = jobqueue_config["interface"],
                                        # nanny = None,
                                        # local_directory = jobqueue_config["local-directory"],
                                        # death_timeout = jobqueue_config["death-timeout"],
@@ -71,10 +71,10 @@ def initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logd
         cluster_by_config.scale(n_job)
 
     elif "pbs" in jobqueue_config["manager"]:
-        cluster_by_config = PBSCluster(cores = core, memory = memory)
+        cluster_by_config = PBSCluster(cores = cores, memory = memory)
         cluster_by_config.scale(n_job)
     elif "slurm" in jobqueue_config["manager"]:
-        cluster_by_config = SLURMCluster(cores = core, memory = memory)
+        cluster_by_config = SLURMCluster(cores = cores, memory = memory)
         cluster_by_config.scale(n_job)
     else:
         LGR.warning(
@@ -86,10 +86,10 @@ def initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logd
             "You can find a jobqueue YAML example in the pySPFM/jobqueue.yaml file."
         )
         cluster_by_config = None
-    print(f"----------------------------This is the funtion that define the {jobqueue_config['manager']}cluster \n")
-    print(f"----------------------------The cluster is  {cluster_by_config.job_script()} \n")
-    print(f"----do we scale? the #of jobs is {n_job}")
-    print(f"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii cluster by this funtion is {cluster_by_config}")
+    print(f"----------------This is the self report of funtion initiate_cluster()\n, the cluster was defined as the {jobqueue_config['manager']}cluster \n")
+    print(f"----------------------------The cluster job_scipt is  {cluster_by_config.job_script()} \n")
+    print(f"----check for job scale,  the number of jobs is {n_job}")
+    print(f"-----under of initiate_cluster() report the cluster is {cluster_by_config}")
     return cluster_by_config
 
 
@@ -116,7 +116,32 @@ def dask_scheduler(jobqueue_config ,n_job, sub, ses, analysis, container, logdir
     return client, cluster
 
 
+def main():
+    jobqueue_config={
+    "cores":6,
+    "memory":"16GB",
+    "queue":"long.q",
+    "interface":"lo",
+    "sin_ver":"python3",
+    "manager":"sge"
+    
+    }
+    n_job = 1
+    sub= "S00tiger"
+    ses= "T010"
+    analysis= "1"
+    container="anatrois"
+    logdir="/export/home/tlei/tlei/TESTDATA/PROJ01"
+    client, cluster=dask_scheduler(jobqueue_config, n_job, sub, ses, analysis, container, logdir)
+    print(f"-------client is {client}\n------------cluster is {cluster}")
+    future = client.map(print, range(100))
+    progress(future)
+    
+    return None
 
+
+if __name__=="__main__":
+    main()
 
 
 
