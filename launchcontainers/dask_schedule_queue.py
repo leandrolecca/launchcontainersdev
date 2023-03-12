@@ -134,7 +134,8 @@ def main():
     logdir="/export/home/tlei/tlei/TESTDATA/PROJ01"
     client, cluster=dask_scheduler(jobqueue_config, n_job, sub, ses, analysis, container, logdir)
     print(f"-------client is {client}\n------------cluster is {cluster}")
-    future = client.map(print, range(100))
+    future = client.submit(print, ["tiger is testing", "please success"])
+    future.result()
     progress(future)
     
     return None
