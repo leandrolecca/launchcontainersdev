@@ -29,15 +29,16 @@ def force_symlink(file1, file2, force):
     if not force:
         try:
             # try the command, if the file are correct and symlink not exist, it will create one
+            print(f"----creating symlink for source file: {file1} and destination file: {file2}\n")
             os.symlink(file1, file2)
-            print (f"--------------- force is {force}, file not exit, create new -----------\n ")
+            print (f"--- force is {force}, symlink is empty, newlink created successfully\n ")
         # if raise [erron 2]: file not exist, print the error and pass
         except OSError as n:
             if n.errno == 2:
                 print("*********** input files are missing, please check *****************\n")
             # if raise [erron 17] the symlink exist, we don't force and print that we keep the original one
-            if n.errno == errno.EEXIST:
-                print (f"--------------- force is {force}, destination file exit, remain ----------- \n")
+            elif n.errno == errno.EEXIST:
+                print (f"--- force is {force}, symlink exist, remain old \n")
             else:
                 raise n
     # if we force to overwrite
@@ -45,19 +46,20 @@ def force_symlink(file1, file2, force):
         try:
             # try the command, if the file are correct and symlink not exist, it will create one
             os.symlink(file1, file2)
-            print (f"--------------- force is {force}, file not exit, create new -----------\n ")
+            print (f"--- force is {force}, symlink empty, newlink created successfully\n ")
         # if the symlink exist, and in this case we force a overwrite
         except OSError as e:
             if e.errno == errno.EEXIST:
                 os.remove(file2)
-                print (f"--------------- force is {force}, file exit, unlink -----------\n ")
+                print(f"--- force is {force}, symlink exist, unlink\n ")
                 os.symlink(file1, file2)
+                print("--- overwrite the exsting symlink")
                 print("-----------------Overwrite success -----------------------\n")
             elif e.errno == 2:
                 print("*********** input files are missing, please check *****************\n")
                 raise e
             else:
-                print("***********************ERROR****************We don't know what happend\n")
+                print("***********************ERROR*******************\nWe don't know what happend\n")
                 raise e
     return
 

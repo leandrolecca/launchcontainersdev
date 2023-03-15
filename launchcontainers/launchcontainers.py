@@ -7,18 +7,13 @@ import shutil as sh
 import glob
 import subprocess as sp
 import shutil
-# from xxlimited import Str
-# import numpy as np
+import numpy as np
 import pandas as pd
 import json
 import sys
-
-# from launchcontainers import __version__
 import yaml
 from yaml.loader import SafeLoader
 import pip
-import numpy as np
-
 # Dask imports
 from dask import compute
 from dask import delayed as delayed_dask
@@ -30,7 +25,7 @@ from dask.distributed import progress
 import dask_schedule_queue as dsq
 import createsymlinks as csl
 
-"""s
+"""
 TODO: 
     4./ Add the check in launchcontainers.py, that only in some cases we wiill 
         need to use createSymLinks, and for the anatrois, rtppreproc and 
@@ -107,7 +102,7 @@ def _get_parser():
     return parse_result
 
 
-# %% function to read config file, yaml
+# %% function to read launchcontainer config.yaml
 def _read_config(path_to_config_file):
     """
     Input:
@@ -117,19 +112,19 @@ def _read_config(path_to_config_file):
     a dictionary that contains all the config info
 
     """
-    print("2222222222222222222222222222222222222222222222222222222222222222222222222 \n")
-    print(f"Read the config file {path_to_config_file} \n ")
+    print("2222222222222222222222222222222222222222222222222222222222222222222222\n")
+    print(f"------Reading the config file {path_to_config_file} \n ")
 
     with open(path_to_config_file, "r") as v:
         config = yaml.load(v, Loader=SafeLoader)
 
     container = config["config"]["container"]
 
-    print(f"Successfully read config_lc.yaml")
+    print(f"----Successfully read config_lc.yaml")
     print(f'\nBasedir is: {config["config"]["basedir"]}')
     print(f'\nContainer is: {container}_{config["container_options"][container]["version"]}')
     print(f'\nAnalysis is: analysis-{config["config"]["analysis"]}\n')
-    print(f"22222222222222222222222222222222222222222222222222222222222222222222222\n")
+    print("2222222222222222222222222222222222222222222222222222222222222222222222\n")
 
     return config
 
@@ -148,10 +143,10 @@ def _read_subSesList(path_to_subSesList_file):
     num_rows = len(subSesList)
 
     # Print the result
-    print(f"#333333333333333333333333333333333333333333333333333333333333333333333\n")
+    print("3333333333333333333333333333333333333333333333333333333333333333333333\n")
     print(f'The subseslist is successfully read. \n')
     print(f'The DataFrame has {num_rows} rows. \n')
-    print(f"33333333333333333333333333333333333333333333333333333333333333333333333\n")
+    print("3333333333333333333333333333333333333333333333333333333333333333333333\n")
     
 
     return subSesList
@@ -173,8 +168,8 @@ def prepare_input_files(lc_config, df_subSes, container_config):
     None.
 
     """
-    print ("44444444444444444444444444444started to parepare the input file for all sub and ses 444444444444444444444\n")
-    
+    print("4444444444444444444444444444444444444444444444444444444444444444444444\n")
+    print("-----starting to preprare the input files for analysis\n")
     for row in df_subSes.itertuples(index=True, name="Pandas"):
         sub = row.sub
         ses = row.ses
@@ -183,7 +178,7 @@ def prepare_input_files(lc_config, df_subSes, container_config):
         func = row.func
         container = lc_config["config"]["container"]
         version = lc_config["container_options"][container]["version"]
-        print("The current run is:\n")
+        print("The current run is:")
         print(f"{sub}_{ses}_RUN-{RUN}_{container}_{version}\n")
 
         if not RUN:
@@ -199,9 +194,9 @@ def prepare_input_files(lc_config, df_subSes, container_config):
         else:
             print(f"******************* ERROR ********************\n")
             print(
-                f"{container} is not created, check for typos or contact for singularity images\n"
+                f"{container} is not created, check for typos or contact admin for singularity images\n"
             )
-    print("44444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444\n")
+    print("4444444444444444444444444444444444444444444444444444444444444444444444\n")
     return
 
 # %% launchcontainers
