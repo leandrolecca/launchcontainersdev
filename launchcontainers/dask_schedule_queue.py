@@ -35,8 +35,8 @@ def initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logd
     if "sge" in jobqueue_config["manager"]:
         name = f"{sub}_{ses}_{container}_{analysis}"
         job_extra_directives = [f"-o {logdir}/t-{container}_a-{analysis}_s-{sub}_s-{ses}.o",
-                                f"-e {logdir}/t-{container}_a-{analysis}_s-{sub}_s-{ses}.e",]
-        envextra = [f"module load {jobqueue_config['sin_ver']}", 
+                                f"-e {logdir}/t-{container}_a-{analysis}_s-{sub}_s-{ses}.e"]
+        envextra = [f"module load {jobqueue_config['sin_ver']}" 
                    #f"conda activate /export/home/tlei/tlei/conda_env/launchcontainers"
                     ]
 

@@ -250,28 +250,27 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
                 print (f"~~~~~~~~~~~do we run it? {run_it}")
                 client, cluster = dsq.dask_scheduler(jobqueue_config, n_jobs, sub, ses, analysis, container, logdir)
             
-            print("~~~~~~~~~~~~~~~this is the cluster and client\n")
-            print(f"{client} \n cluster {cluster}")
-            # command for launch singularity
-            path_to_sub_derivatives=os.path.join(basedir,"nifti","derivatives",
+                print("~~~~~~~~~~~~~~~this is the cluster and client\n")
+                print(f"{client} \n cluster {cluster}")
+                # command for launch singularity
+                path_to_sub_derivatives=os.path.join(basedir,"nifti","derivatives",
                                                  f"{container}_{version}",
                                                  f"analysis-{analysis}",
                                                  f"sub-{sub}",
                                                  f"ses-{ses}")
-            print(f"~~~~~~~~{path_to_sub_derivatives}")
-            path_to_config=os.path.join(basedir,"nifti","derivatives",
+                print(f"~~~~~~~~{path_to_sub_derivatives}")
+                path_to_config=os.path.join(basedir,"nifti","derivatives",
                                                  f"{container}_{version}",
                                                  f"analysis-{analysis}",
                                                  "config.json")
-            cmd=f"singularity run -e --no-home "\
-                f"--bind /bcbl:/bcbl "\
-                f"--bind /tmp:/tmp "\
-                f"--bind /export:/export "\
-                f"--bind {path_to_sub_derivatives}/input:/flywheel/v0/input:ro "\
-                f"--bind {path_to_sub_derivatives}/output:/flywheel/v0/output "\
-                f"--bind {path_to_config}:/flywheel/v0/config.json "\
-                f"{container_path} "
-            if run_it: 
+                cmd=f"singularity run -e --no-home "\
+                    f"--bind /bcbl:/bcbl "\
+                    f"--bind /tmp:/tmp "\
+                    f"--bind /export:/export "\
+                    f"--bind {path_to_sub_derivatives}/input:/flywheel/v0/input:ro "\
+                    f"--bind {path_to_sub_derivatives}/output:/flywheel/v0/output "\
+                    f"--bind {path_to_config}:/flywheel/v0/config.json "\
+                    f"{container_path} " 
                 print(f"-------run_lc is True, we will launch this command: \n" \
                       f"-------{cmd}")
                 print(f"-----------------\n-----------------\n client is {client}")
