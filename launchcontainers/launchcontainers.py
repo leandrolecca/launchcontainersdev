@@ -263,6 +263,7 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
                                                  f"analysis-{analysis}",
                                                  f"sub-{sub}",
                                                  f"ses-{ses}")
+            print(f"~~~~~~~~{path_to_sub_derivatives}")
             path_to_config=os.path.join(basedir,"nifti","derivatives",
                                                  f"{container}_{version}",
                                                  f"analysis-{analysis}",
@@ -270,9 +271,9 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
             cmd=f"singularity run -e --no-home "\
                 f"--bind /bcbl:/bcbl "\
                 f"--bind /tmp:/tmp "\
-                f"--bind /scratch:/scratch "\
+                f"--bind /export:/export "\
                 f"--bind {path_to_sub_derivatives}/input:/flywheel/v0/input:ro "\
-                f"--bind {path_to_sub_derivatives}/output:/flywheel/v0/output:ro "\
+                f"--bind {path_to_sub_derivatives}/output:/flywheel/v0/output "\
                 f"--bind {path_to_config}:/flywheel/v0/config.json "\
                 f"{container_path} "
             if run_it: 
@@ -285,8 +286,8 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
             else:
                 print(f"--------run_lc is false, if True, we would launch this command: \n" \
                       f"--------{cmd}")
-
-           
+    
+    client.get_worker_logs       
     print("5555555555555555555555555555---------the real launchconatiner-----------55555555555555555555555555555555555555\n")
 
     

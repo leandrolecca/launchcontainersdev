@@ -36,7 +36,7 @@ def initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logd
         name = f"{sub}_{ses}_{container}_{analysis}"
         job_extra_directives = [f"-o {logdir}/t-{container}_a-{analysis}_s-{sub}_s-{ses}.o",
                                 f"-e {logdir}/t-{container}_a-{analysis}_s-{sub}_s-{ses}.e",]
-        envextra = [#f"module load {jobqueue_config['sin_ver']}", 
+        envextra = [f"module load {jobqueue_config['sin_ver']}", 
                    #f"conda activate /export/home/tlei/tlei/conda_env/launchcontainers"
                     ]
 
@@ -116,33 +116,33 @@ def dask_scheduler(jobqueue_config ,n_job, sub, ses, analysis, container, logdir
     return client, cluster
 
 
-def main():
-    jobqueue_config={
-    "cores":6,
-    "memory":"16GB",
-    "queue":"long.q",
-    "interface":"lo",
-    "sin_ver":"python3",
-    "manager":"sge"
+#def main():
+ #   jobqueue_config={
+  #  "cores":6,
+   # "memory":"16GB",
+ #   "queue":"long.q",
+ #   "interface":"lo",
+ #   "sin_ver":"python3",
+ #   "manager":"sge"
+  #  
+ #   }
+#    n_job = 1
+#    sub= "S00tiger"
+#    ses= "T010"
+#    analysis= "1"
+#    container="anatrois"
+#    logdir="/export/home/tlei/tlei/TESTDATA/PROJ01"
+#    client, cluster=dask_scheduler(jobqueue_config, n_job, sub, ses, analysis, container, logdir)
+#    print(f"-------client is {client}\n------------cluster is {cluster}")
+#    future = client.submit(print, ["tiger is testing", "please success"])
+#    future.result()
+#    progress(future)
     
-    }
-    n_job = 1
-    sub= "S00tiger"
-    ses= "T010"
-    analysis= "1"
-    container="anatrois"
-    logdir="/export/home/tlei/tlei/TESTDATA/PROJ01"
-    client, cluster=dask_scheduler(jobqueue_config, n_job, sub, ses, analysis, container, logdir)
-    print(f"-------client is {client}\n------------cluster is {cluster}")
-    future = client.submit(print, ["tiger is testing", "please success"])
-    future.result()
-    progress(future)
-    
-    return None
+#    return None
 
 
-if __name__=="__main__":
-    main()
+#if __name__=="__main__":
+#    main()
 
 
 
