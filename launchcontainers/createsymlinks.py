@@ -116,7 +116,7 @@ def anatrois(lc_config, sub, ses, path_to_container_config):
         print(len(zips))
         if len(zips) == 0:
             print(
-                f"There are no {prefs_zipname} zip file in {srcAnatPath}, we will listed potential zip file for you"
+                f"There are no {prefs_zipname}.zip in {srcAnatPath}, we will listed potential zip file for you"
             )
             zips_new = sorted(glob.glob(os.path.join(srcAnatPath, "*")), key=os.path.getmtime)
             if len(zips_new) == 0:
@@ -133,10 +133,10 @@ def anatrois(lc_config, sub, ses, path_to_container_config):
                     srcFileT1 = zips_new[-1]
                 else:
                     print(zips_new)
-                    print("we found all the potential zip file, change them in yaml file")
+                    print("no target preanalysis.zip file exist, please check the config_lc.yaml file")
                     sys.exit()
         elif len(zips) > 1:
-            print(f"There are more than one zip file in {srcAnatPath}, selecting the last one")
+            print(f"There are more than one zip file in {srcAnatPath}, selecting the lastest one")
             srcFileT1 = zips[-1]
         else:
             srcFileT1 = zips[0]
@@ -230,7 +230,7 @@ def anatrois(lc_config, sub, ses, path_to_container_config):
         )
     # config is there, now copy to the right folder
     else:
-        print(f"----------------start copying container_config.json to analysis folder---------\n")
+        print(f"---start copying container_config.json to analysis folder\n")
         try:
             shutil.copy(path_to_container_config, dstFilecontainer_config)
             print(
@@ -240,20 +240,20 @@ def anatrois(lc_config, sub, ses, path_to_container_config):
  
         # If source and destination are same
         except shutil.SameFileError:
-            print("Source and destination represents the same file.\n")
+            print("*********Source and destination represents the same file.\n")
  
         # If there is any permission issue
         except PermissionError:
-            print("Permission denied.\n")
+            print("********Permission denied.\n")
  
         # For other errors
         except:
-            print("Error occurred while copying file.\n")
+            print("********Error occurred while copying file.******\n")
         
         
 
     # Create the symbolic links
-    print("------------starting the create symbolic links-----------\n")
+    
     force_symlink(srcFileT1, dstFileT1, force)
     print("-----------------The symlink created-----------------------\n")
     if annotfile:
@@ -424,6 +424,7 @@ def rtppreproc(lc_config, sub, ses):
     force_symlink(srcFileDwi_nii, dstFileDwi_nii, force)
     force_symlink(srcFileDwi_bval, dstFileDwi_bval, force)
     force_symlink(srcFileDwi_bvec, dstFileDwi_bvec, force)
+    print("-----------------The symlinks created-----------------------\n")
     if rpe:
         force_symlink(srcFileDwi_nii_R, dstFileDwi_nii_R, force)
         force_symlink(srcFileDwi_bval_R, dstFileDwi_bval_R, force)
