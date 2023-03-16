@@ -3,7 +3,6 @@ import argparse
 import importlib
 from logging import DEBUG
 import os
-import shutil as sh
 import glob
 import subprocess as sp
 import shutil
@@ -237,6 +236,10 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
     analysis = lc_config["config"]["analysis"] 
     containerdir = lc_config["config"]["containerdir"] 
     container_path = os.path.join(containerdir, f"{container}_{version}.sif")
+    analysisdir = os.path.join(
+        basedir, "nifti", "derivatives", f"{container}_{version}", "analysis-" + analysis
+    )
+    shutil.copyfile(os.path.join(basedir,"nifti", "config_lc.yaml"), os.path.join(analysisdir, "config_lc.yaml"))
     
     for row in sub_ses_list.itertuples(index=True, name='Pandas'):
         sub  = row.sub
@@ -261,6 +264,9 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
                                                  f"{container}_{version}",
                                                  f"analysis-{analysis}",
                                                 "config.json")
+            # copy the config yaml for every subject and session
+            shutil.copyfile(os.path.join(basedir,"nifti", "config_lc.yaml"), os.path.join(path_to_sub_derivatives, "config_lc.yaml"))
+            
             cmd=f"singularity run -e --no-home "\
                 f"--bind /bcbl:/bcbl "\
                 f"--bind /tmp:/tmp "\
@@ -292,7 +298,7 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
     return
     
 
-def backup_config_info():
+def backup_config_for_subj(sub, ses, basedir, ):
     """
     One of the TODO:
         make a function, when this file was run, create a copy of the original yaml file
