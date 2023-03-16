@@ -31,7 +31,7 @@ def force_symlink(file1, file2, force):
             # try the command, if the file are correct and symlink not exist, it will create one
             print(f"----creating symlink for source file: {file1} and destination file: {file2}\n")
             os.symlink(file1, file2)
-            print (f"--- force is {force}, -----------------creating success -----------------------\n)
+            print (f"--- force is {force}, -----------------creating success -----------------------\n")
         # if raise [erron 2]: file not exist, print the error and pass
         except OSError as n:
             if n.errno == 2:
