@@ -263,7 +263,7 @@ def anatrois(lc_config, sub, ses, path_to_container_config):
 
 
 #%%
-def rtppreproc(lc_config, sub, ses):
+def rtppreproc(lc_config, sub, ses, path_to_container_config):
     """
     Parameters
     ----------
@@ -273,7 +273,8 @@ def rtppreproc(lc_config, sub, ses):
         the subject name looping from df_subSes
     ses : str
         the session name looping from df_subSes.
-
+    path_to_container_config : str
+        the path to the rtppreproc config file
     Returns
     -------
     none, create symbolic links
@@ -417,18 +418,20 @@ def rtppreproc(lc_config, sub, ses):
         dstFileDwi_nii_R = os.path.join(dir_input, "RDIF", "dwiR.nii.gz")
         dstFileDwi_bval_R = os.path.join(dir_input, "RBVL", "dwiR.bval")
         dstFileDwi_bvec_R = os.path.join(dir_input, "RBVC", "dwiR.bvec")
-
+    # copy the rtpprerpoc config 
+    
     # Create the symbolic links
     force_symlink(srcFileT1, dstT1file, force)
     force_symlink(srcFileMask, dstMaskFile, force)
     force_symlink(srcFileDwi_nii, dstFileDwi_nii, force)
     force_symlink(srcFileDwi_bval, dstFileDwi_bval, force)
     force_symlink(srcFileDwi_bvec, dstFileDwi_bvec, force)
-    print("-----------------The symlinks created-----------------------\n")
+    print("-----------------The rtppreproc symlinks created\n")
     if rpe:
         force_symlink(srcFileDwi_nii_R, dstFileDwi_nii_R, force)
         force_symlink(srcFileDwi_bval_R, dstFileDwi_bval_R, force)
         force_symlink(srcFileDwi_bvec_R, dstFileDwi_bvec_R, force)
+        print("---------------The rtppreproc rpe=True symlinks created")
     return
 
 

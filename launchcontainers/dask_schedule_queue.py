@@ -34,15 +34,19 @@ def initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logd
     
     if "sge" in jobqueue_config["manager"]:
         name = f"{sub}_{ses}_{container}_{analysis}"
-        job_extra_directives = [f"-o {logdir}/t-{container}_a-{analysis}_s-{sub}_s-{ses}.o",
-                                f"-e {logdir}/t-{container}_a-{analysis}_s-{sub}_s-{ses}.e"]
-        envextra = [f"module load {jobqueue_config['sin_ver']}" 
+        job_extra_directives = [
+                                f"-N {name} ",
+                                f"-o {logdir}/t-{container}_a-{analysis}_s-{sub}_s-{ses}.o ",
+                                f"-e {logdir}/t-{container}_a-{analysis}_s-{sub}_s-{ses}.e ",
+                                ]
+        envextra = [f"module load {jobqueue_config['sin_ver']} " 
                    #f"conda activate /export/home/tlei/tlei/conda_env/launchcontainers"
                     ]
 
         cluster_by_config = SGECluster(cores  = jobqueue_config["cores"], 
                                        memory = jobqueue_config["memory"],
                                        queue = jobqueue_config["queue"],
+                                       name = jobqueue_config["name"],
                                        # project = jobqueue_config["project"],
                                        # processes = jobqueue_config["processes"],
                                        # interface = jobqueue_config["interface"],
@@ -66,7 +70,7 @@ def initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logd
                                        # scheduler_cls=None,
                                        # shared_temp_directory=None,
                                        # resource_spec=jobqueue_config["resource-spec"],
-                                       # walltime=jobqueue_config["walltime"],
+                                       walltime=jobqueue_config["walltime"],
                                        job_extra_directives=job_extra_directives)
         cluster_by_config.scale(n_job)
 
@@ -86,10 +90,10 @@ def initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logd
             "You can find a jobqueue YAML example in the pySPFM/jobqueue.yaml file."
         )
         cluster_by_config = None
-    print(f"----------------This is the self report of funtion initiate_cluster()\n, the cluster was defined as the {jobqueue_config['manager']}cluster \n")
-    print(f"----------------------------The cluster job_scipt is  {cluster_by_config.job_script()} \n")
-    print(f"----check for job scale,  the number of jobs is {n_job}")
-    print(f"-----under of initiate_cluster() report the cluster is {cluster_by_config}")
+   # print(f"----------------This is the self report of funtion initiate_cluster()\n, the cluster was defined as the {jobqueue_config['manager']}cluster \n")
+   # print(f"----------------------------The cluster job_scipt is  {cluster_by_config.job_script()} \n")
+   # print(f"----check for job scale,  the number of jobs is {n_job}")
+   # print(f"-----under of initiate_cluster() report the cluster is {cluster_by_config}")
     return cluster_by_config
 
 
@@ -108,9 +112,9 @@ def dask_scheduler(jobqueue_config ,n_job, sub, ses, analysis, container, logdir
         cluster = None
     else:
         cluster = initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logdir)
-        print(f"------------!!!!!!!!!!!right after cluster was defined, what is cluster? \n {cluster}")
-    print("----------------cluster should be defined here")
-    print(f"--------------outside of the if-else loop, what is our cluster? \n----{cluster}")
+        #print(f"------------!!!!!!!!!!!right after cluster was defined, what is cluster? \n {cluster}")
+   # print("----------------cluster should be defined here")
+   # print(f"--------------outside of the if-else loop, what is our cluster? \n----{cluster}")
     client = None if cluster is None else Client(cluster)
    
     return client, cluster

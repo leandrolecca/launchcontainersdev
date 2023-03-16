@@ -246,48 +246,51 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
         func = row.func
         if RUN and dwi:
             # Iterate between temporal and spatial regularizations
-            if run_it: 
-                print (f"~~~~~~~~~~~do we run it? {run_it}")
-                client, cluster = dsq.dask_scheduler(jobqueue_config, n_jobs, sub, ses, analysis, container, logdir)
+            client, cluster = dsq.dask_scheduler(jobqueue_config, n_jobs, sub, ses, analysis, container, logdir)
             
-                print("~~~~~~~~~~~~~~~this is the cluster and client\n")
-                print(f"{client} \n cluster {cluster}")
-                # command for launch singularity
-                path_to_sub_derivatives=os.path.join(basedir,"nifti","derivatives",
+            print("~~~~~~~~~~~~~~~this is the cluster and client\n")
+            print(f"{client} \n cluster {cluster}")
+            # command for launch singularity
+            path_to_sub_derivatives=os.path.join(basedir,"nifti","derivatives",
                                                  f"{container}_{version}",
                                                  f"analysis-{analysis}",
                                                  f"sub-{sub}",
                                                  f"ses-{ses}")
-                print(f"~~~~~~~~{path_to_sub_derivatives}")
-                path_to_config=os.path.join(basedir,"nifti","derivatives",
+            print(f"~~~~~~~~{path_to_sub_derivatives}")
+            path_to_config=os.path.join(basedir,"nifti","derivatives",
                                                  f"{container}_{version}",
                                                  f"analysis-{analysis}",
-                                                 "config.json")
-                cmd=f"singularity run -e --no-home "\
-                    f"--bind /bcbl:/bcbl "\
-                    f"--bind /tmp:/tmp "\
-                    f"--bind /export:/export "\
-                    f"--bind {path_to_sub_derivatives}/input:/flywheel/v0/input:ro "\
-                    f"--bind {path_to_sub_derivatives}/output:/flywheel/v0/output "\
-                    f"--bind {path_to_config}:/flywheel/v0/config.json "\
-                    f"{container_path} " 
+                                                "config.json")
+            cmd=f"singularity run -e --no-home "\
+                f"--bind /bcbl:/bcbl "\
+                f"--bind /tmp:/tmp "\
+                f"--bind /export:/export "\
+                f"--bind {path_to_sub_derivatives}/input:/flywheel/v0/input:ro "\
+                f"--bind {path_to_sub_derivatives}/output:/flywheel/v0/output "\
+                f"--bind {path_to_config}:/flywheel/v0/config.json "\
+                f"{container_path} "
+                                                                                                                             
+            if run_it:
+                print (f"~~~~~~~~~~~do we run it? {run_it}")
+                                
                 print(f"-------run_lc is True, we will launch this command: \n" \
                       f"-------{cmd}")
                 print(f"-----------------\n-----------------\n client is {client}")
+                
                 future = client.submit(sp.run, cmd, shell=True,pure=False)
                 print(f"------------\n----------\nfuture is {future}")
-                progress(future)     
+                progress(future)
+                #if future.done(): print(f"!!!!!!!dask work finished, status of future: {future}")     
             else:
                 print(f"--------run_lc is false, if True, we would launch this command: \n" \
-                      f"--------{cmd}")
+                      f"--------{cmd}\n")
+                print(f"-------The cluster job_scipt is  {cluster.job_script()} \n")
+                print("-----please check if the job_script is properlly defined and then starting run_lc")
+    worker_logs= client.get_worker_logs
+    print(type(worker_logs))
+    print("5555555555555555555555555555555555555555555555555555555555555555555555\n")
+    return
     
-    client.get_worker_logs       
-    print("5555555555555555555555555555---------the real launchconatiner-----------55555555555555555555555555555555555555\n")
-
-    
-
-
-
 
 def backup_config_info():
     """
