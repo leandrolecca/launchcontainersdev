@@ -240,7 +240,7 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
         basedir, "nifti", "derivatives", f"{container}_{version}", "analysis-" + analysis
     )
     shutil.copyfile(os.path.join(basedir,"nifti", "config_lc.yaml"), os.path.join(analysisdir, "config_lc.yaml"))
-    
+    print(f"--------succefully copied the config_lc.yaml to {analysisdir} folder! you can check this in the future\n ") 
     for row in sub_ses_list.itertuples(index=True, name='Pandas'):
         sub  = row.sub
         ses  = row.ses
@@ -251,21 +251,22 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
             # Iterate between temporal and spatial regularizations
             client, cluster = dsq.dask_scheduler(jobqueue_config, n_jobs, sub, ses, analysis, container, logdir)
             
-            print("~~~~~~~~~~~~~~~this is the cluster and client\n")
-            print(f"{client} \n cluster {cluster}")
+            print("\n~~~~this is the cluster and client\n")
+            print(f"{client} \n cluster: {cluster} \n")
             # command for launch singularity
             path_to_sub_derivatives=os.path.join(basedir,"nifti","derivatives",
                                                  f"{container}_{version}",
                                                  f"analysis-{analysis}",
                                                  f"sub-{sub}",
                                                  f"ses-{ses}")
-            print(f"~~~~~~~~{path_to_sub_derivatives}")
+            print(f"~~~~~~~~~ this is the path to sub-ses folder: {path_to_sub_derivatives}\n ")
             path_to_config=os.path.join(basedir,"nifti","derivatives",
                                                  f"{container}_{version}",
                                                  f"analysis-{analysis}",
                                                 "config.json")
             # copy the config yaml for every subject and session
             shutil.copyfile(os.path.join(basedir,"nifti", "config_lc.yaml"), os.path.join(path_to_sub_derivatives, "config_lc.yaml"))
+            print(f"--------succefully copied the config_lc.yaml to {path_to_sub_derivatives} folder! you can check this in the future ! \n") 
             
             cmd=f"singularity run -e --no-home "\
                 f"--bind /bcbl:/bcbl "\
@@ -277,10 +278,10 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
                 f"{container_path} "
                                                                                                                              
             if run_it:
-                print (f"~~~~~~~~~~~do we run it? {run_it}")
+                print (f"~~~~~~~~~~~do we run it? {run_it}\n")
                                 
                 print(f"-------run_lc is True, we will launch this command: \n" \
-                      f"-------{cmd}")
+                      f"$$$$$$-------{cmd}\n")
                 print(f"-----------------\n-----------------\n client is {client}")
                 
                 future = client.submit(sp.run, cmd, shell=True,pure=False)
@@ -291,9 +292,10 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
                 print(f"--------run_lc is false, if True, we would launch this command: \n" \
                       f"--------{cmd}\n")
                 print(f"-------The cluster job_scipt is  {cluster.job_script()} \n")
-                print("-----please check if the job_script is properlly defined and then starting run_lc")
+                print("-----please check if the job_script is properlly defined and then starting run_lc \n")
     worker_logs= client.get_worker_logs
     print(type(worker_logs))
+    print(f"\n {worker_logs}")
     print("5555555555555555555555555555555555555555555555555555555555555555555555\n")
     return
     
