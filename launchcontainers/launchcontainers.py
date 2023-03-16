@@ -49,7 +49,7 @@ def _get_parser():
         description=""" This is lanchcontianer.py, you need to input path to the following files after the keywords \n       
                         '-lcc path to config_lc.yaml \n 
                         -ssl path to subSesList.txt  \n
-                        -cc path to container_config.json \n
+                        -cc path to container_specific_config, for the case of rtp-pipeline, you need to input two path, one for config.json and one for tractparm.csv \n
                         And you also need to decide if you are sure you want to launch the container by typying
                         --run_lc  \n
                         if you type --run_lc, this code will actually launch containers, \n
@@ -73,12 +73,13 @@ def _get_parser():
     )
     parser.add_argument(
         "-cc",
-        "--container_config",
-        type=str,
+        "--container_specific_config",
+        nargs='+',
         # default="/Users/tiger/Documents/GitHub/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
         default="/export/home/tlei/tlei/github/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
         help="path to the container specific config file",
     )
+   
     parser.add_argument('--run_lc', action='store_true',
                         help= "if you type --run_lc, the entire program will be launched, jobs will be send to \
                         cluster and launch the corresponding container you suggest in config_lc.yaml. \
@@ -153,7 +154,7 @@ def _read_subSesList(path_to_subSesList_file):
 
 
 # %% prepare_input_files
-def prepare_input_files(lc_config, df_subSes, container_config):
+def prepare_input_files(lc_config, df_subSes, container_specific_config):
     """
 
     Parameters
@@ -185,11 +186,11 @@ def prepare_input_files(lc_config, df_subSes, container_config):
             continue
 
         if "rtppreproc" in container:
-            csl.rtppreproc(lc_config, sub, ses, container_config)
+            csl.rtppreproc(lc_config, sub, ses, container_specific_config)
         elif "rtp-pipeline" in container:
-            csl.rtppipeline(lc_config, sub, ses, container_config)
+            csl.rtppipeline(lc_config, sub, ses, container_specific_config)
         elif "anatrois" in container:
-            csl.anatrois(lc_config, sub, ses, container_config)
+            csl.anatrois(lc_config, sub, ses, container_specific_config)
         # future container
         else:
             print(f"******************* ERROR ********************\n")
@@ -237,7 +238,6 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
     containerdir = lc_config["config"]["containerdir"] 
     container_path = os.path.join(containerdir, f"{container}_{version}.sif")
     
-    futures = []
     for row in sub_ses_list.itertuples(index=True, name='Pandas'):
         sub  = row.sub
         ses  = row.ses
@@ -310,12 +310,14 @@ def main():
     inputs = _get_parser()
     lc_config = _read_config(inputs["lc_config"])
     sub_ses_list = _read_subSesList(inputs["sub_ses_list"])
-    container_config = inputs["container_config"]
+    container_specific_config = inputs["container_specific_config"]
+    
     run_lc = inputs["run_lc"]
     basedir = lc_config['config']["basedir"]
     container = lc_config["config"]["container"]
     version = lc_config["container_options"][container]
-    prepare_input_files(lc_config, sub_ses_list, container_config)
+    
+    prepare_input_files(lc_config, sub_ses_list, container_specific_config)
 
     # launchcontainers('kk', command_str=command_str)
     if run_lc:
