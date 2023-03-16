@@ -118,36 +118,3 @@ def dask_scheduler(jobqueue_config ,n_job, sub, ses, analysis, container, logdir
     client = None if cluster is None else Client(cluster)
    
     return client, cluster
-
-
-#def main():
- #   jobqueue_config={
-  #  "cores":6,
-   # "memory":"16GB",
- #   "queue":"long.q",
- #   "interface":"lo",
- #   "sin_ver":"python3",
- #   "manager":"sge"
-  #  
- #   }
-#    n_job = 1
-#    sub= "S00tiger"
-#    ses= "T010"
-#    analysis= "1"
-#    container="anatrois"
-#    logdir="/export/home/tlei/tlei/TESTDATA/PROJ01"
-#    client, cluster=dask_scheduler(jobqueue_config, n_job, sub, ses, analysis, container, logdir)
-#    print(f"-------client is {client}\n------------cluster is {cluster}")
-#    future = client.submit(print, ["tiger is testing", "please success"])
-#    future.result()
-#    progress(future)
-    
-#    return None
-
-
-#if __name__=="__main__":
-#    main()
-
-
-
-
