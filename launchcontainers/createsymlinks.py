@@ -3,6 +3,7 @@ import os, errno
 import glob
 import sys
 import shutil
+import nibabel as nib
 #%%
 def force_symlink(file1, file2, force):
     """
