@@ -103,6 +103,7 @@ def anatrois(lc_config, sub, ses, container_specific_config):
     
     # if we run freesurfer before:
     if pre_fs:
+        print(f"########\n the sourceT1 file will be pre_fs\n#########\n")
         srcAnatPath = os.path.join(
             basedir,
             "nifti",
@@ -116,7 +117,7 @@ def anatrois(lc_config, sub, ses, container_specific_config):
         zips = sorted(
             glob.glob(os.path.join(srcAnatPath, prefs_zipname + "*")), key=os.path.getmtime
         )
-        print(len(zips))
+        print(f"---the len of the zip file list is {len(zips)}\n")
         if len(zips) == 0:
             print(
                 f"There are no {prefs_zipname}.zip in {srcAnatPath}, we will listed potential zip file for you"
@@ -577,9 +578,7 @@ def rtppipeline(lc_config, sub, ses, container_specific_config):
     dstDwi_bvalFile = os.path.join(dstdstDir_input, "bval", "dwi.bval")
     dstDwi_bvecFile = os.path.join(dstdstDir_input, "bvec", "dwi.bvec")
     dst_tractparams = os.path.join(dstdstDir_input, "tractparams", "tractparams.csv")
-    src_tractparams = os.path.join(
-        basedir, "nifti", "derivatives", container, "analysis-" + analysis, "tractparams.csv"
-    )
+    src_tractparams = os.path.join(Dir_analysis, "tractparams.csv")
     # Copy the rtp-pipeline config to the analysis folder
     dstFile_rtppipeline_config = os.path.join(Dir_analysis, "config.json")
     dstFile_rtppipeline_tractparam = os.path.join(Dir_analysis, "tractparams.csv")

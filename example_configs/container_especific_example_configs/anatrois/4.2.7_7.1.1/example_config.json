@@ -7,7 +7,7 @@
     "thalamic_nuclei": false,
     "cerebellum":false,
     "hcp":false,
-    "mori":false,
+    "mori":true,
     "aparc2009":false,
     "neuropythy_analysis": false,
     "register_surfaces": false,
