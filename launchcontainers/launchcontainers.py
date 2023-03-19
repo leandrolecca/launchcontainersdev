@@ -8,6 +8,7 @@ import subprocess as sp
 import shutil
 import numpy as np
 import pandas as pd
+import zipfile
 import json
 import sys
 import yaml
@@ -130,7 +131,7 @@ def _read_config(path_to_config_file):
 
 
 # %% function to read subSesList. txt
-def _read_subSesList(path_to_subSesList_file):
+def _read_df(path_to_df_file):
     """
     Input:
     path to the subject and session list txt file
@@ -139,19 +140,73 @@ def _read_subSesList(path_to_subSesList_file):
     a dataframe
 
     """
-    subSesList = pd.read_csv(path_to_subSesList_file, sep=",", header=0)
-    num_rows = len(subSesList)
+    outputdf = pd.read_csv(path_to_df_file, sep=",", header=0)
+    num_rows = len(outputdf)
 
     # Print the result
     print("3333333333333333333333333333333333333333333333333333333333333333333333\n")
-    print(f'The subseslist is successfully read. \n')
+    print(f'The dataframe{path_to_df_file} is successfully read. \n')
     print(f'The DataFrame has {num_rows} rows. \n')
     print("3333333333333333333333333333333333333333333333333333333333333333333333\n")
     
 
-    return subSesList
+    return outputdf
+#%% check if tractparam ROI was created in the anatrois fs.zip file
+def check_tractparam(lc_config, sub, ses, tractparam_df):
+    """
 
+        Parameters
+        ----------
+        lc_config : dict
+             the config info about lc
+        sub : str
+        ses: str
+        tractparam_df : str
+            path to the tractparam.csv file, needs to be transferred into df
 
+            inherited parameters: path to the fs.zip file
+                defined by lc_config, sub, ses
+        Returns
+        -------
+        None.
+    """
+    # Read list of required .gz files from CSV
+    df = pd.read_csv(tractparam_df)
+    # Define the list of required ROIs
+    required_rois=set()
+    for col in ['roi1', 'roi2', 'roi3', 'roi4']:
+        for val in df[col].unique():
+            if val != "No":
+                required_rois.add(val)
+
+    # Define the zip file
+    basedir = lc_config["config"]["basedir"]
+
+    precontainerfs = lc_config["container_options"][container]["precontainerfs"]
+    preanalysisfs = lc_config["container_options"][container]["preanalysisfs"]
+    fs_zip = os.path.join(
+        basedir,
+        "nifti",
+        "derivatives",
+        precontainerfs,
+        "analysis-" + preanalysisfs,
+        "sub-" + sub,
+        "ses-" + ses,
+        "output", "fs.zip"
+    )
+    # Extract .gz files from zip file and check if they are all present
+    with zipfile.ZipFile(fs_zip, 'r') as zip:
+        zip_gz_files = set(zip.namelist())
+        required_gz_files = set(f"/fs/ROI/{file}.gz" for file in required_rois)
+        if required_gz_files.issubset(zip_gz_files):
+            print("-----checked! All required .gz files are present in the fs.zip \n")
+        else:
+            missing_files = required_gz_files - zip_gz_files
+            print(f"*****Error: The following .gz files are missing in the zip file:\n {missing_files}")
+            sys.exit(1)
+
+    ROIs_are_there= required_gz_files.issubset(zip_gz_files)
+    return ROIs_are_there
 # %% prepare_input_files
 def prepare_input_files(lc_config, df_subSes, container_specific_config):
     """
@@ -188,6 +243,8 @@ def prepare_input_files(lc_config, df_subSes, container_specific_config):
             csl.rtppreproc(lc_config, sub, ses, container_specific_config)
         elif "rtp-pipeline" in container:
             csl.rtppipeline(lc_config, sub, ses, container_specific_config)
+            tractparam_df=_read_df(container_specific_config[1])
+            check_tractparam(lc_config, sub, ses, tractparam_df)
         elif "anatrois" in container:
             csl.anatrois(lc_config, sub, ses, container_specific_config)
         # future container
