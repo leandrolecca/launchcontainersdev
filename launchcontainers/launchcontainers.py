@@ -161,8 +161,7 @@ def check_tractparam(lc_config, sub, ses, tractparam_df):
              the config info about lc
         sub : str
         ses: str
-        tractparam_df : str
-            path to the tractparam.csv file, needs to be transferred into df
+        tractparam_df : dataframe
 
             inherited parameters: path to the fs.zip file
                 defined by lc_config, sub, ses
@@ -170,18 +169,16 @@ def check_tractparam(lc_config, sub, ses, tractparam_df):
         -------
         None.
     """
-    # Read list of required .gz files from CSV
-    df = pd.read_csv(tractparam_df)
     # Define the list of required ROIs
     required_rois=set()
-    for col in ['roi1', 'roi2', 'roi3', 'roi4']:
-        for val in df[col].unique():
-            if val != "No":
+    for col in ['roi1', 'roi2', 'roi3', 'roi4',"roiexc1","roiexc2"]:
+        for val in tractparam_df[col].unique():
+            if val != "NO":
                 required_rois.add(val)
 
     # Define the zip file
     basedir = lc_config["config"]["basedir"]
-
+    container = lc_config["config"]["container"]
     precontainerfs = lc_config["container_options"][container]["precontainerfs"]
     preanalysisfs = lc_config["container_options"][container]["preanalysisfs"]
     fs_zip = os.path.join(
@@ -197,13 +194,16 @@ def check_tractparam(lc_config, sub, ses, tractparam_df):
     # Extract .gz files from zip file and check if they are all present
     with zipfile.ZipFile(fs_zip, 'r') as zip:
         zip_gz_files = set(zip.namelist())
-        required_gz_files = set(f"/fs/ROI/{file}.gz" for file in required_rois)
-        if required_gz_files.issubset(zip_gz_files):
-            print("-----checked! All required .gz files are present in the fs.zip \n")
-        else:
-            missing_files = required_gz_files - zip_gz_files
-            print(f"*****Error: The following .gz files are missing in the zip file:\n {missing_files}")
-            sys.exit(1)
+    required_gz_files = set(f"fs/ROIs/{file}.nii.gz" for file in required_rois)
+    print(f"The following are the ROIs in fs.zip file: \n {zip_gz_files}")
+    print(f"---there are {len(zip_gz_files)} .nii.gz files in fs.zip from anarois output\n")
+    print(f"---There are {len(required_gz_files)} ROIs that are required to run RTP-PIPELINE\n")
+    if required_gz_files.issubset(zip_gz_files):
+        print("-----checked! All required .gz files are present in the fs.zip \n")
+    else:
+        missing_files = required_gz_files - zip_gz_files
+        print(f"*****Error: there are {len(missing_files)} missed in fs.zip \n The following .gz files are missing in the zip file:\n {missing_files}")
+        sys.exit(1)
 
     ROIs_are_there= required_gz_files.issubset(zip_gz_files)
     return ROIs_are_there
@@ -297,6 +297,7 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
         basedir, "nifti", "derivatives", f"{container}_{version}", "analysis-" + analysis
     )
     shutil.copyfile(os.path.join(basedir,"nifti", "config_lc.yaml"), os.path.join(analysisdir, "config_lc.yaml"))
+    shutil.copyfile(os.path.join(basedir,"nifti", "subSesList.txt"), os.path.join(analysisdir, "subSesList.txt"))
     print(f"--------succefully copied the config_lc.yaml to {analysisdir} folder! you can check this in the future\n ") 
     for row in sub_ses_list.itertuples(index=True, name='Pandas'):
         sub  = row.sub
@@ -345,6 +346,9 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
                 print(f"------------\n----------\nfuture is {future}")
                 progress(future)
                 #if future.done(): print(f"!!!!!!!dask work finished, status of future: {future}")     
+               
+                shutil.copyfile(os.path.join(logdir,"t-"+container+"_a-"+analysis+"_s-"+sub+"_s-"+ses+".o" ), os.path.join(path_to_sub_derivatives,"dask_worker_output.o"))
+                print("---copied the .o log file to {sub}-{ses} folder")
             else:
                 print(f"--------run_lc is false, if True, we would launch this command: \n" \
                       f"--------{cmd}\n")
@@ -374,7 +378,7 @@ def main():
     """launch_container entry point"""
     inputs = _get_parser()
     lc_config = _read_config(inputs["lc_config"])
-    sub_ses_list = _read_subSesList(inputs["sub_ses_list"])
+    sub_ses_list = _read_df(inputs["sub_ses_list"])
     container_specific_config = inputs["container_specific_config"]
     
     run_lc = inputs["run_lc"]
