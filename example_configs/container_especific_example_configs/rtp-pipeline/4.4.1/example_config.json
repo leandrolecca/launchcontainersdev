@@ -25,6 +25,7 @@
         "mrtrix_lmax": 6,
         "mrtrix_useACT": false,
 	"save_output":true,
-	"segmentSLF":false
+	"segmentSLF": true,
+	"tractparams": "/export/home/llecca/llecca/soft/launchcontainersdev/example_configs/container_especific_example_configs/rtp-pipeline/4.4.1/example_tractparams.csv"
     }
 }
