@@ -9,7 +9,7 @@ LGR = logging.getLogger("GENERAL")
 from dask.distributed import progress
 
 
-def initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logdir):
+def initiate_cluster(jobqueue_config, n_job):
     '''
     
 
@@ -33,16 +33,9 @@ def initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logd
     config.set(admin__tick__limit="3h")
     
     if "sge" in jobqueue_config["manager"]:
-        name = f"{sub}_{ses}_{container}_{analysis}"
-        job_extra_directives = [
-                                f"-N {name} ",
-                                f"-o {logdir}/t-{container}_a-{analysis}_s-{sub}_s-{ses}.o ",
-                                f"-e {logdir}/t-{container}_a-{analysis}_s-{sub}_s-{ses}.e ",
-                                ]
         envextra = [f"module load {jobqueue_config['sin_ver']} " 
                    #f"conda activate /export/home/tlei/tlei/conda_env/launchcontainers"
                     ]
-
         cluster_by_config = SGECluster(cores  = jobqueue_config["cores"], 
                                        memory = jobqueue_config["memory"],
                                        queue = jobqueue_config["queue"],
@@ -58,11 +51,11 @@ def initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logd
                                        # job_script_prologue = None,
                                        # header_skip=None,
                                        # job_directives_skip=None,
-                                       # log_directory=jobqueue_config["log-directory"],
+                                       log_directory=jobqueue_config["logdir"],
                                        # shebang=jobqueue_config["shebang"],
                                        # python=None,
                                        # config_name=None,
-                                       # n_workers=None,
+                                       # n_workers=n_job,
                                        # silence_logs=None,
                                        # asynchronous=None,
                                        # security=None,
@@ -70,16 +63,16 @@ def initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logd
                                        # scheduler_cls=None,
                                        # shared_temp_directory=None,
                                        # resource_spec=jobqueue_config["resource-spec"],
-                                       walltime=jobqueue_config["walltime"],
-                                       job_extra_directives=job_extra_directives)
-        cluster_by_config.scale(n_job)
+                                       walltime=jobqueue_config["walltime"])#,
+                                       #job_extra_directives=job_extra_directives)
+        cluster_by_config.scale(jobs=n_job)
 
     elif "pbs" in jobqueue_config["manager"]:
         cluster_by_config = PBSCluster(cores = cores, memory = memory)
-        cluster_by_config.scale(n_job)
+        cluster_by_config.scale(jobs=n_job)
     elif "slurm" in jobqueue_config["manager"]:
         cluster_by_config = SLURMCluster(cores = cores, memory = memory)
-        cluster_by_config.scale(n_job)
+        cluster_by_config.scale(jobs=n_job)
     else:
         LGR.warning(
             "dask configuration wasn't detected, "
@@ -97,7 +90,7 @@ def initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logd
     return cluster_by_config
 
 
-def dask_scheduler(jobqueue_config ,n_job, sub, ses, analysis, container, logdir):
+def dask_scheduler(jobqueue_config, n_job):
     print("----------------------is jobqueue_config None? \n")
     print(f"--------------------it is {jobqueue_config is None}")
     if jobqueue_config is None:
@@ -111,7 +104,7 @@ def dask_scheduler(jobqueue_config ,n_job, sub, ses, analysis, container, logdir
         )
         cluster = None
     else:
-        cluster = initiate_cluster(jobqueue_config, n_job, sub, ses, analysis, container, logdir)
+        cluster = initiate_cluster(jobqueue_config, n_job)
         #print(f"------------!!!!!!!!!!!right after cluster was defined, what is cluster? \n {cluster}")
    # print("----------------cluster should be defined here")
    # print(f"--------------outside of the if-else loop, what is our cluster? \n----{cluster}")

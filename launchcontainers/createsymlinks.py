@@ -4,6 +4,7 @@ import glob
 import sys
 import shutil
 import nibabel as nib
+import json
 #%%
 def force_symlink(file1, file2, force):
     """
@@ -295,7 +296,12 @@ def rtppreproc(lc_config, sub, ses, container_specific_config):
     preanalysisfs = lc_config["container_options"][container]["preanalysisfs"]
     rpe = lc_config["container_options"][container]["rpe"]
     version = lc_config["container_options"][container]["version"]
-    srcFile_container_config_json= container_specific_config[0]
+    srcFile_container_config_json= container_specific_config[0] 
+    
+    container_specific_config_data = json.load(open(srcFile_container_config_json))
+    acqd = container_specific_config_data["config"]["acqd"]
+    
+    #acq = container_specific_config["acqd"]
     # define base directory for particular subject and session
     basedir_subses = os.path.join(basedir, "nifti", "sub-" + sub, "ses-" + ses)
 
@@ -319,29 +325,33 @@ def rtppreproc(lc_config, sub, ses, container_specific_config):
     # 3 dwi file that needs to be preprocessed, under nifti/sub/ses/dwi
     # the nii.gz
     srcFileDwi_nii = os.path.join(
-        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-AP_dwi.nii.gz"
+        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-"+acqd+"_dwi.nii.gz"
     )
     # the bval.gz
     srcFileDwi_bval = os.path.join(
-        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-AP_dwi.bval"
+        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-"+acqd+"_dwi.bval"
     )
     # the bvec.gz
     srcFileDwi_bvec = os.path.join(
-        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-AP_dwi.bvec"
+        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-"+acqd+"_dwi.bvec"
     )
     # check_create_bvec_bval（force) one of the todo here
     if rpe:
+        if acqd == "PA":
+            acqdrpe = "AP"
+        elif acqd == "AP":
+            acqdrpe = "PA"
         # the reverse direction nii.gz
         srcFileDwi_nii_R = os.path.join(
-            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-PA_dwi.nii.gz"
+            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses +"_acq-"+acqdrpe+"_dwi.nii.gz"
         )
         # the reverse direction bval
         srcFileDwi_bval_R = os.path.join(
-            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-PA_dwi.bval"
+            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-"+acqdrpe+"_dwi.bval"
         )
         # the reverse diretion bvec
         srcFileDwi_bvec_R = os.path.join(
-            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-PA_dwi.bvec"
+            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-"+acqdrpe+"_dwi.bvec"
         )
 
         # If bval and bvec do not exist because it is only b0-s, create them
@@ -499,8 +509,9 @@ def rtppipeline(lc_config, sub, ses, container_specific_config):
     preanalysisfs = lc_config["container_options"][container]["preanalysisfs"]
     precontainerpp = lc_config["container_options"][container]["precontainerpp"]
     preanalysispp = lc_config["container_options"][container]["preanalysispp"]
-    srcFile_container_config_json= container_specific_config[0]
-    srcFile_tractparam= container_specific_config[1]
+    srcFile_container_config_json = container_specific_config[0]
+    container_specific_config_data = json.load(open(srcFile_container_config_json))
+    srcFile_tractparam = container_specific_config_data["config"]["tractparams"]
     # the source directory
     srcDirfs = os.path.join(
         basedir,
@@ -509,7 +520,7 @@ def rtppipeline(lc_config, sub, ses, container_specific_config):
         precontainerfs,
         "analysis-" + preanalysisfs,
         "sub-" + sub,
-        "ses-" + "T01",
+        "ses-" + ses,
         "output",
     )
     srcDirpp = os.path.join(
