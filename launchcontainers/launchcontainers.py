@@ -14,6 +14,7 @@ import sys
 import yaml
 from yaml.loader import SafeLoader
 import pip
+import pandas as pd
 # Dask imports
 from dask import compute
 from dask import delayed as delayed_dask
@@ -77,7 +78,7 @@ def _get_parser():
         nargs='+',
         # default="/Users/tiger/Documents/GitHub/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
         default="/export/home/tlei/tlei/github/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
-        help="path to the container specific config file",
+        help="path to the container specific config file(s). First file needs to be the config.json file of the container. Some containers might need more config files (e.g., rtp-pipeline needs tractparams.csv). Add them here separated with a space.",
     )
    
     parser.add_argument('--run_lc', action='store_true',
@@ -225,6 +226,9 @@ def prepare_input_files(lc_config, df_subSes, container_specific_config):
     """
     print("4444444444444444444444444444444444444444444444444444444444444444444444\n")
     print("-----starting to preprare the input files for analysis\n")
+    
+
+
     for row in df_subSes.itertuples(index=True, name="Pandas"):
         sub = row.sub
         ses = row.ses
@@ -236,29 +240,33 @@ def prepare_input_files(lc_config, df_subSes, container_specific_config):
         print("The current run is:")
         print(f"{sub}_{ses}_RUN-{RUN}_{container}_{version}\n")
 
-        if not RUN:
-            continue
+        if RUN == "True":
+            if "rtppreproc" in container:
+                csl.rtppreproc(lc_config, sub, ses, container_specific_config)
+            elif "rtp-pipeline" in container:
+                if not len(container_specific_config) == 2:
+                    sys.exit('This container needs the config.json and tratparams.csv as container specific configs')
+                csl.rtppipeline(lc_config, sub, ses, container_specific_config)
+                #srcFile_tractparam = container_specific_config[1]
+                # tractparam_df=_read_df(srcFile_tractparam)
+                # check_tractparam(lc_config, sub, ses, tractparam_df)
+            elif "anatrois" in container:
+                csl.anatrois(lc_config, sub, ses, container_specific_config)
+            # future container
+            else:
+                print(f"******************* ERROR ********************\n")
+                print(
+                    f"{container} is not created, check for typos or contact admin for singularity images\n"
+                )
 
-        if "rtppreproc" in container:
-            csl.rtppreproc(lc_config, sub, ses, container_specific_config)
-        elif "rtp-pipeline" in container:
-            csl.rtppipeline(lc_config, sub, ses, container_specific_config)
-            tractparam_df=_read_df(container_specific_config[1])
-            check_tractparam(lc_config, sub, ses, tractparam_df)
-        elif "anatrois" in container:
-            csl.anatrois(lc_config, sub, ses, container_specific_config)
-        # future container
         else:
-            print(f"******************* ERROR ********************\n")
-            print(
-                f"{container} is not created, check for typos or contact admin for singularity images\n"
-            )
+            continue
     print("4444444444444444444444444444444444444444444444444444444444444444444444\n")
     return
 
 # %% launchcontainers
 
-def launchcontainers(sub_ses_list, lc_config, run_it):
+def launchcontainers(sub_ses_list, lc_config, run_it, lc_config_path):
     """
     This function launches containers generically in different Docker/Singularity HPCs
     This function is going to assume that all files are where they need to be.
@@ -283,9 +291,6 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
     host = lc_config["config"]["host"]
     jobqueue_config= lc_config["host_options"][host]
     
-    # Count how many jobs we need to launch from  sub_ses_list
-    # n_jobs = np.sum(sub_ses_list.RUN == True)
-    n_jobs = 1
 
     basedir = lc_config["config"]["basedir"]
     container = lc_config["config"]["container"] 
@@ -296,21 +301,27 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
     analysisdir = os.path.join(
         basedir, "nifti", "derivatives", f"{container}_{version}", "analysis-" + analysis
     )
+    shutil.copyfile(lc_config_path,os.path.join(basedir,"nifti","config_lc.yaml"))
     shutil.copyfile(os.path.join(basedir,"nifti", "config_lc.yaml"), os.path.join(analysisdir, "config_lc.yaml"))
     shutil.copyfile(os.path.join(basedir,"nifti", "subSesList.txt"), os.path.join(analysisdir, "subSesList.txt"))
-    print(f"--------succefully copied the config_lc.yaml to {analysisdir} folder! you can check this in the future\n ") 
+    print(f"--------succefully copied the config_lc.yaml to {analysisdir} folder! you can check this in the future\n ")
+    
+    # Count how many jobs we need to launch from  sub_ses_list
+    n_jobs = np.sum(sub_ses_list.RUN == "True")
+
+    client, cluster = dsq.dask_scheduler(jobqueue_config,n_jobs)
+    print("\n~~~~this is the cluster and client\n")
+    print(f"{client} \n cluster: {cluster} \n")
+    ourlist=[]
+
     for row in sub_ses_list.itertuples(index=True, name='Pandas'):
         sub  = row.sub
         ses  = row.ses
         RUN  = row.RUN
         dwi  = row.dwi
         func = row.func
-        if RUN and dwi:
-            # Iterate between temporal and spatial regularizations
-            client, cluster = dsq.dask_scheduler(jobqueue_config, n_jobs, sub, ses, analysis, container, logdir)
-            
-            print("\n~~~~this is the cluster and client\n")
-            print(f"{client} \n cluster: {cluster} \n")
+        if RUN=="True" and dwi=="True":
+
             # command for launch singularity
             path_to_sub_derivatives=os.path.join(basedir,"nifti","derivatives",
                                                  f"{container}_{version}",
@@ -324,8 +335,9 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
                                                 "config.json")
             # copy the config yaml for every subject and session
             shutil.copyfile(os.path.join(basedir,"nifti", "config_lc.yaml"), os.path.join(path_to_sub_derivatives, "config_lc.yaml"))
-            print(f"--------succefully copied the config_lc.yaml to {path_to_sub_derivatives} folder! you can check this in the future ! \n") 
-            
+            print(f"--------succefully copied the config_lc.yaml to {path_to_sub_derivatives} folder! you can check this in the future ! \n")
+
+            logfilename=f"{logdir}/t-{container}_a-{analysis}_sub-{sub}_ses-{ses}" 
             cmd=f"singularity run -e --no-home "\
                 f"--bind /bcbl:/bcbl "\
                 f"--bind /tmp:/tmp "\
@@ -333,8 +345,7 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
                 f"--bind {path_to_sub_derivatives}/input:/flywheel/v0/input:ro "\
                 f"--bind {path_to_sub_derivatives}/output:/flywheel/v0/output "\
                 f"--bind {path_to_config}:/flywheel/v0/config.json "\
-                f"{container_path} "
-                                                                                                                             
+                f"{container_path} 2>> {logfilename}.e 1>> {logfilename}.o "
             if run_it:
                 print (f"~~~~~~~~~~~do we run it? {run_it}\n")
                                 
@@ -342,24 +353,35 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
                       f"$$$$$$-------{cmd}\n")
                 print(f"-----------------\n-----------------\n client is {client}")
                 
-                future = client.submit(sp.run, cmd, shell=True,pure=False)
-                print(f"------------\n----------\nfuture is {future}")
-                progress(future)
-                #if future.done(): print(f"!!!!!!!dask work finished, status of future: {future}")     
+                ourlist.append(delayed_dask(sp.run)(cmd,shell=True,pure=False,dask_key_name='sub-'+sub+'_ses-'+ses))
                
-                shutil.copyfile(os.path.join(logdir,"t-"+container+"_a-"+analysis+"_s-"+sub+"_s-"+ses+".o" ), os.path.join(path_to_sub_derivatives,"dask_worker_output.o"))
-                print("---copied the .o log file to {sub}-{ses} folder")
+                #shutil.copyfile(os.path.join(logfilename+".o"),
+                #                os.path.join(path_to_sub_derivatives,"stdout.o"))
+                #print("---copied the .o log file to {sub}-{ses} folder")
+                #shutil.copyfile(os.path.join(logfilename+".e"),
+                #                os.path.join(path_to_sub_derivatives,"stderr.e"))
+                #print("---copied the .e error file to {sub}-{ses}")
+
             else:
                 print(f"--------run_lc is false, if True, we would launch this command: \n" \
                       f"--------{cmd}\n")
                 print(f"-------The cluster job_scipt is  {cluster.job_script()} \n")
                 print("-----please check if the job_script is properlly defined and then starting run_lc \n")
-    worker_logs= client.get_worker_logs
-    print(type(worker_logs))
-    print(f"\n {worker_logs}")
-    print("5555555555555555555555555555555555555555555555555555555555555555555555\n")
-    return
     
+    if run_it:
+        print(ourlist)
+        print('##########')
+        results = client.compute(ourlist)
+        progress(results)
+        print(results)
+        print('###########')
+        results = client.gather(results)
+        print(results)
+        print('###########')
+        print("5555555555555555555555555555555555555555555555555555555555555555555555\n")
+        client.close()
+        cluster.close()
+    return
 
 def backup_config_for_subj(sub, ses, basedir, ):
     """
@@ -377,22 +399,23 @@ def backup_config_for_subj(sub, ses, basedir, ):
 def main():
     """launch_container entry point"""
     inputs = _get_parser()
-    lc_config = _read_config(inputs["lc_config"])
-    sub_ses_list = _read_df(inputs["sub_ses_list"])
+    lc_config_path = inputs["lc_config"]
+    lc_config = _read_config(lc_config_path)
+    sub_ses_list = pd.read_csv(inputs["sub_ses_list"],sep=",",dtype=str)
     container_specific_config = inputs["container_specific_config"]
     
     run_lc = inputs["run_lc"]
     basedir = lc_config['config']["basedir"]
     container = lc_config["config"]["container"]
     version = lc_config["container_options"][container]
-    
+
     prepare_input_files(lc_config, sub_ses_list, container_specific_config)
 
     # launchcontainers('kk', command_str=command_str)
     if run_lc:
-        launchcontainers(sub_ses_list, lc_config, True)
+        launchcontainers(sub_ses_list, lc_config, True, lc_config_path)
     else:
-        launchcontainers(sub_ses_list, lc_config, False)
+        launchcontainers(sub_ses_list, lc_config, False, lc_config_path)
 
   #  cmd_copy= f"scp {basedir}/nifti/config_lc.yaml {basedir}/nifti/derivatives/{container}_{version}/analysis_{analysis}"
   #  sp.run(cmd_copy, Shell=True)

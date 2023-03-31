@@ -4,6 +4,8 @@ import glob
 import sys
 import shutil
 import nibabel as nib
+import json
+from launchcontainers import _read_df, check_tractparam
 #%%
 def force_symlink(file1, file2, force):
     """
@@ -295,7 +297,12 @@ def rtppreproc(lc_config, sub, ses, container_specific_config):
     preanalysisfs = lc_config["container_options"][container]["preanalysisfs"]
     rpe = lc_config["container_options"][container]["rpe"]
     version = lc_config["container_options"][container]["version"]
-    srcFile_container_config_json= container_specific_config[0]
+    srcFile_container_config_json= container_specific_config[0] 
+    
+    container_specific_config_data = json.load(open(srcFile_container_config_json))
+    acqd = container_specific_config_data["config"]["acqd"]
+    
+    #acq = container_specific_config["acqd"]
     # define base directory for particular subject and session
     basedir_subses = os.path.join(basedir, "nifti", "sub-" + sub, "ses-" + ses)
 
@@ -319,29 +326,33 @@ def rtppreproc(lc_config, sub, ses, container_specific_config):
     # 3 dwi file that needs to be preprocessed, under nifti/sub/ses/dwi
     # the nii.gz
     srcFileDwi_nii = os.path.join(
-        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-AP_dwi.nii.gz"
+        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-"+acqd+"_dwi.nii.gz"
     )
     # the bval.gz
     srcFileDwi_bval = os.path.join(
-        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-AP_dwi.bval"
+        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-"+acqd+"_dwi.bval"
     )
     # the bvec.gz
     srcFileDwi_bvec = os.path.join(
-        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-AP_dwi.bvec"
+        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-"+acqd+"_dwi.bvec"
     )
     # check_create_bvec_bval（force) one of the todo here
     if rpe:
+        if acqd == "PA":
+            acqdrpe = "AP"
+        elif acqd == "AP":
+            acqdrpe = "PA"
         # the reverse direction nii.gz
         srcFileDwi_nii_R = os.path.join(
-            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-PA_dwi.nii.gz"
+            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses +"_acq-"+acqdrpe+"_dwi.nii.gz"
         )
         # the reverse direction bval
         srcFileDwi_bval_R = os.path.join(
-            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-PA_dwi.bval"
+            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-"+acqdrpe+"_dwi.bval"
         )
         # the reverse diretion bvec
         srcFileDwi_bvec_R = os.path.join(
-            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-PA_dwi.bvec"
+            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-"+acqdrpe+"_dwi.bvec"
         )
 
         # If bval and bvec do not exist because it is only b0-s, create them
@@ -509,7 +520,7 @@ def rtppipeline(lc_config, sub, ses, container_specific_config):
         precontainerfs,
         "analysis-" + preanalysisfs,
         "sub-" + sub,
-        "ses-" + "T01",
+        "ses-" + ses,
         "output",
     )
     srcDirpp = os.path.join(
@@ -590,17 +601,18 @@ def rtppipeline(lc_config, sub, ses, container_specific_config):
     else:
         print(f"---start copying container_config.json to analysis folder\n")
         try:
-            shutil.copy(srcFile_container_config_json, dstFile_rtppipeline_config)
+            if not os.path.isfile(dstFile_rtppipeline_config) or force:
+                shutil.copy(srcFile_container_config_json, dstFile_rtppipeline_config)
             
-            print(
-                f" config.json has been succesfully copied to derivaitons/analysis direcory. "
-                f"\nREMEMBER TO CHECK/EDIT TO HAVE THE CORRECT PARAMETERS IN THE FILE\n"
-            )
-            
-            shutil.copy(srcFile_tractparam, dstFile_rtppipeline_tractparam)
-            print(
-                f" tractparam.csv has been succesfully copied to derivaitons/analysis direcory. "
-            )
+                print(
+                    f" config.json has been succesfully copied to derivatives/analysis directory. "
+                    f"\nREMEMBER TO CHECK/EDIT TO HAVE THE CORRECT PARAMETERS IN THE FILE\n"
+                )
+            if not os.path.isfile(dstFile_rtppipeline_tractparam) or force:
+                shutil.copy(srcFile_tractparam, dstFile_rtppipeline_tractparam)
+                print(
+                    f" tractparam.csv has been succesfully copied to derivatives/analysis directory. "
+                )
         # If source and destination are same
         except shutil.SameFileError:
             print("*********Source and destination represents the same file.\n")
@@ -612,6 +624,9 @@ def rtppipeline(lc_config, sub, ses, container_specific_config):
         # For other errors
         except:
             print("********Error occurred while copying file.******\n")    
+    
+    tractparam_df =_read_df(dstFile_rtppipeline_tractparam)
+    check_tractparam(lc_config, sub, ses, tractparam_df)
     # Create the symbolic links
     force_symlink(srcFileT1, dstAnatomicalFile, force)
     force_symlink(srcFileFs, dstFsfile, force)
