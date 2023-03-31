@@ -28,7 +28,7 @@ config:
   # The container where it will be run, version and other details will be stored in container_options
   container: "rtp-pipeline"  # VALID OPTIONS: anatrois, rtppreproc, rtp-pipeline, TODO: heudiconv, prfprepare, prfanalyze, prfresults, fmriprep
   # Give a number or name to your analysis
-  analysis: "01"
+  analysis: "03"
   # TODO: If the analysis exists, and force is true, then overwrite, otherwise stop
   # This force command applies to symlinks and analyses, if it set to true, it will always overwrite everything
   # FOR CREATESYMLINKS
@@ -37,7 +37,7 @@ config:
   # if not file_exists: we don't care about force, you add the file (the symlink)
   # FOR CONTAINER_VERSION_ANALYSIS
   # IF CONTAINER_VERSION_ANALYSIS_EXISTS and force: print warning and overwirte
-  force: true
+  force: false
   # The host where this will be run, see below for options  
   host: BCBL
   # If true it will use sge or slumr, otherwise it just generates the "docker" or "singularity" commands

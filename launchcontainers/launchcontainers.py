@@ -78,7 +78,7 @@ def _get_parser():
         nargs='+',
         # default="/Users/tiger/Documents/GitHub/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
         default="/export/home/tlei/tlei/github/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
-        help="path to the container specific config file",
+        help="path to the container specific config file(s). First file needs to be the config.json file of the container. Some containers might need more config files (e.g., rtp-pipeline needs tractparams.csv). Add them here separated with a space.",
     )
    
     parser.add_argument('--run_lc', action='store_true',
@@ -226,6 +226,9 @@ def prepare_input_files(lc_config, df_subSes, container_specific_config):
     """
     print("4444444444444444444444444444444444444444444444444444444444444444444444\n")
     print("-----starting to preprare the input files for analysis\n")
+    
+
+
     for row in df_subSes.itertuples(index=True, name="Pandas"):
         sub = row.sub
         ses = row.ses
@@ -241,11 +244,12 @@ def prepare_input_files(lc_config, df_subSes, container_specific_config):
             if "rtppreproc" in container:
                 csl.rtppreproc(lc_config, sub, ses, container_specific_config)
             elif "rtp-pipeline" in container:
+                if not len(container_specific_config) == 2:
+                    sys.exit('This container needs the config.json and tratparams.csv as container specific configs')
                 csl.rtppipeline(lc_config, sub, ses, container_specific_config)
-                container_specific_config_data = json.load(open(container_specific_config[0]))
-                srcFile_tractparam = container_specific_config_data["config"]["tractparams"]
-                tractparam_df=_read_df(srcFile_tractparam)
-                check_tractparam(lc_config, sub, ses, tractparam_df)
+                #srcFile_tractparam = container_specific_config[1]
+                # tractparam_df=_read_df(srcFile_tractparam)
+                # check_tractparam(lc_config, sub, ses, tractparam_df)
             elif "anatrois" in container:
                 csl.anatrois(lc_config, sub, ses, container_specific_config)
             # future container

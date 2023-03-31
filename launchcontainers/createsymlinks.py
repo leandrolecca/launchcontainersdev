@@ -5,6 +5,7 @@ import sys
 import shutil
 import nibabel as nib
 import json
+from launchcontainers import _read_df, check_tractparam
 #%%
 def force_symlink(file1, file2, force):
     """
@@ -509,9 +510,8 @@ def rtppipeline(lc_config, sub, ses, container_specific_config):
     preanalysisfs = lc_config["container_options"][container]["preanalysisfs"]
     precontainerpp = lc_config["container_options"][container]["precontainerpp"]
     preanalysispp = lc_config["container_options"][container]["preanalysispp"]
-    srcFile_container_config_json = container_specific_config[0]
-    container_specific_config_data = json.load(open(srcFile_container_config_json))
-    srcFile_tractparam = container_specific_config_data["config"]["tractparams"]
+    srcFile_container_config_json= container_specific_config[0]
+    srcFile_tractparam= container_specific_config[1]
     # the source directory
     srcDirfs = os.path.join(
         basedir,
@@ -601,17 +601,18 @@ def rtppipeline(lc_config, sub, ses, container_specific_config):
     else:
         print(f"---start copying container_config.json to analysis folder\n")
         try:
-            shutil.copy(srcFile_container_config_json, dstFile_rtppipeline_config)
+            if not os.path.isfile(dstFile_rtppipeline_config) or force:
+                shutil.copy(srcFile_container_config_json, dstFile_rtppipeline_config)
             
-            print(
-                f" config.json has been succesfully copied to derivaitons/analysis direcory. "
-                f"\nREMEMBER TO CHECK/EDIT TO HAVE THE CORRECT PARAMETERS IN THE FILE\n"
-            )
-            
-            shutil.copy(srcFile_tractparam, dstFile_rtppipeline_tractparam)
-            print(
-                f" tractparam.csv has been succesfully copied to derivaitons/analysis direcory. "
-            )
+                print(
+                    f" config.json has been succesfully copied to derivatives/analysis directory. "
+                    f"\nREMEMBER TO CHECK/EDIT TO HAVE THE CORRECT PARAMETERS IN THE FILE\n"
+                )
+            if not os.path.isfile(dstFile_rtppipeline_tractparam) or force:
+                shutil.copy(srcFile_tractparam, dstFile_rtppipeline_tractparam)
+                print(
+                    f" tractparam.csv has been succesfully copied to derivatives/analysis directory. "
+                )
         # If source and destination are same
         except shutil.SameFileError:
             print("*********Source and destination represents the same file.\n")
@@ -623,6 +624,9 @@ def rtppipeline(lc_config, sub, ses, container_specific_config):
         # For other errors
         except:
             print("********Error occurred while copying file.******\n")    
+    
+    tractparam_df =_read_df(dstFile_rtppipeline_tractparam)
+    check_tractparam(lc_config, sub, ses, tractparam_df)
     # Create the symbolic links
     force_symlink(srcFileT1, dstAnatomicalFile, force)
     force_symlink(srcFileFs, dstFsfile, force)
