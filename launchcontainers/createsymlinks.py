@@ -238,11 +238,12 @@ def anatrois(lc_config, sub, ses, container_specific_config):
     else:
         print(f"---start copying container_config.json to analysis folder\n")
         try:
-            shutil.copy(srcFile_container_config_json, dstFilecontainer_config)
-            print(
-                f" config.json has been succesfully copied to derivaitons/analysis direcory. "
-                f"\nREMEMBER TO CHECK/EDIT TO HAVE THE CORRECT PARAMETERS IN THE FILE\n"
-            )
+            if not os.path.isfile(dstFilecontainer_config) or force:
+                shutil.copy(srcFile_container_config_json, dstFilecontainer_config)
+                print(
+                    f" config.json has been succesfully copied to derivaitons/analysis direcory. "
+                    f"\nREMEMBER TO CHECK/EDIT TO HAVE THE CORRECT PARAMETERS IN THE FILE\n"
+                )
  
         # If source and destination are same
         except shutil.SameFileError:
@@ -447,11 +448,12 @@ def rtppreproc(lc_config, sub, ses, container_specific_config):
     else:
         print(f"---start copying container_config.json to analysis folder\n")
         try:
-            shutil.copy(srcFile_container_config_json, dstFile_rtppreproc_config)
-            print(
-                f" config.json has been succesfully copied to derivaitons/analysis direcory. "
-                f"\nREMEMBER TO CHECK/EDIT TO HAVE THE CORRECT PARAMETERS IN THE FILE\n"
-            )
+            if not os.path.isfile(dstFile_rtppreproc_config) or force:
+                shutil.copy(srcFile_container_config_json, dstFile_rtppreproc_config)
+                print(
+                    f" config.json has been succesfully copied to derivaitons/analysis direcory. "
+                    f"\nREMEMBER TO CHECK/EDIT TO HAVE THE CORRECT PARAMETERS IN THE FILE\n"
+                )
  
         # If source and destination are same
         except shutil.SameFileError:
