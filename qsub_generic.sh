@@ -101,6 +101,7 @@ if [ "$qsb" == "false" ];then
   printf "Path: ${path2subderivatives}\n"
   printf "Config: ${path2config}\n"
   set -x
+  
   module load ${sin_ver}  
   singularity run -e --no-home \
           --bind /scratch:/scratch \
