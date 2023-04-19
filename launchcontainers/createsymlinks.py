@@ -68,7 +68,7 @@ def force_symlink(file1, file2, force):
 
 
 #%%
-def anatrois(lc_config, sub, ses, container_specific_config):
+def anatrois(lc_config,lc_config_path, sub, ses, sub_ses_list_path, container_specific_config,run_lc):
 
     """
     Parameters
@@ -89,7 +89,7 @@ def anatrois(lc_config, sub, ses, container_specific_config):
     # general level variables:
     basedir = lc_config["config"]["basedir"]
     container = lc_config["config"]["container"]
-    force = lc_config["config"]["force"]
+    force = (lc_config["config"]["force"])&(~run_lc)
     analysis = lc_config["config"]["analysis"]
     # container specific:
     pre_fs = lc_config["container_options"][container]["pre_fs"]
@@ -226,10 +226,18 @@ def anatrois(lc_config, sub, ses, container_specific_config):
     dstFileAnnot = os.path.join(dstdstDir_input, "annotfile", "annots.zip")
     dstFileMniroizip = os.path.join(dstdstDir_input, "mniroizip", "mniroizip.zip")
 
+    #copy the lc_config to analysis also, launchcontainer will read this config
+    new_lc_config_path = os.path.join(Dir_analysis, "analysis-"+analysis+ "lc_config.yaml")
+    if not os.path.isfile(new_lc_config_path) or force:
+        shutil.copy(lc_config_path, new_lc_config_path)
+    new_sub_ses_list_path=os.path.join(Dir_analysis, "analysis-"+analysis+ "sub_ses_list.txt")  
+    if not os.path.isfile(new_sub_ses_list_path) or force:
+        shutil.copy(sub_ses_list_path, new_sub_ses_list_path)
     # Now that the folder structure is created for this subject, now copy the config file to the analysis folder so that
     # when we call the Singularity container, it is at the base of the analysis folder and it can create a link
     # First check that the file is there
-    dstFilecontainer_config = os.path.join(Dir_analysis, "config.json")
+    
+    dstFilecontainer_config = os.path.join(Dir_analysis, "analysis-"+analysis+"_config.json")
     if not os.path.isfile(srcFile_container_config_json):
         sys.exit(
             f"{srcFile_container_config_json} des not exist, CANNOT paste it to the analysis folder, aborting. "
@@ -267,10 +275,12 @@ def anatrois(lc_config, sub, ses, container_specific_config):
         force_symlink(srcFileAnnot, dstFileAnnot, force)
     if mniroizip:
         force_symlink(srcFileMniroizip, dstFileMniroizip, force)
-
+   
+   return new_lc_config_path,new_sub_ses_list_path
+   
 
 #%%
-def rtppreproc(lc_config, sub, ses, container_specific_config):
+def rtppreproc(lc_config, lc_config_path, sub, ses,new_sub_ses_list_path,container_specific_config,run_lc):
     """
     Parameters
     ----------
@@ -291,7 +301,7 @@ def rtppreproc(lc_config, sub, ses, container_specific_config):
     # general level variables:
     basedir = lc_config["config"]["basedir"]
     container = lc_config["config"]["container"]
-    force = lc_config["config"]["force"]
+    force = (lc_config["config"]["force"])&(~run_lc)
     analysis = lc_config["config"]["analysis"]
     # container specific:
     precontainerfs = lc_config["container_options"][container]["precontainerfs"]
@@ -438,8 +448,13 @@ def rtppreproc(lc_config, sub, ses, container_specific_config):
         dstFileDwi_bval_R = os.path.join(dstdstDir_input, "RBVL", "dwiR.bval")
         dstFileDwi_bvec_R = os.path.join(dstdstDir_input, "RBVC", "dwiR.bvec")
     
-    # copy the rtpprerpoc config 
-    dstFile_rtppreproc_config = os.path.join(Dir_analysis, "config.json")
+   # copy the config_yaml to analysis directory, and launchcontainer will read new path
+    new_lc_config_path = os.path.join(Dir_analysis, "analysis-"+analysis+ "lc_config.yaml")
+    if not os.path.isfile(new_lc_config_path) or force:
+        shutil.copy(lc_config_path, new_lc_config_path)
+   # copy the rtpprerpoc config 
+    
+    dstFile_rtppreproc_config = os.path.join(Dir_analysis, "analysis-"+analysis+"_config.json")
     if not os.path.isfile(srcFile_container_config_json):
         sys.exit(
             f"{srcFile_container_config_json} des not exist, CANNOT paste it to the analysis folder, aborting. "
@@ -479,11 +494,12 @@ def rtppreproc(lc_config, sub, ses, container_specific_config):
         force_symlink(srcFileDwi_bval_R, dstFileDwi_bval_R, force)
         force_symlink(srcFileDwi_bvec_R, dstFileDwi_bvec_R, force)
         print("---------------The rtppreproc rpe=True symlinks created")
-    return
+    return new_lc_config_path, new_sub_ses_list_path
+
 
 
 #%%
-def rtppipeline(lc_config, sub, ses, container_specific_config):
+def rtppipeline(lc_config,lc_config_path,sub, ses,new_sub_ses_list_path, container_specific_config,run_lc):
     """
     Parameters
     ----------
@@ -504,7 +520,7 @@ def rtppipeline(lc_config, sub, ses, container_specific_config):
     # general level variables:
     basedir = lc_config["config"]["basedir"]
     container = lc_config["config"]["container"]
-    force = lc_config["config"]["force"]
+    force = (lc_config["config"]["force"])&(~run_lc)
     analysis = lc_config["config"]["analysis"]
     # rtppipeline specefic variables
     version = lc_config["container_options"][container]["version"]
@@ -592,9 +608,19 @@ def rtppipeline(lc_config, sub, ses, container_specific_config):
     dstDwi_bvecFile = os.path.join(dstdstDir_input, "bvec", "dwi.bvec")
     dst_tractparams = os.path.join(dstdstDir_input, "tractparams", "tractparams.csv")
     src_tractparams = os.path.join(Dir_analysis, "tractparams.csv")
-    # Copy the rtp-pipeline config to the analysis folder
-    dstFile_rtppipeline_config = os.path.join(Dir_analysis, "config.json")
-    dstFile_rtppipeline_tractparam = os.path.join(Dir_analysis, "tractparams.csv")
+   
+   
+   
+   # copy the config yaml to analysis folder, the launchcontainer will read from here
+    new_lc_config_path = os.path.join(Dir_analysis, "analysis-"+analysis+ "lc_config.yaml")     
+    if not os.path.isfile(new_lc_config_path) or force:
+        shutil.copy(lc_config_path,new_lc_config_path)
+    new_sub_ses_list_path = os.path.
+
+   # Copy the rtp-pipeline config to the analysis folder
+    
+    dstFile_rtppipeline_config = os.path.join(Dir_analysis, "analysis-"+analysis+"_config.json")
+    dstFile_rtppipeline_tractparam = os.path.join(Dir_analysis, "analysis-"+analysis+"tractparams.csv")
     if not os.path.isfile(srcFile_container_config_json):
         sys.exit(
             f"{srcFile_container_config_json} des not exist, CANNOT paste it to the analysis folder, aborting. "
@@ -637,4 +663,5 @@ def rtppipeline(lc_config, sub, ses, container_specific_config):
     force_symlink(srcFileDwi_bvals, dstDwi_bvalFile, force)
     force_symlink(src_tractparams, dst_tractparams, force)
     print("-----------------The rtppipeline symlinks created\n")
-    return
+    return new_lc_config_path,new_sub_ses_list_path
+    
