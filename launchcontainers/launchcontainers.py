@@ -335,7 +335,7 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
                                                  f"analysis-{analysis}",
                                                 "config.json")
             # copy the config yaml for every subject and session
-            shutil.copyfile(os.path.join(basedir,"nifti", "config_lc.yaml"), os.path.join(path_to_sub_derivatives, "config_lc.yaml"))
+            # shutil.copyfile(os.path.join(basedir,"nifti", "config_lc.yaml"), os.path.join(path_to_sub_derivatives, "config_lc.yaml"))
             print(f"--------succefully copied the config_lc.yaml to {path_to_sub_derivatives} folder! you can check this in the future ! \n")
 
             logfilename=f"{logdir}/t-{container}_a-{analysis}_sub-{sub}_ses-{ses}" 
