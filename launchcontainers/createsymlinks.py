@@ -276,11 +276,11 @@ def anatrois(lc_config,lc_config_path, sub, ses, sub_ses_list_path, container_sp
     if mniroizip:
         force_symlink(srcFileMniroizip, dstFileMniroizip, force)
    
-   return new_lc_config_path,new_sub_ses_list_path
+    return new_lc_config_path, new_sub_ses_list_path
    
 
 #%%
-def rtppreproc(lc_config, lc_config_path, sub, ses,new_sub_ses_list_path,container_specific_config,run_lc):
+def rtppreproc(lc_config, lc_config_path, sub, ses,sub_ses_list_path,container_specific_config,run_lc):
     """
     Parameters
     ----------
@@ -452,6 +452,11 @@ def rtppreproc(lc_config, lc_config_path, sub, ses,new_sub_ses_list_path,contain
     new_lc_config_path = os.path.join(Dir_analysis, "analysis-"+analysis+ "lc_config.yaml")
     if not os.path.isfile(new_lc_config_path) or force:
         shutil.copy(lc_config_path, new_lc_config_path)
+
+    new_sub_ses_list_path=os.path.join(Dir_analysis, "analysis-"+analysis+ "sub_ses_list.txt")  
+    if not os.path.isfile(new_sub_ses_list_path) or force:
+        shutil.copy(sub_ses_list_path, new_sub_ses_list_path)
+   
    # copy the rtpprerpoc config 
     
     dstFile_rtppreproc_config = os.path.join(Dir_analysis, "analysis-"+analysis+"_config.json")
@@ -499,7 +504,7 @@ def rtppreproc(lc_config, lc_config_path, sub, ses,new_sub_ses_list_path,contain
 
 
 #%%
-def rtppipeline(lc_config,lc_config_path,sub, ses,new_sub_ses_list_path, container_specific_config,run_lc):
+def rtppipeline(lc_config,lc_config_path,sub, ses,sub_ses_list_path, container_specific_config,run_lc):
     """
     Parameters
     ----------
@@ -615,7 +620,10 @@ def rtppipeline(lc_config,lc_config_path,sub, ses,new_sub_ses_list_path, contain
     new_lc_config_path = os.path.join(Dir_analysis, "analysis-"+analysis+ "lc_config.yaml")     
     if not os.path.isfile(new_lc_config_path) or force:
         shutil.copy(lc_config_path,new_lc_config_path)
-    new_sub_ses_list_path = os.path.
+ 
+    new_sub_ses_list_path=os.path.join(Dir_analysis, "analysis-"+analysis+ "sub_ses_list.txt")  
+    if not os.path.isfile(new_sub_ses_list_path) or force:
+        shutil.copy(sub_ses_list_path, new_sub_ses_list_path)
 
    # Copy the rtp-pipeline config to the analysis folder
     
@@ -663,5 +671,5 @@ def rtppipeline(lc_config,lc_config_path,sub, ses,new_sub_ses_list_path, contain
     force_symlink(srcFileDwi_bvals, dstDwi_bvalFile, force)
     force_symlink(src_tractparams, dst_tractparams, force)
     print("-----------------The rtppipeline symlinks created\n")
-    return new_lc_config_path,new_sub_ses_list_path
+    return new_lc_config_path, new_sub_ses_list_path
     

@@ -252,7 +252,7 @@ def prepare_input_files(lc_config, lc_config_path, df_subSes, sub_ses_list_path,
                 # tractparam_df=_read_df(srcFile_tractparam)
                 # check_tractparam(lc_config, sub, ses, tractparam_df)
             elif "anatrois" in container:
-                new_lc_config_path,new_sub_ses_list_path =csl.anatrois(lc_config, lc_config_path,sub, ses,sub_ses_list, container_specific_config,run_lc)
+                new_lc_config_path,new_sub_ses_list_path =csl.anatrois(lc_config, lc_config_path,sub, ses,sub_ses_list_path, container_specific_config,run_lc)
             # future container
             else:
                 print(f"******************* ERROR ********************\n")
@@ -268,7 +268,7 @@ def prepare_input_files(lc_config, lc_config_path, df_subSes, sub_ses_list_path,
 
 # %% launchcontainers
 
-def launchcontainers(sub_ses_list, lc_config, run_it, lc_config_path):
+def launchcontainers(sub_ses_list, lc_config, run_it):
     """
     This function launches containers generically in different Docker/Singularity HPCs
     This function is going to assume that all files are where they need to be.
