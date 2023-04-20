@@ -628,7 +628,7 @@ def rtppipeline(lc_config,lc_config_path,sub, ses,sub_ses_list_path, container_s
    # Copy the rtp-pipeline config to the analysis folder
     
     dstFile_rtppipeline_config = os.path.join(Dir_analysis, "analysis-"+analysis+"_config.json")
-    dstFile_rtppipeline_tractparam = os.path.join(Dir_analysis, "analysis-"+analysis+"tractparams.csv")
+    dstFile_rtppipeline_tractparam = os.path.join(Dir_analysis, "tractparams.csv")
     if not os.path.isfile(srcFile_container_config_json):
         sys.exit(
             f"{srcFile_container_config_json} des not exist, CANNOT paste it to the analysis folder, aborting. "

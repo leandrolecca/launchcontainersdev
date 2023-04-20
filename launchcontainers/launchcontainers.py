@@ -333,10 +333,10 @@ def launchcontainers(sub_ses_list, lc_config, run_it):
             path_to_config=os.path.join(basedir,"nifti","derivatives",
                                                  f"{container}_{version}",
                                                  f"analysis-{analysis}",
-                                                "config.json")
+                                                 "analysis-"+analysis+"_config.json")
             # copy the config yaml for every subject and session
             # shutil.copyfile(os.path.join(basedir,"nifti", "config_lc.yaml"), os.path.join(path_to_sub_derivatives, "config_lc.yaml"))
-            print(f"--------succefully copied the config_lc.yaml to {path_to_sub_derivatives} folder! you can check this in the future ! \n")
+            # print(f"--------succefully copied the config_lc.yaml to {path_to_sub_derivatives} folder! you can check this in the future ! \n")
 
             logfilename=f"{logdir}/t-{container}_a-{analysis}_sub-{sub}_ses-{ses}" 
             cmd=f"singularity run -e --no-home "\
@@ -400,11 +400,15 @@ def backup_config_for_subj(sub, ses, basedir, ):
 def main():
     """launch_container entry point"""
     inputs = _get_parser()
+    
     lc_config_path = inputs["lc_config"]
     lc_config = _read_config(lc_config_path)
+    
     sub_ses_list = pd.read_csv(inputs["sub_ses_list"],sep=",",dtype=str)
     sub_ses_list_path = inputs["sub_ses_list"]
+    
     container_specific_config = inputs["container_specific_config"]
+    
     run_lc = inputs["run_lc"]
     
     basedir = lc_config['config']["basedir"]
@@ -416,6 +420,7 @@ def main():
     
     new_lc_config=_read_config(new_lc_config_path)
     new_sub_ses_list= pd.read_csv(new_sub_ses_list_path,sep=",",dtype=str)
+    
     if run_lc:
         launchcontainers(new_sub_ses_list, new_lc_config, True)
     else:
