@@ -47,14 +47,15 @@ def _get_parser():
 
     """
     parser = argparse.ArgumentParser(
-        description=""" This is lanchcontianer.py, you need to input path to the following files after the keywords \n       
-                        '-lcc path to config_lc.yaml \n 
-                        -ssl path to subSesList.txt  \n
-                        -cc path to container_specific_config, for the case of rtp-pipeline, you need to input two path, one for config.json and one for tractparm.csv \n
-                        And you also need to decide if you are sure you want to launch the container by typying
-                        --run_lc  \n
-                        if you type --run_lc, this code will actually launch containers, \n
-                        otherwise just prints all the config information for you checking and  prepare all the input files"""
+        description= """This is a python program helps you analysis MRI data using different containers,\nbefore you make use of this program, please edit the required config files to match your analysis demand. \n
+                      --------STEP 1
+                      To begin the analysis, you need to first prepare and check the input files by typing this command in your bash prompt:\n
+                      python path/to/the/launchcontianer.py -lcc path/to/launchcontainer_config.yaml -ssl path/to/subject_session_info.txt -cc path/to/contianer_specific_config.json \n
+                      #--cc note, for the case of rtp-pipeline, you need to input two paths, one for config.json and one for tractparm.csv#
+                      ------- STEP2
+                      After you have done step 1, all the config files are copied to nifti/sub/ses/analysis/ directory \n
+                      When you are confident everthing is there, press up arrow to recall the command in STEP 1, and just add --run_lc after it. \n
+                      We add lots of check in the script to avoid program breakdowns. if you found new bugs while running, do not hesitate to contact us"""
     )
     parser.add_argument(
         "-lcc",
@@ -209,7 +210,7 @@ def check_tractparam(lc_config, sub, ses, tractparam_df):
     ROIs_are_there= required_gz_files.issubset(zip_gz_files)
     return ROIs_are_there
 # %% prepare_input_files
-def prepare_input_files(lc_config, df_subSes, container_specific_config):
+def prepare_input_files(lc_config, lc_config_path, df_subSes, sub_ses_list_path, container_specific_config, run_lc):
     """
 
     Parameters
@@ -239,19 +240,19 @@ def prepare_input_files(lc_config, df_subSes, container_specific_config):
         version = lc_config["container_options"][container]["version"]
         print("The current run is:")
         print(f"{sub}_{ses}_RUN-{RUN}_{container}_{version}\n")
-
+        
         if RUN == "True":
             if "rtppreproc" in container:
-                csl.rtppreproc(lc_config, sub, ses, container_specific_config)
+                new_lc_config_path,new_sub_ses_list_path=csl.rtppreproc(lc_config, lc_config_path, sub, ses, sub_ses_list_path, container_specific_config,run_lc)
             elif "rtp-pipeline" in container:
                 if not len(container_specific_config) == 2:
                     sys.exit('This container needs the config.json and tratparams.csv as container specific configs')
-                csl.rtppipeline(lc_config, sub, ses, container_specific_config)
+                new_lc_config_pathnew_sub_ses_list_path=csl.rtppipeline(lc_config,lc_config_path, sub, ses,sub_ses_list_path,container_specific_config,run_lc)
                 #srcFile_tractparam = container_specific_config[1]
                 # tractparam_df=_read_df(srcFile_tractparam)
                 # check_tractparam(lc_config, sub, ses, tractparam_df)
             elif "anatrois" in container:
-                csl.anatrois(lc_config, sub, ses, container_specific_config)
+                new_lc_config_path,new_sub_ses_list_path =csl.anatrois(lc_config, lc_config_path,sub, ses,sub_ses_list_path, container_specific_config,run_lc)
             # future container
             else:
                 print(f"******************* ERROR ********************\n")
@@ -262,11 +263,12 @@ def prepare_input_files(lc_config, df_subSes, container_specific_config):
         else:
             continue
     print("4444444444444444444444444444444444444444444444444444444444444444444444\n")
-    return
+    
+    return new_lc_config_path, new_sub_ses_list_path
 
 # %% launchcontainers
 
-def launchcontainers(sub_ses_list, lc_config, run_it, lc_config_path):
+def launchcontainers(sub_ses_list, lc_config, run_it):
     """
     This function launches containers generically in different Docker/Singularity HPCs
     This function is going to assume that all files are where they need to be.
@@ -277,7 +279,13 @@ def launchcontainers(sub_ses_list, lc_config, run_it, lc_config_path):
         Data frame with subject information and if run or not run
     lc_config : dict
         Dictionary with all the values in the configuracion yaml file
-    """
+    run_it: boolean
+        used to control if we run the launchcontainer, or not
+    lc_config_path: Str
+        the path to lc_config file, it is the input from parser
+  
+   
+   """
     print("5555555555555555555555555555---------the real launchconatiner-----------55555555555555555555555555555555\n")
     tmpdir = lc_config["config"]["tmpdir"]
     logdir = lc_config["config"]["logdir"]
@@ -297,14 +305,7 @@ def launchcontainers(sub_ses_list, lc_config, run_it, lc_config_path):
     version = lc_config["container_options"][container]["version"]
     analysis = lc_config["config"]["analysis"] 
     containerdir = lc_config["config"]["containerdir"] 
-    container_path = os.path.join(containerdir, f"{container}_{version}.sif")
-    analysisdir = os.path.join(
-        basedir, "nifti", "derivatives", f"{container}_{version}", "analysis-" + analysis
-    )
-    shutil.copyfile(lc_config_path,os.path.join(basedir,"nifti","config_lc.yaml"))
-    shutil.copyfile(os.path.join(basedir,"nifti", "config_lc.yaml"), os.path.join(analysisdir, "config_lc.yaml"))
-    shutil.copyfile(os.path.join(basedir,"nifti", "subSesList.txt"), os.path.join(analysisdir, "subSesList.txt"))
-    print(f"--------succefully copied the config_lc.yaml to {analysisdir} folder! you can check this in the future\n ")
+    sif_path = os.path.join(containerdir, f"{container}_{version}.sif")
     
     # Count how many jobs we need to launch from  sub_ses_list
     n_jobs = np.sum(sub_ses_list.RUN == "True")
@@ -332,10 +333,10 @@ def launchcontainers(sub_ses_list, lc_config, run_it, lc_config_path):
             path_to_config=os.path.join(basedir,"nifti","derivatives",
                                                  f"{container}_{version}",
                                                  f"analysis-{analysis}",
-                                                "config.json")
+                                                 "analysis-"+analysis+"_config.json")
             # copy the config yaml for every subject and session
-            shutil.copyfile(os.path.join(basedir,"nifti", "config_lc.yaml"), os.path.join(path_to_sub_derivatives, "config_lc.yaml"))
-            print(f"--------succefully copied the config_lc.yaml to {path_to_sub_derivatives} folder! you can check this in the future ! \n")
+            # shutil.copyfile(os.path.join(basedir,"nifti", "config_lc.yaml"), os.path.join(path_to_sub_derivatives, "config_lc.yaml"))
+            # print(f"--------succefully copied the config_lc.yaml to {path_to_sub_derivatives} folder! you can check this in the future ! \n")
 
             logfilename=f"{logdir}/t-{container}_a-{analysis}_sub-{sub}_ses-{ses}" 
             cmd=f"singularity run -e --no-home "\
@@ -345,7 +346,7 @@ def launchcontainers(sub_ses_list, lc_config, run_it, lc_config_path):
                 f"--bind {path_to_sub_derivatives}/input:/flywheel/v0/input:ro "\
                 f"--bind {path_to_sub_derivatives}/output:/flywheel/v0/output "\
                 f"--bind {path_to_config}:/flywheel/v0/config.json "\
-                f"{container_path} 2>> {logfilename}.e 1>> {logfilename}.o "
+                f"{sif_path} 2>> {logfilename}.e 1>> {logfilename}.o "
             if run_it:
                 print (f"~~~~~~~~~~~do we run it? {run_it}\n")
                                 
@@ -399,27 +400,31 @@ def backup_config_for_subj(sub, ses, basedir, ):
 def main():
     """launch_container entry point"""
     inputs = _get_parser()
+    
     lc_config_path = inputs["lc_config"]
     lc_config = _read_config(lc_config_path)
+    
     sub_ses_list = pd.read_csv(inputs["sub_ses_list"],sep=",",dtype=str)
+    sub_ses_list_path = inputs["sub_ses_list"]
+    
     container_specific_config = inputs["container_specific_config"]
     
     run_lc = inputs["run_lc"]
+    
     basedir = lc_config['config']["basedir"]
     container = lc_config["config"]["container"]
     version = lc_config["container_options"][container]
+ 
 
-    prepare_input_files(lc_config, sub_ses_list, container_specific_config)
-
-    # launchcontainers('kk', command_str=command_str)
+    new_lc_config_path,new_sub_ses_list_path=prepare_input_files(lc_config, lc_config_path, sub_ses_list, sub_ses_list_path,container_specific_config,run_lc)
+    
+    new_lc_config=_read_config(new_lc_config_path)
+    new_sub_ses_list= pd.read_csv(new_sub_ses_list_path,sep=",",dtype=str)
+    
     if run_lc:
-        launchcontainers(sub_ses_list, lc_config, True, lc_config_path)
+        launchcontainers(new_sub_ses_list, new_lc_config, True)
     else:
-        launchcontainers(sub_ses_list, lc_config, False, lc_config_path)
-
-  #  cmd_copy= f"scp {basedir}/nifti/config_lc.yaml {basedir}/nifti/derivatives/{container}_{version}/analysis_{analysis}"
-  #  sp.run(cmd_copy, Shell=True)
-   
+        launchcontainers(new_sub_ses_list, new_lc_config, False)
 
 # #%%
 if __name__ == "__main__":
