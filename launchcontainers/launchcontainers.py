@@ -169,7 +169,6 @@ def check_tractparam(lc_config, sub, ses, tractparam_df):
     # Define the list of required ROIs
     print(
         "--check_tracparams_ROI--check_tracparams_ROI--check_tracparams_ROI--check_tracparams_ROI--check_tracparams_ROI--check_tracparams_ROI--\n")
-    if not os.path.isfile(src_file):
     required_rois=set()
     for col in ['roi1', 'roi2', 'roi3', 'roi4',"roiexc1","roiexc2"]:
         for val in tractparam_df[col][~tractparam_df[col].isna()].unique():
@@ -240,7 +239,6 @@ def copy_file(src_file, dst_file, force):
         except:
             print("********Error occurred while copying file.******\n")
     print("--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--\n")
-    if not os.path.isfile(src_file):
     return dst_file
 # %% prepare_input_files
 def prepare_input_files(lc_config, lc_config_path, df_subSes, sub_ses_list_path, container_specific_config_path, run_lc):
