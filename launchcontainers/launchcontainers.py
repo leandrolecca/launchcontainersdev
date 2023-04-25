@@ -78,7 +78,6 @@ def _get_parser():
         "--container_specific_config",
         nargs='+',
         # default="/Users/tiger/Documents/GitHub/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
-        default="/export/home/tlei/tlei/github/launchcontainers/example_configs/container_especific_example_configs/anatrois/4.2.7_7.1.1/example_config.json",
         help="path to the container specific config file(s). First file needs to be the config.json file of the container. Some containers might need more config files (e.g., rtp-pipeline needs tractparams.csv). Add them here separated with a space.",
     )
    
@@ -174,7 +173,7 @@ def check_tractparam(lc_config, sub, ses, tractparam_df):
     # Define the list of required ROIs
     required_rois=set()
     for col in ['roi1', 'roi2', 'roi3', 'roi4',"roiexc1","roiexc2"]:
-        for val in tractparam_df[col].unique():
+        for val in tractparam_df[col][~tractparam_df[col].isna()].unique():
             if val != "NO":
                 required_rois.add(val)
 
@@ -247,7 +246,7 @@ def prepare_input_files(lc_config, lc_config_path, df_subSes, sub_ses_list_path,
             elif "rtp-pipeline" in container:
                 if not len(container_specific_config) == 2:
                     sys.exit('This container needs the config.json and tratparams.csv as container specific configs')
-                new_lc_config_pathnew_sub_ses_list_path=csl.rtppipeline(lc_config,lc_config_path, sub, ses,sub_ses_list_path,container_specific_config,run_lc)
+                new_lc_config_path,new_sub_ses_list_path=csl.rtppipeline(lc_config,lc_config_path, sub, ses,sub_ses_list_path,container_specific_config,run_lc)
                 #srcFile_tractparam = container_specific_config[1]
                 # tractparam_df=_read_df(srcFile_tractparam)
                 # check_tractparam(lc_config, sub, ses, tractparam_df)
