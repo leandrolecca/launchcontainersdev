@@ -617,17 +617,17 @@ def rtppipeline(lc_config,lc_config_path,sub, ses,sub_ses_list_path, container_s
    
    
    # copy the config yaml to analysis folder, the launchcontainer will read from here
-    new_lc_config_path = os.path.join(Dir_analysis, "analysis-"+analysis+ "lc_config.yaml")     
+    new_lc_config_path = os.path.join(Dir_analysis, "lc_config.yaml")
     if not os.path.isfile(new_lc_config_path) or force:
         shutil.copy(lc_config_path,new_lc_config_path)
  
-    new_sub_ses_list_path=os.path.join(Dir_analysis, "analysis-"+analysis+ "sub_ses_list.txt")  
+    new_sub_ses_list_path=os.path.join(Dir_analysis, "sub_ses_list.txt")
     if not os.path.isfile(new_sub_ses_list_path) or force:
         shutil.copy(sub_ses_list_path, new_sub_ses_list_path)
 
    # Copy the rtp-pipeline config to the analysis folder
     
-    dstFile_rtppipeline_config = os.path.join(Dir_analysis, "analysis-"+analysis+"_config.json")
+    dstFile_rtppipeline_config = os.path.join(Dir_analysis, "config.json")
     if not os.path.isfile(srcFile_container_config_json):
         sys.exit(
             f"{srcFile_container_config_json} does not exist, CANNOT paste it to the analysis folder, aborting. "
