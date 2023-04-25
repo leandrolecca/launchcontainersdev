@@ -276,7 +276,7 @@ def prepare_input_files(lc_config, lc_config_path, df_subSes, sub_ses_list_path,
             if "rtppreproc" in container:
                 new_lc_config_path,new_sub_ses_list_path,new_container_specific_config_path=csl.rtppreproc(lc_config, lc_config_path, sub, ses, sub_ses_list_path, container_specific_config_path,run_lc)
             elif "rtp-pipeline" in container:
-                if not len(container_specific_config) == 2:
+                if not len(container_specific_config_path) == 2:
                     sys.exit('This container needs the config.json and tratparams.csv as container specific configs')
                 new_lc_config_path,new_sub_ses_list_path,new_container_specific_config_path=csl.rtppipeline(lc_config,lc_config_path, sub, ses,sub_ses_list_path,container_specific_config_path,run_lc)
 
