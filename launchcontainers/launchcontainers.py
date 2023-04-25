@@ -383,7 +383,7 @@ def launchcontainers(lc_config, sub_ses_list, run_it,new_lc_config_path, new_sub
 
             path_to_config_json=new_container_specific_config_path[0]
             path_to_config_yaml = new_lc_config_path
-            path_to_subSesList = new_sub_ses_list_path,
+            path_to_subSesList = new_sub_ses_list_path
 
 
             logfilename=f"{logdir}/t-{container}_a-{analysis}_sub-{sub}_ses-{ses}"
