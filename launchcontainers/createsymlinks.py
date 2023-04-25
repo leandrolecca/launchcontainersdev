@@ -227,18 +227,18 @@ def anatrois(lc_config,lc_config_path, sub, ses, sub_ses_list_path, container_sp
     dstFileMniroizip = os.path.join(dstdstDir_input, "mniroizip", "mniroizip.zip")
 
     #copy the lc_config to analysis also, launchcontainer will read this config
-    new_lc_config_path = os.path.join(Dir_analysis, "analysis-"+analysis+ "lc_config.yaml")
+    new_lc_config_path = os.path.join(Dir_analysis, "lc_config.yaml")
     if not os.path.isfile(new_lc_config_path) or force:
         shutil.copy(lc_config_path, new_lc_config_path)
-    new_sub_ses_list_path=os.path.join(Dir_analysis, "analysis-"+analysis+ "sub_ses_list.txt")  
+    new_sub_ses_list_path=os.path.join(Dir_analysis, "subSesList.txt")
     if not os.path.isfile(new_sub_ses_list_path) or force:
         shutil.copy(sub_ses_list_path, new_sub_ses_list_path)
     # Now that the folder structure is created for this subject, now copy the config file to the analysis folder so that
     # when we call the Singularity container, it is at the base of the analysis folder and it can create a link
     # First check that the file is there
     
-    dstFilecontainer_config = os.path.join(Dir_analysis, "analysis-"+analysis+"_config.json")
-    if not os.path.isfile(srcFile_container_config_json):
+    dstFilecontainer_config = os.path.join(Dir_analysis, "config.json")
+    if not os.path.isfile(srcFile_container_config_json) or force:
         sys.exit(
             f"{srcFile_container_config_json} des not exist, CANNOT paste it to the analysis folder, aborting. "
         )
@@ -628,7 +628,7 @@ def rtppipeline(lc_config,lc_config_path,sub, ses,sub_ses_list_path, container_s
    # Copy the rtp-pipeline config to the analysis folder
     
     dstFile_rtppipeline_config = os.path.join(Dir_analysis, "config.json")
-    if not os.path.isfile(srcFile_container_config_json):
+    if not os.path.isfile(srcFile_container_config_json) :
         sys.exit(
             f"{srcFile_container_config_json} does not exist, CANNOT paste it to the analysis folder, aborting. "
         )

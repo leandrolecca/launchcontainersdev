@@ -31,10 +31,6 @@ TODO:
     4./ Add the check in launchcontainers.py, that only in some cases we wiill 
         need to use createSymLinks, and for the anatrois, rtppreproc and 
         rtp-pipeline, we will need to do it
-    5./ Edit createSymLinks again and make one function per every container
-        createSymLinks_anatrois.py
-        createSymLinks_rtppreproc.py
-        createSymLinks_rtp-pipeline.py
 """
 # %% parser
 def _get_parser():
@@ -398,8 +394,8 @@ def backup_config_for_subj(sub, ses, basedir, ):
 
 def main():
     """launch_container entry point"""
+    # function 1
     inputs = _get_parser()
-    
     lc_config_path = inputs["lc_config"]
     lc_config = _read_config(lc_config_path)
     
