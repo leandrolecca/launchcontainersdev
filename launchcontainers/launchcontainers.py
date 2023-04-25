@@ -110,7 +110,7 @@ def _read_config(path_to_config_file):
     a dictionary that contains all the config info
 
     """
-    print("--read_config_yaml--read_config_yaml--read_config_yaml--read_config_yaml--read_config_yaml--read_config_yaml--read_config_yaml--\n")
+    print("-----------------------------------------------\n")
     print(f"------Reading the config file {path_to_config_file} \n ")
 
     with open(path_to_config_file, "r") as v:
@@ -122,7 +122,7 @@ def _read_config(path_to_config_file):
     print(f'\nBasedir is: {config["config"]["basedir"]}')
     print(f'\nContainer is: {container}_{config["container_options"][container]["version"]}')
     print(f'\nAnalysis is: analysis-{config["config"]["analysis"]}\n')
-    print("--read_config_yaml--read_config_yaml--read_config_yaml--read_config_yaml--read_config_yaml--read_config_yaml--read_config_yaml--\n")
+    print("-----------------------------------------------\n")
 
     return config
 
@@ -141,10 +141,10 @@ def _read_df(path_to_df_file):
     num_rows = len(outputdf)
 
     # Print the result
-    print("--read_dataframe--read_dataframe--read_dataframe--read_dataframe--read_dataframe--read_dataframe--read_dataframe--read_dataframe--\n")
+    print("-----------------------------------------------\n")
     print(f'The dataframe{path_to_df_file} is successfully read. \n')
     print(f'The DataFrame has {num_rows} rows. \n')
-    print("--read_dataframe--read_dataframe--read_dataframe--read_dataframe--read_dataframe--read_dataframe--read_dataframe--read_dataframe--\n")
+    print("-----------------------------------------------\n")
     
 
     return outputdf
@@ -167,8 +167,7 @@ def check_tractparam(lc_config, sub, ses, tractparam_df):
         None.
     """
     # Define the list of required ROIs
-    print(
-        "--check_tracparams_ROI--check_tracparams_ROI--check_tracparams_ROI--check_tracparams_ROI--check_tracparams_ROI--check_tracparams_ROI--\n")
+    print("-----------------------------------------------\n")
     required_rois=set()
     for col in ['roi1', 'roi2', 'roi3', 'roi4',"roiexc1","roiexc2"]:
         for val in tractparam_df[col][~tractparam_df[col].isna()].unique():
@@ -205,11 +204,10 @@ def check_tractparam(lc_config, sub, ses, tractparam_df):
         sys.exit(1)
 
     ROIs_are_there= required_gz_files.issubset(zip_gz_files)
-    print(
-        "--check_tracparams_ROI--check_tracparams_ROI--check_tracparams_ROI--check_tracparams_ROI--check_tracparams_ROI--check_tracparams_ROI--\n")
+    print("-----------------------------------------------\n")
     return ROIs_are_there
 def copy_file(src_file, dst_file, force):
-    print("--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--\n")
+    print("-----------------------------------------------\n")
     if not os.path.isfile(src_file):
         sys.exit(
             f"{src_file} does NOT exist, CANNOT paste it to the analysis folder, aborting. \n"
@@ -238,7 +236,7 @@ def copy_file(src_file, dst_file, force):
         # For other errors
         except:
             print("********Error occurred while copying file.******\n")
-    print("--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--copy_file--\n")
+    print("-----------------------------------------------\n")
     return dst_file
 # %% prepare_input_files
 def prepare_input_files(lc_config, lc_config_path, df_subSes, sub_ses_list_path, container_specific_config_path, run_lc):

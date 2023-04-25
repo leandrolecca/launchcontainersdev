@@ -29,6 +29,7 @@ def force_symlink(file1, file2, force):
 
     """
     # if we don't force to overwrite
+    print("-----------------------------------------------\n")
     if not force:
         try:
             # try the command, if the file are correct and symlink not exist, it will create one
@@ -64,6 +65,7 @@ def force_symlink(file1, file2, force):
             else:
                 print("***********************ERROR*******************\nWe don't know what happened\n")
                 raise e
+    print("-----------------------------------------------\n")
     return
 
 
