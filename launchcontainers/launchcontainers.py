@@ -213,17 +213,18 @@ def copy_file(src_file, dst_file, force):
             f"{src_file} does NOT exist, CANNOT paste it to the analysis folder, aborting. \n"
         )
     # config is there, now copy to the right folder
-    else:
-        print(f"---start copying container_config.json to analysis folder\n")
+    if not (src_file == dst_file):
+        print(f"---start copying {src_file} to analysis folder\n")
         try:
-            if not os.path.isfile(dst_file) or force:
+            if ((not os.path.isfile(dst_file)) or (force)) or (os.path.isfile(dst_file) and force):
                 shutil.copy(src_file, dst_file)
                 print(
-                    f"{src_file} has been succesfully copied to derivaitons/analysis direcory. "
+                    f"{src_file} has been succesfully copied to derivatives/analysis directory. "
                     f"\nREMEMBER TO CHECK/EDIT TO HAVE THE CORRECT PARAMETERS IN THE FILE\n"
                 )
             elif os.path.isfile(dst_file) and not force:
                 print(f"Didn't copy, the{src_file}already exist in {Dir_analysis}")
+
 
         # If source and destination are same
         except shutil.SameFileError:
@@ -236,7 +237,13 @@ def copy_file(src_file, dst_file, force):
         # For other errors
         except:
             print("********Error occurred while copying file.******\n")
+    if src_file == dst_file:
+        print(f"the source file and the destination file are the same, not copy")
+        pass
+
     print("-----------------------------------------------\n")
+
+
     return dst_file
 # %% prepare_input_files
 def prepare_input_files(lc_config, lc_config_path, df_subSes, sub_ses_list_path, container_specific_config_path, run_lc):
