@@ -562,7 +562,7 @@ def rtppipeline(lc_config,lc_config_path,sub, ses,sub_ses_list_path, container_s
     srcFileDwi_bvals = os.path.join(srcDirpp, "dwi.bvals")
     srcFileDwi_bvec = os.path.join(srcDirpp, "dwi.bvecs")
     srcFileDwi_nii = os.path.join(srcDirpp, "dwi.nii.gz")
-
+    #src_tractparams = os.path.join(Dir_analysis, "tractparams.csv")
     # creat input and output directory for this container, the dstDir_output should be empty, the dstdstDir_input should contains all the symlinks
     dstdstDir_input = os.path.join(
         basedir,
@@ -611,8 +611,8 @@ def rtppipeline(lc_config,lc_config_path,sub, ses,sub_ses_list_path, container_s
     dstDwi_niiFile = os.path.join(dstdstDir_input, "dwi", "dwi.nii.gz")
     dstDwi_bvalFile = os.path.join(dstdstDir_input, "bval", "dwi.bval")
     dstDwi_bvecFile = os.path.join(dstdstDir_input, "bvec", "dwi.bvec")
-    #dst_tractparams = os.path.join(dstdstDir_input, "tractparams", "tractparams.csv")
-    #src_tractparams = os.path.join(Dir_analysis, "tractparams.csv")
+    dst_tractparams = os.path.join(dstdstDir_input, "tractparams", "tractparams.csv")
+
    
    
    
@@ -658,17 +658,17 @@ def rtppipeline(lc_config,lc_config_path,sub, ses,sub_ses_list_path, container_s
     
     
     
-    dstFile_tractparam = os.path.join(Dir_analysis, "tractparams.csv")
-    if not os.path.isfile(srcFile_tractparam):
+    dstFile_tractparams = os.path.join(Dir_analysis, "tractparams.csv")
+    if not os.path.isfile(srcFile_tractparams):
         sys.exit(
-            f"{srcFile_tractparam} does not exist, CANNOT paste it to the analysis folder, aborting. "
+            f"{srcFile_tractparams} does not exist, CANNOT paste it to the analysis folder, aborting. "
         )
     # config is there, now copy to the right folder
     else:
         print(f"---start copying tractparam to analysis folder\n")
         try:
-            if not os.path.isfile(dstFile_tractparam) or force:
-                shutil.copy(srcFile_tractparam, dstFile_tractparam)
+            if not os.path.isfile(dstFile_tractparams) or force:
+                shutil.copy(srcFile_tractparam, dstFile_tractparams)
             
                 print(
                     f" tractparam has been succesfully copied to derivatives/analysis directory. "
@@ -685,15 +685,17 @@ def rtppipeline(lc_config,lc_config_path,sub, ses,sub_ses_list_path, container_s
         # For other errors
         except:
             print("********Error occurred while copying file.******\n")    
-    tractparam_df =_read_df(dstFile_tractparam)
+    tractparam_df =_read_df(dstFile_tractparams)
     check_tractparam(lc_config, sub, ses, tractparam_df)
+
+
     # Create the symbolic links
     force_symlink(srcFileT1, dstAnatomicalFile, force)
     force_symlink(srcFileFs, dstFsfile, force)
     force_symlink(srcFileDwi_nii, dstDwi_niiFile, force)
     force_symlink(srcFileDwi_bvec, dstDwi_bvecFile, force)
     force_symlink(srcFileDwi_bvals, dstDwi_bvalFile, force)
-    #force_symlink(src_tractparams, dst_tractparams, force)
+    force_symlink(dstFile_tractparams, dst_tractparams, force)
     print("-----------------The rtppipeline symlinks created\n")
     return new_lc_config_path, new_sub_ses_list_path
     
