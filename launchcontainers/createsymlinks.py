@@ -62,7 +62,7 @@ def force_symlink(file1, file2, force):
                 print("*********** input files are missing, please check *****************\n")
                 raise e
             else:
-                print("***********************ERROR*******************\nWe don't know what happend\n")
+                print("***********************ERROR*******************\nWe don't know what happened\n")
                 raise e
     return
 
@@ -567,10 +567,10 @@ def rtppipeline(lc_config,lc_config_path,sub, ses,sub_ses_list_path, container_s
 
     dstFilecontainer_config = os.path.join(Dir_analysis, "config.json")
     copy_file(srcFile_container_config_json, dstFilecontainer_config, force)
-    new_container_specific_config_path.append[dstFilecontainer_config]
+    new_container_specific_config_path.append(dstFilecontainer_config)
     dstFile_tractparams = os.path.join(Dir_analysis, "tractparams.csv")
     copy_file(srcFile_tractparams, dstFile_tractparams,force)
-    new_container_specific_config_path.append[dstFile_tractparams]
+    new_container_specific_config_path.append(dstFile_tractparams)
     tractparam_df =_read_df(dstFile_tractparams)
     check_tractparam(lc_config, sub, ses, tractparam_df)
 
