@@ -419,7 +419,8 @@ def main():
     
     new_lc_config=_read_config(new_lc_config_path)
     new_sub_ses_list= pd.read_csv(new_sub_ses_list_path,sep=",",dtype=str)
-    
+
+    print(f"-------{new_lc_config_path}, {new_sub_ses_list_path}")
     if run_lc:
         launchcontainers(new_sub_ses_list, new_lc_config, True)
     else:
