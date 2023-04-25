@@ -534,7 +534,7 @@ def rtppipeline(lc_config,lc_config_path,sub, ses,sub_ses_list_path, container_s
     precontainerpp = lc_config["container_options"][container]["precontainerpp"]
     preanalysispp = lc_config["container_options"][container]["preanalysispp"]
     srcFile_container_config_json= container_specific_config[0]
-    srcFile_tractparam= container_specific_config[1]
+    srcFile_tractparams= container_specific_config[1]
     # the source directory
     srcDirfs = os.path.join(
         basedir,
@@ -562,7 +562,7 @@ def rtppipeline(lc_config,lc_config_path,sub, ses,sub_ses_list_path, container_s
     srcFileDwi_bvals = os.path.join(srcDirpp, "dwi.bvals")
     srcFileDwi_bvec = os.path.join(srcDirpp, "dwi.bvecs")
     srcFileDwi_nii = os.path.join(srcDirpp, "dwi.nii.gz")
-    #src_tractparams = os.path.join(Dir_analysis, "tractparams.csv")
+
     # creat input and output directory for this container, the dstDir_output should be empty, the dstdstDir_input should contains all the symlinks
     dstdstDir_input = os.path.join(
         basedir,
@@ -668,7 +668,7 @@ def rtppipeline(lc_config,lc_config_path,sub, ses,sub_ses_list_path, container_s
         print(f"---start copying tractparam to analysis folder\n")
         try:
             if not os.path.isfile(dstFile_tractparams) or force:
-                shutil.copy(srcFile_tractparam, dstFile_tractparams)
+                shutil.copy(srcFile_tractparams, dstFile_tractparams)
             
                 print(
                     f" tractparam has been succesfully copied to derivatives/analysis directory. "
