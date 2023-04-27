@@ -1,42 +1,54 @@
-# Note:
-# this is the config file for launchcontainers.py 
-# this file should be stored under the dir: ~/PROJECT/nifti with another file: subSES.txt 
-# 
-#
+########################
+# Instruction to set your lc_config.yaml
+# This is the config file for running the launchcontainers.py
+# This file should be copied from garikoitz/launchcontainer/example_configs to your local dir: ~/PROJECT/nifti with another file: subSES.txt 
+########################
 # Structure:
-# three dictionary: config, container_options, and host_options
 
-# in the config dict, it provides info about the directory where data, code, template, container, and logs were stored, 
-# also, it provides info about the container, host, qsub we use. 
+# There are three dictionaries in this yaml: config, container_options, and host_options
+# The config dictionary defines the basic setting of the launchcontainers.py it will specify your project path, what container you are using 
+# and what HPC server you are using.  
+
+# The container_options defines the parameters that are related to each container. It is correlated to the prepare mode when the program creates
+# folder structures for you
+
+# The host_options defines the parameters related to Python dask, a package to send jobs to the cluster.
+
+# Detailed explanations are explained under each dictionary.
+########################
+
 config:
-  # Base folder of your project where the dicom and nifti folder are. 
-  # Give the full path starting from /, do not use ~
-  # If you are using public folders, go from generic public wihout using your path
+  # The parametes and their explanation are explained in the comments, we also gives you examples of each parameters. 
+  # basedir: 
+      # type: str
+      # Base folder of your project where the dicom and nifti folder are. 
+      # Remember to give the full path of the directory starting from /, do not use ~
+      # If you are using public folders, go from generic public wihout using your path e.g. useing /bcbl/public instead of using /export/xxxx/public
+  # containerdir:
+      # type: str
+      # Path to where all the singularity images are stored. For Docker, this can be empty
+  
+  # container:
+      # type: str
+      # The container name that you want to run, version and other details will be stored in container_options, you need to edit them also
+  # analysis:
+      # type: str or int
+      # The name of your analysis, every analysis will have a folder under derivetives folder
+  # force:
+      # type: bool/ don't sensitive to capital letters True and true both okay
+      # Options whether you will overwritte the existing file or not
+      # This force command applies to symlinks and analyses, if it set to true, it will always overwrite everything
+      # For PREPARE MODE
+      # if file_exists and force: overwrite
+      # if file_exists and not force: do nothing and print(say that the file existed but you kept it)
+      # if not file_exists: we don't care about force, you add the file (the symlink)
+  # host
+      # type: str
+      # The host where this will be run, see below for options
   basedir: /export/home/llecca/public/LEPA/testlaunchcontainers
-  # I think that in the new version we will not need it, otherwise create a function that obtains it
-  codedir: /export/home/llecca/llecca/soft/launchcontainersdev
-  # Always necessary, it creates output and error logs per every subject and analysis   
-  # It gets really big. Store somewhere in the cluster.
-  # TODO: when it finishes succesfuly, store the log in the output folder of each subject
-  logdir: /export/home/llecca/public/LEPA/testlaunchcontainers/logdir
-  # This is cluster specific. the problem is that tmp files can be huge and fill your quota, 
-  # so in most clusters they will give you a tmp folder that it will be deleted after every run 
-  # and do not count through your total quota. In DIPC thi is very important
-  tmpdir: /export/home/llecca/public/LEPA/testlaunchcontainers
-  # Path to where all the singularity images are. For Docker, this can be empty
   containerdir: /bcbl/home/public/LEPA/containers
-  # The container where it will be run, version and other details will be stored in container_options
   container: "rtp-pipeline"  # VALID OPTIONS: anatrois, rtppreproc, rtp-pipeline, TODO: heudiconv, prfprepare, prfanalyze, prfresults, fmriprep
-  # Give a number or name to your analysis
   analysis: "03"
-  # TODO: If the analysis exists, and force is true, then overwrite, otherwise stop
-  # This force command applies to symlinks and analyses, if it set to true, it will always overwrite everything
-  # FOR CREATESYMLINKS
-  # if file_exists and force: overwrite
-  # if file_exists and not force: do nothing and print(say that the file existed but you kept it)
-  # if not file_exists: we don't care about force, you add the file (the symlink)
-  # FOR CONTAINER_VERSION_ANALYSIS
-  # IF CONTAINER_VERSION_ANALYSIS_EXISTS and force: print warning and overwirte
   force: false
   # The host where this will be run, see below for options  
   host: BCBL
