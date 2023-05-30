@@ -71,7 +71,15 @@ def initiate_cluster(jobqueue_config, n_job):
         cluster_by_config = PBSCluster(cores = cores, memory = memory)
         cluster_by_config.scale(jobs=n_job)
     elif "slurm" in jobqueue_config["manager"]:
-        cluster_by_config = SLURMCluster(cores = cores, memory = memory)
+        envextra = [f"module load {jobqueue_config['sin_ver']} "]
+        cluster_by_config = SLURMCluster(cores = jobqueue_config["cores"], 
+                                         memory = jobqueue_config["memory"],
+                                         job_script_prologue = envextra,
+                                         log_directory = jobqueue_config["logdir"],
+                                         #walltime = jobqueue_config["walltime"],
+                                         queue = jobqueue_config["queue"],
+                                         name = jobqueue_config["name"],
+                                         job_extra_directives = ["--export=ALL"])
         cluster_by_config.scale(jobs=n_job)
     else:
         LGR.warning(
