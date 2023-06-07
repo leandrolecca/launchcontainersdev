@@ -76,9 +76,10 @@ def initiate_cluster(jobqueue_config, n_job):
                                          memory = jobqueue_config["memory"],
                                          job_script_prologue = envextra,
                                          log_directory = jobqueue_config["logdir"],
-                                         #walltime = jobqueue_config["walltime"],
                                          queue = jobqueue_config["queue"],
                                          name = jobqueue_config["name"],
+                                         #walltime=jobqueue_config["walltime"],
+                                         walltime='35:00:00',
                                          job_extra_directives = ["--export=ALL"])
         cluster_by_config.scale(jobs=n_job)
     else:
