@@ -148,13 +148,13 @@ host_options:
     # Defaul DIPC
     DIPC:
       memory: 32G
-      queue: regular
+      queue: long
       cores: 24
+      walltime: '22:00:00'
       sin_ver: Singularity/3.5.3-GCC-8.3.0
       manager: slurm
       system: scratch
       name: "anatrois"
-      maxwall: 5
-      walltime: 45:00
+    # maxwall: 5
       logdir: /scratch/llecca/devtrajtract/DATA/BERTSOLARI/logdir
     # Other
