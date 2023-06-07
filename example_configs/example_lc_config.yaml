@@ -148,7 +148,7 @@ host_options:
     # Defaul DIPC
     DIPC:
       memory: 32G
-      queue: long
+      queue: regular
       cores: 24
       walltime: '22:00:00'
       sin_ver: Singularity/3.5.3-GCC-8.3.0
