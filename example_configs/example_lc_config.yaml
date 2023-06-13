@@ -157,4 +157,5 @@ host_options:
       name: "anatrois"
     # maxwall: 5
       logdir: /scratch/llecca/devtrajtract/DATA/BERTSOLARI/logdir
+      tmpdir: /scratch/llecca/tmp
     # Other
