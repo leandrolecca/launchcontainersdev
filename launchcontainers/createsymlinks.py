@@ -308,15 +308,15 @@ def rtppreproc(lc_config, lc_config_path, sub, ses,sub_ses_list_path,container_s
     # 3 dwi file that needs to be preprocessed, under nifti/sub/ses/dwi
     # the nii.gz
     srcFileDwi_nii = os.path.join(
-        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-"+acqd+"_dwi.nii.gz"
+        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_dir-"+acqd+"_dwi.nii.gz"
     )
     # the bval.gz
     srcFileDwi_bval = os.path.join(
-        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-"+acqd+"_dwi.bval"
+        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_dir-"+acqd+"_dwi.bval"
     )
     # the bvec.gz
     srcFileDwi_bvec = os.path.join(
-        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-"+acqd+"_dwi.bvec"
+        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_dir-"+acqd+"_dwi.bvec"
     )
     # check_create_bvec_bval（force) one of the todo here
     if rpe:
@@ -326,15 +326,15 @@ def rtppreproc(lc_config, lc_config_path, sub, ses,sub_ses_list_path,container_s
             acqdrpe = "PA"
         # the reverse direction nii.gz
         srcFileDwi_nii_R = os.path.join(
-            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses +"_acq-"+acqdrpe+"_dwi.nii.gz"
+            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses +"_dir-"+acqdrpe+"_dwi.nii.gz"
         )
         # the reverse direction bval
         srcFileDwi_bval_R = os.path.join(
-            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-"+acqdrpe+"_dwi.bval"
+            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_dir-"+acqdrpe+"_dwi.bval"
         )
         # the reverse diretion bvec
         srcFileDwi_bvec_R = os.path.join(
-            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_acq-"+acqdrpe+"_dwi.bvec"
+            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_dir-"+acqdrpe+"_dwi.bvec"
         )
 
         # If bval and bvec do not exist because it is only b0-s, create them
