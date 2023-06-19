@@ -282,7 +282,7 @@ def rtppreproc(lc_config, lc_config_path, sub, ses,sub_ses_list_path,container_s
     srcFile_container_config_json= container_specific_config_path[0]
     new_container_specific_config_path=[]
     container_specific_config_data = json.load(open(srcFile_container_config_json))
-    acqd = container_specific_config_data["config"]["acqd"]
+    pe_dir = container_specific_config_data["config"]["acqd"]
     
     #acq = container_specific_config["acqd"]
     # define base directory for particular subject and session
@@ -308,33 +308,33 @@ def rtppreproc(lc_config, lc_config_path, sub, ses,sub_ses_list_path,container_s
     # 3 dwi file that needs to be preprocessed, under nifti/sub/ses/dwi
     # the nii.gz
     srcFileDwi_nii = os.path.join(
-        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_dir-"+acqd+"_dwi.nii.gz"
+        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_dir-"+pe_dir+"_dwi.nii.gz"
     )
     # the bval.gz
     srcFileDwi_bval = os.path.join(
-        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_dir-"+acqd+"_dwi.bval"
+        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_dir-"+pe_dir+"_dwi.bval"
     )
     # the bvec.gz
     srcFileDwi_bvec = os.path.join(
-        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_dir-"+acqd+"_dwi.bvec"
+        basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_dir-"+pe_dir+"_dwi.bvec"
     )
     # check_create_bvec_bval（force) one of the todo here
     if rpe:
-        if acqd == "PA":
-            acqdrpe = "AP"
-        elif acqd == "AP":
-            acqdrpe = "PA"
+        if pe_dir == "PA":
+            rpe_dir = "AP"
+        elif pe_dir == "AP":
+            rpe_dir = "PA"
         # the reverse direction nii.gz
         srcFileDwi_nii_R = os.path.join(
-            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses +"_dir-"+acqdrpe+"_dwi.nii.gz"
+            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses +"_dir-"+rpe_dir+"_dwi.nii.gz"
         )
         # the reverse direction bval
         srcFileDwi_bval_R = os.path.join(
-            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_dir-"+acqdrpe+"_dwi.bval"
+            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_dir-"+rpe_dir+"_dwi.bval"
         )
         # the reverse diretion bvec
         srcFileDwi_bvec_R = os.path.join(
-            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_dir-"+acqdrpe+"_dwi.bvec"
+            basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_dir-"+rpe_dir+"_dwi.bvec"
         )
 
         # If bval and bvec do not exist because it is only b0-s, create them
