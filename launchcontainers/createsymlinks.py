@@ -5,7 +5,9 @@ import sys
 import shutil
 import nibabel as nib
 import json
+import subprocess as sp
 from launchcontainers import _read_df, check_tractparam, copy_file
+
 #%%
 def force_symlink(file1, file2, force):
     """
@@ -318,6 +320,33 @@ def rtppreproc(lc_config, lc_config_path, sub, ses,sub_ses_list_path,container_s
     srcFileDwi_bvec = os.path.join(
         basedir_subses, "dwi", "sub-" + sub + "_ses-" + ses + "_dir-"+pe_dir+"_dwi.bvec"
     )
+    # check how many *dir_dwi.nii.gz there are in the nifti/sub/ses/dwi directory
+    dwi_dir = glob.glob(os.path.join(basedir_subses,"dwi","*_dir-"+pe_dir+"*_dwi.nii.gz"))
+    if len(dwi_dir) > 1:
+        dwi_acq = [f for f in dwi_dir if 'acq-' in f]
+        if len(dwi_acq) == 0:
+            print(f"No files with different acq- to concatenate.\n")
+        elif len(dwi_acq) == 1:
+            print(f"Found only {dwi_acq[0]} to concatenate. There must be at least two files with different acq.\n")
+        elif len(dwi_acq) > 1 and not os.path.isfile(srcFileDwi_nii):
+            print(f"Concatenating with mrcat of mrtrix3 these files: {dwi_acq} in: {srcFileDwi_nii} \n")
+            dwi_acq.sort()
+            sp.run(['mrcat',*dwi_acq,srcFileDwi_nii])
+            # also get the bvecs and bvals
+            bvals_dir = glob.glob(os.path.join(basedir_subses,"dwi","*_dir-"+pe_dir+"*_dwi.bval"))
+            bvecs_dir = glob.glob(os.path.join(basedir_subses,"dwi","*_dir-"+pe_dir+"*_dwi.bvec"))
+            bvals_acq = [f for f in bvals_dir if 'acq-' in f]
+            bvecs_acq = [f for f in bvecs_dir if 'acq-' in f]
+            if len(dwi_acq) == len(bvals_acq) and not os.path.isfile(srcFileDwi_bval):
+                bvals_acq.sort()
+                sp.run(f"paste -d ' ' {bvals_acq[0]} {bvals_acq[1]} > %s"%srcFileDwi_bval,shell=True)
+            else:
+                print("Missing bval files")
+            if len(dwi_acq) == len(bvecs_acq) and not os.path.isfile(srcFileDwi_bvec):
+                bvecs_acq.sort()
+                sp.run(f"paste -d ' ' {bvecs_acq[0]} {bvecs_acq[1]} > %s"%srcFileDwi_bvec,shell=True)
+            else:
+                print("Missing bval files")
     # check_create_bvec_bval（force) one of the todo here
     if rpe:
         if pe_dir == "PA":
