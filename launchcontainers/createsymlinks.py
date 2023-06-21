@@ -328,10 +328,11 @@ def rtppreproc(lc_config, lc_config_path, sub, ses,sub_ses_list_path,container_s
             print(f"No files with different acq- to concatenate.\n")
         elif len(dwi_acq) == 1:
             print(f"Found only {dwi_acq[0]} to concatenate. There must be at least two files with different acq.\n")
-        elif len(dwi_acq) > 1 and not os.path.isfile(srcFileDwi_nii):
-            print(f"Concatenating with mrcat of mrtrix3 these files: {dwi_acq} in: {srcFileDwi_nii} \n")
-            dwi_acq.sort()
-            sp.run(['mrcat',*dwi_acq,srcFileDwi_nii])
+        elif len(dwi_acq) > 1:
+            if not os.path.isfile(srcFileDwi_nii):
+                print(f"Concatenating with mrcat of mrtrix3 these files: {dwi_acq} in: {srcFileDwi_nii} \n")
+                dwi_acq.sort()
+                sp.run(['mrcat',*dwi_acq,srcFileDwi_nii])
             # also get the bvecs and bvals
             bvals_dir = glob.glob(os.path.join(basedir_subses,"dwi","*_dir-"+pe_dir+"*_dwi.bval"))
             bvecs_dir = glob.glob(os.path.join(basedir_subses,"dwi","*_dir-"+pe_dir+"*_dwi.bvec"))
@@ -339,14 +340,22 @@ def rtppreproc(lc_config, lc_config_path, sub, ses,sub_ses_list_path,container_s
             bvecs_acq = [f for f in bvecs_dir if 'acq-' in f]
             if len(dwi_acq) == len(bvals_acq) and not os.path.isfile(srcFileDwi_bval):
                 bvals_acq.sort()
-                sp.run(f"paste -d ' ' {bvals_acq[0]} {bvals_acq[1]} > %s"%srcFileDwi_bval,shell=True)
+                bval_cmd = "paste -d ' '"
+                for bvalF in bvals_acq:
+                    bval_cmd = bval_cmd+" "+bvalF
+                bval_cmd = bval_cmd+" > "+srcFileDwi_bval
+                sp.run(bval_cmd,shell=True)
             else:
                 print("Missing bval files")
             if len(dwi_acq) == len(bvecs_acq) and not os.path.isfile(srcFileDwi_bvec):
                 bvecs_acq.sort()
-                sp.run(f"paste -d ' ' {bvecs_acq[0]} {bvecs_acq[1]} > %s"%srcFileDwi_bvec,shell=True)
+                bvec_cmd = "paste -d ' '"
+                for bvecF in bvecs_acq:
+                    bvec_cmd = bvec_cmd+" "+bvecF
+                bvec_cmd = bvec_cmd+" > "+srcFileDwi_bvec
+                sp.run(bvec_cmd,shell=True)
             else:
-                print("Missing bval files")
+                print("Missing bvec files")
     # check_create_bvec_bval（force) one of the todo here
     if rpe:
         if pe_dir == "PA":
