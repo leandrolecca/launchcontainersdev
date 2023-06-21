@@ -284,7 +284,7 @@ def rtppreproc(lc_config, lc_config_path, sub, ses,sub_ses_list_path,container_s
     srcFile_container_config_json= container_specific_config_path[0]
     new_container_specific_config_path=[]
     container_specific_config_data = json.load(open(srcFile_container_config_json))
-    pe_dir = container_specific_config_data["config"]["acqd"]
+    pe_dir = container_specific_config_data["config"]["pe_dir"]
     
     #acq = container_specific_config["acqd"]
     # define base directory for particular subject and session
