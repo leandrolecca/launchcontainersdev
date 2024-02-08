@@ -217,7 +217,7 @@ def prepare_dwi_input(parser_namespace, Dir_analysis, lc_config, df_subSes, layo
                 "#####################################################\n")
     return  
 
-def fmrprep_intended_for(sub_ses_list, bidslayout):
+def fmriprep_intended_for(sub_ses_list, bidslayout):
     '''
     not implement yet, thinking how to smartly do the job
     '''
@@ -313,6 +313,7 @@ def link_vistadisplog(basedir, sub_ses_list, bids_layout):
                     symlink(path.basename(matFile), linkName)
 
     return True
+
 def prepare_prf_input(basedir, container, config_path, sub_ses_list, bids_layout ,run_lc):
     # first prepare the sourcedata, the vistadisp-log
     # then write the subject information to the config.json file

@@ -134,7 +134,6 @@ host_options:
       extra: []
       env-extra: []
       job-extra: []
-      #logdir: /bcbl/home/public/Gari/VOTCLOC/BIDS
       resource-spec: null
       bind_options: ['/bcbl', '/tmp', '/export']
 
@@ -150,12 +149,10 @@ host_options:
       system: scratch
       name: "anatrois"
     # maxwall: 5
-      #logdir: /scratch/llecca/devtrajtract/DATA/BERTSOLARI/logdir
       tmpdir: /scratch/llecca/tmp
     # Other
       bind_options: ['/scratch']
     # local host options
-    # currently optimized for okazaki
     local:
       use_module: False # if the local machine use module load this option will give you different version of job-queue cmd
       apptainer: apptainer/latest

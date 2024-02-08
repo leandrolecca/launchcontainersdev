@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 MIT License
 
@@ -16,6 +17,7 @@ import os
 import subprocess as sp
 import numpy as np
 import logging
+
 # modules in lc
 
 from bids import BIDSLayout
@@ -25,11 +27,13 @@ from prepare_inputs import dask_scheduler_config as dsq
 from prepare_inputs import prepare as prepare
 from prepare_inputs import utils as do
 
-logger=logging.getLogger("GENERAL")
+logger = logging.getLogger("GENERAL")
 
 
 # %% launchcontainers
-def generate_cmd(lc_config,sub,ses,dir_analysis, lst_container_specific_configs,run_lc):
+def generate_cmd(
+    lc_config, sub, ses, dir_analysis, lst_container_specific_configs, run_lc
+):
     """Puts together the command to send to the container.
 
     Args:
@@ -46,142 +50,161 @@ def generate_cmd(lc_config,sub,ses,dir_analysis, lst_container_specific_configs,
     Returns:
         _type_: _description_
     """
-    
+
     # Relevant directories
-    basedir=lc_config['general']['basedir']  # All other relevant directories stem from this one
-    homedir= os.path.join(basedir,'singularity_home')
-    container= lc_config['general']['container']
-    host = lc_config['general']['host']
-    containerdir=  lc_config['general']['containerdir']  
-    
+    # All other relevant directories stem from this one
+    basedir = lc_config["general"]["basedir"]
+
+    homedir = os.path.join(basedir, "singularity_home")
+    container = lc_config["general"]["container"]
+    host = lc_config["general"]["host"]
+    containerdir = lc_config["general"]["containerdir"]
+
     # Information relevant to the host and container
-    jobqueue_config= lc_config['host_options'][host]
+    jobqueue_config = lc_config["host_options"][host]
     version = lc_config["container_specific"][container]["version"]
-    use_module= jobqueue_config['use_module']
-    bind_options= jobqueue_config['bind_options']
+    use_module = jobqueue_config["use_module"]
+    bind_options = jobqueue_config["bind_options"]
 
     # Location of the Singularity Image File (.sif)
-    container_name= os.path.join(containerdir, f'{container}_{version}.sif')
+    container_name = os.path.join(containerdir, f"{container}_{version}.sif")
     # Define the directory and the file name to output the log of each subject
-    logdir= os.path.join(
-            dir_analysis,
-            "sub-" + sub,
-            "ses-" + ses,
-            "output", "log"
+    logdir = os.path.join(dir_analysis, "sub-" + sub, "ses-" + ses, "output", "log")
+    logfilename = f"{logdir}/t-{container}-sub-{sub}_ses-{ses}"
+
+    path_to_sub_derivatives = os.path.join(dir_analysis, f"sub-{sub}", f"ses-{ses}")
+
+    if container in ["anatrois", "rtppreproc", "rtp-pipeline"]:
+        logger.info("\n" + f"start to generate the DWI PIPELINE command")
+        config_json = lst_container_specific_configs[0]
+        logger.debug(
+            f"\n the sub is {sub} \n the ses is {ses} \n the analysis dir is {dir_analysis}"
         )
-    logfilename=f"{logdir}/t-{container}-sub-{sub}_ses-{ses}"
-    
-    path_to_sub_derivatives=os.path.join(dir_analysis,
-                                    f"sub-{sub}",
-                                    f"ses-{ses}")
-    
-    if container in ['anatrois', 'rtppreproc','rtp-pipeline']:  
-        logger.info("\n"+ f'start to generate the DWI PIPELINE command')
-        config_json= lst_container_specific_configs[0]
-        logger.debug(f"\n the sub is {sub} \n the ses is {ses} \n the analysis dir is {dir_analysis}")
-        
-        bind_cmd=''
+
+        bind_cmd = ""
         for bind in bind_options:
-            bind_cmd += f"--bind {bind}:{bind} "           
-        
-        env_cmd=''
+            bind_cmd += f"--bind {bind}:{bind} "
+
+        env_cmd = ""
         if host == "local":
             if use_module == True:
-                env_cmd= f"module load {jobqueue_config['apptainer']} &&"
+                env_cmd = f"module load {jobqueue_config['apptainer']} &&"
 
-        cmd=f"{env_cmd} singularity run -e --no-home {bind_cmd}"\
-            f"--bind {path_to_sub_derivatives}/input:/flywheel/v0/input:ro "\
-            f"--bind {path_to_sub_derivatives}/output:/flywheel/v0/output "\
-            f"--bind {config_json}:/flywheel/v0/config.json "\
-            f"{container_name} 2>> {logfilename}.e 1>> {logfilename}.o "
-        
-    
+        cmd = (
+            f"{env_cmd} singularity run -e --no-home {bind_cmd}"
+            f"--bind {path_to_sub_derivatives}/input:/flywheel/v0/input:ro "
+            f"--bind {path_to_sub_derivatives}/output:/flywheel/v0/output "
+            f"--bind {config_json}:/flywheel/v0/config.json "
+            f"{container_name} 1>> {logfilename}.o 2>> {logfilename}.e  "
+        )
+
     # Check which container we are using, and define the command accordingly
-    if container == 'fmriprep':
-        logger.info("\n"+ f'start to generate the FMRIPREP command')
-                
-        nthreads=lc_config["container_specific"][container]['nthreads']
-        mem=lc_config["container_specific"][container]['mem'] 
-        fs_license=lc_config["container_specific"][container]['fs_license']
-        containerdir=  lc_config['general']['containerdir']  
-        container_path= os.path.join(containerdir, f"{container}_{lc_config['container_specific'][container]['version']}.sif")
-        precommand=f'mkdir -p {homedir}; '\
-                f'unset PYTHONPATH; ' \
-        
-        if "local" == host:
-            cmd =   precommand+f'singularity run '\
-                    f'-H {homedir} '\
-                    f'-B {basedir}:/base -B {fs_license}:/license '\
-                    f'--cleanenv {container_path} '\
-                    f'-w {dir_analysis} '\
-                    f'/base/BIDS {dir_analysis} participant '\
-                        f'--participant-label sub-{sub} '\
-                    f'--skip-bids-validation '\
-                    f'--output-spaces func fsnative fsaverage T1w MNI152NLin2009cAsym '\
-                    f'--dummy-scans 0 '\
-                    f'--use-syn-sdc '\
-                    f'--fs-license-file /license/license.txt '\
-                    f'--nthreads {nthreads} '\
-                    f'--omp-nthreads {nthreads} '\
-                    f'--stop-on-first-crash '\
-                    f'--mem_mb {(mem*1000)-5000} '\
-        
-        if host in ['BCBL','DIPC']:
-            cmd = precommand+f'singularity run '\
-                    f'-H {homedir} '\
-                    f'-B {basedir}:/base -B {fs_license}:/license '\
-                    f'--cleanenv {container_path} '\
-                    f'-w {dir_analysis} '\
-                    f'/base/BIDS {dir_analysis} participant '\
-                        f'--participant-label sub-{sub} '\
-                    f'--skip-bids-validation '\
-                    f'--output-spaces func fsnative fsaverage T1w MNI152NLin2009cAsym '\
-                    f'--dummy-scans 0 '\
-                    f'--use-syn-sdc '\
-                    f'--fs-license-file /license/license.txt '\
-                    f'--nthreads {nthreads} '\
-                    f'--omp-nthreads {nthreads} '\
-                    f'--stop-on-first-crash '\
-                    f'--mem_mb {(mem*1000)-5000} '\
-    
-    
-    if container in ['prfprepare','prfreport','prfanalyze-vista']:
-        config_name=lc_config['container_specific'][container]['config_name']
-        homedir= os.path.join(basedir,'singularity_home')
-        container_path= os.path.join(containerdir, f"{container}_{lc_config['container_specific'][container]['version']}.sif")
-        if host in ['BCBL','DIPC']:
-            cmd=   'unset PYTHONPATH; '\
-                f'singularity run '\
-                f'-H {homedir} '\
-                f'-B {basedir}/derivatives/fmriprep:/flywheel/v0/input '\
-                f'-B {dir_analysis}:/flywheel/v0/output '\
-                f'-B {basedir}/BIDS:/flywheel/v0/BIDS '\
-                    f'-B {dir_analysis}/{config_name}.json:/flywheel/v0/config.json '\
-	            f'-B {basedir}/license/license.txt:/opt/freesurfer/.license '\
-                f'--cleanenv {container_path} '\
-        
-        elif host == 'local':
-            cmd= 'unset PYTHONPATH; '\
-                f'singularity run '\
-                f'-H {homedir} '\
-                f'-B {basedir}/derivatives/fmriprep:/flywheel/v0/input '\
-                f'-B {dir_analysis}:/flywheel/v0/output '\
-                f'-B {basedir}/BIDS:/flywheel/v0/BIDS '\
-                    f'-B {dir_analysis}/{config_name}.json:/flywheel/v0/config.json '\
-	            f'-B {basedir}/license/license.txt:/opt/freesurfer/.license '\
-                f'--cleanenv {container_path} '\
+    if container == "fmriprep":
+        logger.info("\n" + f"start to generate the FMRIPREP command")
 
+        nthreads = lc_config["container_specific"][container]["nthreads"]
+        mem = lc_config["container_specific"][container]["mem"]
+        fs_license = lc_config["container_specific"][container]["fs_license"]
+        containerdir = lc_config["general"]["containerdir"]
+        container_path = os.path.join(
+            containerdir,
+            f"{container}_{lc_config['container_specific'][container]['version']}.sif",
+        )
+        precommand = f"mkdir -p {homedir}; " f"unset PYTHONPATH; "
+        if "local" == host:
+            cmd = (
+                precommand + f"singularity run "
+                f"-H {homedir} "
+                f"-B {basedir}:/base -B {fs_license}:/license "
+                f"--cleanenv {container_path} "
+                f"-w {dir_analysis} "
+                f"/base/BIDS {dir_analysis} participant "
+                f"--participant-label sub-{sub} "
+                f"--skip-bids-validation "
+                f"--output-spaces func fsnative fsaverage T1w MNI152NLin2009cAsym "
+                f"--dummy-scans 0 "
+                f"--use-syn-sdc "
+                f"--fs-license-file /license/license.txt "
+                f"--nthreads {nthreads} "
+                f"--omp-nthreads {nthreads} "
+                f"--stop-on-first-crash "
+                f"--mem_mb {(mem*1000)-5000} "
+            )
+        if host in ["BCBL", "DIPC"]:
+            cmd = (
+                precommand + f"singularity run "
+                f"-H {homedir} "
+                f"-B {basedir}:/base -B {fs_license}:/license "
+                f"--cleanenv {container_path} "
+                f"-w {dir_analysis} "
+                f"/base/BIDS {dir_analysis} participant "
+                f"--participant-label sub-{sub} "
+                f"--skip-bids-validation "
+                f"--output-spaces func fsnative fsaverage T1w MNI152NLin2009cAsym "
+                f"--dummy-scans 0 "
+                f"--use-syn-sdc "
+                f"--fs-license-file /license/license.txt "
+                f"--nthreads {nthreads} "
+                f"--omp-nthreads {nthreads} "
+                f"--stop-on-first-crash "
+                f"--mem_mb {(mem*1000)-5000} "
+            )
+
+    if container in ["prfprepare", "prfreport", "prfanalyze-vista"]:
+        config_name = lc_config["container_specific"][container]["config_name"]
+        homedir = os.path.join(basedir, "singularity_home")
+        container_path = os.path.join(
+            containerdir,
+            f"{container}_{lc_config['container_specific'][container]['version']}.sif",
+        )
+        if host in ["BCBL", "DIPC"]:
+            cmd = (
+                "unset PYTHONPATH; "
+                f"singularity run "
+                f"-H {homedir} "
+                f"-B {basedir}/derivatives/fmriprep:/flywheel/v0/input "
+                f"-B {dir_analysis}:/flywheel/v0/output "
+                f"-B {basedir}/BIDS:/flywheel/v0/BIDS "
+                f"-B {dir_analysis}/{config_name}.json:/flywheel/v0/config.json "
+                f"-B {basedir}/license/license.txt:/opt/freesurfer/.license "
+                f"--cleanenv {container_path} "
+            )
+        elif host == "local":
+            cmd = (
+                "unset PYTHONPATH; "
+                f"singularity run "
+                f"-H {homedir} "
+                f"-B {basedir}/derivatives/fmriprep:/flywheel/v0/input "
+                f"-B {dir_analysis}:/flywheel/v0/output "
+                f"-B {basedir}/BIDS:/flywheel/v0/BIDS "
+                f"-B {dir_analysis}/{config_name}.json:/flywheel/v0/config.json "
+                f"-B {basedir}/license/license.txt:/opt/freesurfer/.license "
+                f"--cleanenv {container_path} "
+            )
     # If after all configuration, we do not have command, raise an error
     if cmd is None:
-        logger.error("\n"+ f'the DWI PIPELINE command is not assigned, please check your config.yaml[general][host] session\n')
-        raise ValueError('cmd is not defined, aborting')
-    if run_lc:
-        sp.run(cmd, shell=True)
-    
+        logger.error(
+            "\n"
+            + f"the DWI PIPELINE command is not assigned, please check your config.yaml[general][host] session\n"
+        )
+        raise ValueError("cmd is not defined, aborting")
+
+    # GLU: I don't think this is right, run is done below, I will make it work just for local but not in here,
+    #      it is good that this function just creates the cmd, I would keep it like that
+    # if run_lc:
+    #     sp.run(cmd, shell=True)
+
     return cmd
 
-#%% the launchcontainer
-def launchcontainer(dir_analysis, lc_config, sub_ses_list, parser_namespace, path_to_analysis_container_specific_config):
+
+# %% the launchcontainer
+def launchcontainer(
+    dir_analysis,
+    lc_config,
+    sub_ses_list,
+    parser_namespace,
+    path_to_analysis_container_specific_config,
+):
     """
     This function launches containers generically in different Docker/Singularity HPCs
     This function is going to assume that all files are where they need to be.
@@ -190,153 +213,225 @@ def launchcontainer(dir_analysis, lc_config, sub_ses_list, parser_namespace, pat
         dir_analysis (str): _description_
         lc_config (str): path to launchcontainer config.yaml file
         sub_ses_list (_type_): parsed CSV containing the subject list to be analyzed, and the analysis options
-        parser_namespace (argparse.Namespace): command line arguments 
+        parser_namespace (argparse.Namespace): command line arguments
     """
-    logger.info("\n"+
-                "#####################################################\n")
+    logger.info("\n" + "#####################################################\n")
 
     # Get the host and jobqueue config info from the config.yaml file
     host = lc_config["general"]["host"]
-    jobqueue_config= lc_config["host_options"][host]
-    logger.debug(f'\n,, this is the job_queue config {jobqueue_config}')
-    
-    force = lc_config["general"]["force"]    
-    logdir= os.path.join(
-                dir_analysis,"daskworker_log"
-            )
+    jobqueue_config = lc_config["host_options"][host]
+    if host == "local":
+        launch_mode = jobqueue_config["launch_mode"]
+    logger.debug(f"\n,, this is the job_queue config {jobqueue_config}")
+
+    force = lc_config["general"]["force"]
+    logdir = os.path.join(dir_analysis, "daskworker_log")
 
     # Count how many jobs we need to launch from  sub_ses_list
     n_jobs = np.sum(sub_ses_list.RUN == "True")
 
-    client, cluster = dsq.dask_scheduler(jobqueue_config,n_jobs, logdir)
-    
-    logger.info("---this is the cluster and client\n"
-                +f"{client} \n cluster: {cluster} \n")
+    client, cluster = new_func(jobqueue_config, logdir, n_jobs)
 
-    run_lc= parser_namespace.run_lc
+    logger.info(
+        "---this is the cluster and client\n" + f"{client} \n cluster: {cluster} \n"
+    )
 
-    lc_configs=[]
-    subs=[]
-    sess=[]
-    dir_analysiss=[]
-    paths_to_analysis_config_json=[]
-    run_lcs=[]
-    
+    run_lc = parser_namespace.run_lc
+
+    lc_configs = []
+    subs = []
+    sess = []
+    dir_analysiss = []
+    paths_to_analysis_config_json = []
+    run_lcs = []
 
     # PREPARATION mode
     if not run_lc:
-        logger.critical(f"\nlaunchcontainers.py was run in PREPARATION mode (without option --run_lc)\n" \
-                            f"Please check that: \n" \
-                            f"    (1) launchcontainers.py prepared the input data properly\n" \
-                            f"    (2) the command created for each subject is properly formed\n" \
-                            f"         (you can copy the command for one subject and launch it " \
-                                      f"on the prompt before you launch multiple subjects\n" \
-                            f"    (3) Once the check is done, launch the jobs by adding --run_lc to the first command you executed.\n"
+        logger.critical(
+            f"\nlaunchcontainers.py was run in PREPARATION mode (without option --run_lc)\n"
+            f"Please check that: \n"
+            f"    (1) launchcontainers.py prepared the input data properly\n"
+            f"    (2) the command created for each subject is properly formed\n"
+            f"         (you can copy the command for one subject and launch it "
+            f"on the prompt before you launch multiple subjects\n"
+            f"    (3) Once the check is done, launch the jobs by adding --run_lc to the first command you executed.\n"
         )
         # If the host is not local, print the job script to be launched in the cluster.
-        if host != 'local':
+        if host != "local":
             logger.critical(
-                        f"The cluster job script for this command is:\n" \
-                        f"{cluster.job_script()}"
-                        )
+                f"The cluster job script for this command is:\n"
+                f"{cluster.job_script()}"
+            )
     # Iterate over the provided subject list
-    for row in sub_ses_list.itertuples(index=True, name='Pandas'):
-        sub  = row.sub
-        ses  = row.ses
-        RUN  = row.RUN
-        dwi  = row.dwi
-        
-        if RUN=="True":
+    commands = list()
+    for row in sub_ses_list.itertuples(index=True, name="Pandas"):
+        sub = row.sub
+        ses = row.ses
+        RUN = row.RUN
+        dwi = row.dwi
+
+        if RUN == "True":
             # Append config, subject, session, and path info in corresponding lists
             lc_configs.append(lc_config)
             subs.append(sub)
             sess.append(ses)
             dir_analysiss.append(dir_analysis)
-            paths_to_analysis_config_json.append(path_to_analysis_container_specific_config)
-            run_lcs.append(run_lc)    
+            paths_to_analysis_config_json.append(
+                path_to_analysis_container_specific_config
+            )
+            run_lcs.append(run_lc)
 
+            # This cmd is only for print the command
+            command = generate_cmd(
+                lc_config,
+                sub,
+                ses,
+                dir_analysis,
+                path_to_analysis_container_specific_config,
+                run_lc,
+            )
+            commands.append(command)
             if not run_lc:
-                # This cmd is only for print the command 
-                command= generate_cmd(lc_config,sub,ses,dir_analysis, path_to_analysis_container_specific_config, run_lc)
-                logger.critical(f"\nCOMMAND for subject-{sub}, and session-{ses}:\n" \
-                                f"{command}\n\n"
-                                )
-                if lc_config['general']['container']=='fmriprep':
-                    logger.critical('\n'+ 'fmriprep now can not deal with session specification, so the analysis are running on all sessions of the subject you are specifying')
-        
+                logger.critical(
+                    f"\nCOMMAND for subject-{sub}, and session-{ses}:\n"
+                    f"{command}\n\n"
+                )
+
+                if not run_lc and lc_config["general"]["container"] == "fmriprep":
+                    logger.critical(
+                        f"\n"
+                        f"fmriprep now can not deal with session specification, "
+                        f"so the analysis are running on all sessions of the "
+                        f"subject you are specifying"
+                    )
+
     # RUN mode
-    if run_lc:  
-        # Compose the command to run in the cluster  
-        futures = client.map(generate_cmd,lc_configs,subs,sess,dir_analysiss,paths_to_analysis_config_json, run_lcs)
+    if run_lc and host != "local":
+        # Compose the command to run in the cluster
+        futures = client.map(
+            generate_cmd,
+            lc_configs,
+            subs,
+            sess,
+            dir_analysiss,
+            paths_to_analysis_config_json,
+            run_lcs,
+        )
         # Record the progress
         progress(futures)
         # Get the info and report it in the logger
         results = client.gather(futures)
         logger.info(results)
-        logger.info('###########')
+        logger.info("###########")
         # Close the connection with the client and the cluster, and inform about it
         client.close()
         cluster.close()
-        
-        logger.critical("\n"
-                        + "launchcontainer finished, all the jobs are done")
-    
+
+        logger.critical("\n" + "launchcontainer finished, all the jobs are done")
+
+    if run_lc and host == "local":
+        if launch_mode == "parallel":
+            logger.info(
+                f"\nLocally launching {len(commands)} jobs in parallel, check "
+                f"your server's memory, some jobs might fail\n"
+            )
+            for i, cmd in enumerate(commands):
+                logger.info(f"LAUNCHING JOB {1}/{len(commands)}:\n{cmd}\n")
+                sp.run(cmd, shell=True)
+
+        if launch_mode == "serial":  # Run this with dask...
+            logger.critical(
+                f"Locally launching {len(commands)} jobs in series, this might take a lot of time"
+            )
+            serial_cmd = ""
+            for i, cmd in enumerate(commands):
+                if i == 0:
+                    serial_cmd = cmd
+                else:
+                    serial_cmd += f" && {cmd}"
+            logger.critical(
+                f"LAUNCHING SUPER SERIAL {len(commands)} JOBS:\n{serial_cmd}\n"
+            )
+            sp.run(serial_cmd, shell=True)
+
     return
+
+
+def new_func(jobqueue_config, logdir, n_jobs):
+    client, cluster = dsq.dask_scheduler(jobqueue_config, n_jobs, logdir)
+    return client, cluster
+
+
 # %% main()
 def main():
     # Set the logging level to get the command
-    do.setup_logger() 
-    
+    do.setup_logger()
+
     # Get the path from command line input
     parser_namespace = do.get_parser()
     lc_config_path = parser_namespace.lc_config
-    lc_config = do.read_yaml(lc_config_path)   
-    
+    lc_config = do.read_yaml(lc_config_path)
+
     # Get general information from the config.yaml file
-    container= lc_config['general']['container']
-    basedir=lc_config['general']['basedir'] 
-    bidsdir_name= lc_config['general']['bidsdir_name'] 
+    container = lc_config["general"]["container"]
+    basedir = lc_config["general"]["basedir"]
+    bidsdir_name = lc_config["general"]["bidsdir_name"]
     sub_ses_list_path = parser_namespace.sub_ses_list
-    sub_ses_list = do.read_df(sub_ses_list_path)    
-    
+    sub_ses_list = do.read_df(sub_ses_list_path)
+
     # Stored value
-    verbose=parser_namespace.verbose
-    debug= parser_namespace.DEBUG
-    
+    verbose = parser_namespace.verbose
+    debug = parser_namespace.DEBUG
+
     # Set the verbosity level
-    print_command_only=lc_config["general"]["print_command_only"]  # TODO: this should be defined using -v and -print command only
-    
-    # Set logger message level 
-    # TODO: this implementation should allow changing the level of verbosity in the three levels 
-    if print_command_only:    
+    print_command_only = lc_config["general"][
+        "print_command_only"
+    ]  # TODO: this should be defined using -v and -print command only
+
+    # Set logger message level
+    # TODO: this implementation should allow changing the level of verbosity in the three levels
+    if print_command_only:
         logger.setLevel(logging.CRITICAL)
     if verbose:
-        logger.setLevel(logging.INFO)    
+        logger.setLevel(logging.INFO)
     if debug:
         logger.setLevel(logging.DEBUG)
-    logger.critical('start reading the BIDS layout')
+    logger.critical("Reading the BIDS layout...")
     # Prepare file and launch containers
     # First of all prepare the analysis folder: it create you the analysis folder automatically so that you are not messing up with different analysis
-    dir_analysis, path_to_analysis_container_specific_config = prepare.prepare_analysis_folder(parser_namespace, lc_config)
-    layout= BIDSLayout(os.path.join(basedir,bidsdir_name))
-    
-    
+    dir_analysis, path_to_analysis_container_specific_config = (
+        prepare.prepare_analysis_folder(parser_namespace, lc_config)
+    )
+    layout = BIDSLayout(os.path.join(basedir, bidsdir_name))
+    logger.critical("                       ... finished reading the BIDS layout.")
+
     # Prepare mode
-    if container in ['anatrois', 'rtppreproc', 'rtp-pipeline']:  # TODO: define list in another module for reusability accross modules and functions
-        prepare.prepare_dwi_input(parser_namespace, dir_analysis, lc_config, sub_ses_list, layout)
-    
-    if container == 'fmriprep':
-        prepare.fmrprep_intended_for(sub_ses_list, layout)
-    
-    if container in ['prfprepare', 'prfanalyze-vista', 'prfreport']:
+    if container in [
+        "anatrois",
+        "rtppreproc",
+        "rtp-pipeline",
+    ]:  # TODO: define list in another module for reusability accross modules and functions
+        prepare.prepare_dwi_input(
+            parser_namespace, dir_analysis, lc_config, sub_ses_list, layout
+        )
+
+    if container == "fmriprep":
+        prepare.fmriprep_intended_for(sub_ses_list, layout)
+
+    if container in ["prfprepare", "prfanalyze-vista", "prfreport"]:
         logger.info(f"Container not implemented yet.")
         pass
-    
-    # Run mode
-    launchcontainer(dir_analysis, lc_config, sub_ses_list, parser_namespace, path_to_analysis_container_specific_config)
-    
 
-    
+    # Run mode
+    launchcontainer(
+        dir_analysis,
+        lc_config,
+        sub_ses_list,
+        parser_namespace,
+        path_to_analysis_container_specific_config,
+    )
+
+
 # #%%
 if __name__ == "__main__":
     main()
