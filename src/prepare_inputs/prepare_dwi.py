@@ -3,7 +3,7 @@ MIT License
 
 Copyright (c) 2020-2023 Garikoitz Lerma-Usabiaga
 Copyright (c) 2020-2022 Mengxing Liu
-Copyright (c) 2022-2023 Leandro Lecca
+Copyright (c) 2022-2024 Leandro Lecca
 Copyright (c) 2022-2023 Yongning Lei
 Copyright (c) 2023 David Linhardt
 Copyright (c) 2023 Iñigo Tellaetxe
@@ -233,6 +233,14 @@ def anatrois(parser_namespace, dir_analysis,lc_config, sub, ses, layout):
     
     srcFile_container_config_json= container_specific_config_path[0]
     new_container_specific_config_path=[]
+
+    # specific for freesurferator
+    if container == "freesurferator":
+        control_points = lc_config["container_specific"][container]["control_points"]
+        prefs_unzipname = lc_config["container_specific"][container]["prefs_unzipname"]   
+    else:
+        # if not running freesurferator control_points field is not available, then we set it False
+        control_points = False
     
     # If we ran freesurfer before:
     if pre_fs:
@@ -272,6 +280,13 @@ def anatrois(parser_namespace, dir_analysis,lc_config, sub, ses, layout):
         for filename in os.listdir(srcAnatPath):
             if filename.endswith(".zip") and re.match(prefs_zipname, filename):
                 zips.append(filename)
+            if control_points and os.path.isdir(os.path.join(srcAnatPath,filename)) and re.match(prefs_unzipname, filename):
+                srcControlPoints = os.path.join(
+                    srcAnatPath,
+                    filename,
+                    "tmp",
+                    "control.dat"
+                )
         if len(zips) == 0:
             logger.warning("\n"+
                 f"There are no files with pattern: {prefs_zipname} in {srcAnatPath}, we will listed potential zip file for you"
@@ -324,9 +339,22 @@ def anatrois(parser_namespace, dir_analysis,lc_config, sub, ses, layout):
     if not os.path.exists(dstDir_output):
         os.makedirs(dstDir_output)
     
+    if container == "freesurferator":
+        dstDir_work = os.path.join(
+            dir_analysis,
+            "sub-" + sub,
+            "ses-" + ses,
+            "work",
+        )
+        if not os.path.exists(dstDir_work):
+            os.makedirs(dstDir_work)
+
     if pre_fs:
         if not os.path.exists(os.path.join(dstDir_input, "pre_fs")):
             os.makedirs(os.path.join(dstDir_input, "pre_fs"))
+        if control_points:
+            if not os.path.exists(os.path.join(dstDir_input,"control_points")):
+                os.makedirs(os.path.join(dstDir_input,"control_points"))
     else:
         if not os.path.exists(os.path.join(dstDir_input, "anat")):
             os.makedirs(os.path.join(dstDir_input, "anat"))
@@ -366,6 +394,9 @@ def anatrois(parser_namespace, dir_analysis,lc_config, sub, ses, layout):
     # Create the target files
     if pre_fs:
         dstFileT1 = os.path.join(dstDir_input, "pre_fs", "existingFS.zip")
+        if control_points:
+            dstControlPoints = os.path.join(dstDir_input, "control_points", "control.dat")
+            force_symlink(srcControlPoints,dstControlPoints,force)
     else:
         dstFileT1 = os.path.join(dstDir_input, "anat", "T1.nii.gz")
 
