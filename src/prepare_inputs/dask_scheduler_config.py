@@ -3,7 +3,7 @@ MIT License
 
 Copyright (c) 2020-2023 Garikoitz Lerma-Usabiaga
 Copyright (c) 2020-2022 Mengxing Liu
-Copyright (c) 2022-2023 Leandro Lecca
+Copyright (c) 2022-2024 Leandro Lecca
 Copyright (c) 2022-2023 Yongning Lei
 Copyright (c) 2023 David Linhardt
 Copyright (c) 2023 Iñigo Tellaetxe
@@ -13,6 +13,7 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 """
 import logging
+import os
 from dask import config
 from dask.distributed import Client, LocalCluster
 from dask_jobqueue import SGECluster, SLURMCluster
@@ -39,6 +40,10 @@ def initiate_cluster(jobqueue_config, n_job, logdir):
     config.set(scheduler="single-threaded")
     config.set({"distributed.scheduler.allowed-failures": 50})
     config.set(admin__tick__limit="3h")
+    #config.set({"distributed.worker.use-file-locking": False})
+
+    if jobqueue_config["manager"] in ["sge","slurm"] and  not os.path.exists(logdir):
+        os.makedirs(logdir)
     
     if "sge" in jobqueue_config["manager"]:
         envextra = [f"module load {jobqueue_config['apptainer']} " 
@@ -92,7 +97,14 @@ def initiate_cluster(jobqueue_config, n_job, logdir):
         cluster_by_config.scale(jobs=n_job)
     elif "local" in jobqueue_config["manager"]:
         logger.debug("defining local cluster")
-        cluster_by_config=LocalCluster()
+        cluster_by_config = LocalCluster(
+            #silence_logs = True,
+            processes = False,
+            #worker_class = "Worker",
+            n_workers = n_job,
+            threads_per_worker = jobqueue_config["threads_per_worker"],
+            memory_limit = jobqueue_config["memory_limit"],
+        )
         
     else:
         logger.warning(
