@@ -137,17 +137,18 @@ def prepare_dwi_input(parser_namespace, Dir_analysis, lc_config, df_subSes, layo
                 +"---starting to prepare the input files for analysis\n")
     
     container = lc_config["general"]["container"]
-    version = lc_config["container_specific"][container]["version"]
     force = lc_config["general"]["force"]   
     run_lc = parser_namespace.run_lc    
     force= force or run_lc    
-    pre_fs = lc_config["container_specific"][container]["pre_fs"]
     # first thing, if the container specific config is not correct, then not doing anything
     if len(parser_namespace.container_specific_config)==0:
                 logger.error("\n"
                               +f"Input file error: the container specific config is not provided")
                 raise FileNotFoundError("Didn't input container_specific_config, please indicate it in your command line flag -cc")
-    
+    else:
+        version = lc_config["container_specific"][container]["version"]
+        if "anatrois" in container or "freesurferator" in container:
+            pre_fs = lc_config["container_specific"][container]["pre_fs"]
     
     # If freesurferator, before copying configs, existingFS and control input fields need to be in the config.json
     if "freesurferator" in container:
