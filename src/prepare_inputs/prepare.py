@@ -3,7 +3,7 @@ MIT License
 
 Copyright (c) 2020-2023 Garikoitz Lerma-Usabiaga
 Copyright (c) 2020-2022 Mengxing Liu
-Copyright (c) 2022-2023 Leandro Lecca
+Copyright (c) 2022-2024 Leandro Lecca
 Copyright (c) 2022-2023 Yongning Lei
 Copyright (c) 2023 David Linhardt
 Copyright (c) 2023 Iñigo Tellaetxe
@@ -56,7 +56,9 @@ def prepare_analysis_folder(parser_namespace, lc_config):
     version = lc_config["container_specific"][container]["version"]    
     # get the analysis folder information
     
-    container_folder = os.path.join(basedir, 'BIDS','derivatives',f'{container}_{version}')
+    bidsdir_name = lc_config['general']['bidsdir_name']  
+
+    container_folder = os.path.join(basedir, bidsdir_name,'derivatives',f'{container}_{version}')
     if not os.path.isdir(container_folder):
         os.makedirs(container_folder)
     
@@ -73,7 +75,7 @@ def prepare_analysis_folder(parser_namespace, lc_config):
     path_to_analysis_sub_ses_list = os.path.join(Dir_analysis, "subSesList.txt")
     
     if container  not in ['rtp-pipeline', 'fmriprep']:    
-        path_to_analysis_container_specific_config = [os.path.join(Dir_analysis, "config.json")]
+        path_to_analysis_container_specific_config = [os.path.join(Dir_analysis, "config.json")] 
     if container == 'rtp-pipeline':
         path_to_analysis_container_specific_config = [os.path.join(Dir_analysis, "config.json"), os.path.join(Dir_analysis, "tractparams.csv")]
     if container == 'fmriprep':
@@ -115,7 +117,7 @@ def prepare_analysis_folder(parser_namespace, lc_config):
     return Dir_analysis, path_to_analysis_container_specific_config
 
 # %% prepare_input_files
-def prepare_dwi_input(parser_namespace, Dir_analysis, lc_config, df_subSes, layout):
+def prepare_dwi_input(parser_namespace, Dir_analysis, lc_config, df_subSes, layout, path_to_analysis_container_specific_config):
     """
 
     Parameters
@@ -135,18 +137,37 @@ def prepare_dwi_input(parser_namespace, Dir_analysis, lc_config, df_subSes, layo
                 +"---starting to prepare the input files for analysis\n")
     
     container = lc_config["general"]["container"]
-    version = lc_config["container_specific"][container]["version"]
     force = lc_config["general"]["force"]   
     run_lc = parser_namespace.run_lc    
     force= force or run_lc    
-    
     # first thing, if the container specific config is not correct, then not doing anything
     if len(parser_namespace.container_specific_config)==0:
                 logger.error("\n"
                               +f"Input file error: the container specific config is not provided")
                 raise FileNotFoundError("Didn't input container_specific_config, please indicate it in your command line flag -cc")
+    else:
+        version = lc_config["container_specific"][container]["version"]
+        if "anatrois" in container or "freesurferator" in container:
+            pre_fs = lc_config["container_specific"][container]["pre_fs"]
     
-    
+    # If freesurferator, before copying configs, existingFS and control input fields need to be in the config.json
+    if "freesurferator" in container:
+        control_points = lc_config["container_specific"][container]["control_points"] #specific for freesurferator
+        container_specific_config_data = json.load(open(parser_namespace.container_specific_config[0]))
+        container_specific_config_data["inputs"] = {}
+        container_config_inputs = container_specific_config_data["inputs"]
+        # if pre_fs. add pre_fs in the inputs field of the container specific config.json, otherwise add T1.nii.gz
+        if pre_fs:
+            container_config_inputs["pre_fs"] = {'location': {'path': os.path.join('/flywheel/v0/input/pre_fs', 'existingFS.zip'), 'name': 'existingFS.zip'}, 'base': 'file'}
+        else:
+            container_config_inputs["anat"] = {'location': {'path': os.path.join('/flywheel/v0/input/anat', 'T1.nii.gz'), 'name': 'T1.nii.gz'}, 'base': 'file'}
+        # add control_points in the inputs field of the container specific config.json 
+        if control_points:
+            container_config_inputs["control_points"] =  {'location': {'path': '/flywheel/v0/input/control_points/control.dat', 'name': 'control.dat'}, 'base': 'file'}
+        container_specific_config_data["inputs"] = container_config_inputs
+        with open(path_to_analysis_container_specific_config[0] , "w") as outfile:
+            json.dump(container_specific_config_data, outfile, indent = 4)
+
     for row in df_subSes.itertuples(index=True, name="Pandas"):
         sub = row.sub
         ses = row.ses
@@ -205,6 +226,14 @@ def prepare_dwi_input(parser_namespace, Dir_analysis, lc_config, df_subSes, layo
                 do.copy_file(parser_namespace.container_specific_config[0], os.path.join(logdir,'config.json'), force)
                 dwipre.anatrois(parser_namespace, Dir_analysis,lc_config,sub, ses, layout)
             
+            elif "freesurferator" in container:
+                logger.info('we do the freesurferator')
+                do.copy_file(path_to_analysis_container_specific_config[0], os.path.join(logdir,'config.json'), force)
+                dwipre.anatrois(parser_namespace, Dir_analysis,lc_config,sub, ses, layout)
+                # in dwipre.anatrois the config.json can be modified if there are pre_fs and control.dat, so we neeed to copy the .json 
+                # after editing it 
+                
+
             else:
                 logger.error("\n"+
                              f"***An error occurred"

@@ -3,7 +3,7 @@ MIT License
 
 Copyright (c) 2020-2023 Garikoitz Lerma-Usabiaga
 Copyright (c) 2020-2022 Mengxing Liu
-Copyright (c) 2022-2023 Leandro Lecca
+Copyright (c) 2022-2024 Leandro Lecca
 Copyright (c) 2022-2023 Yongning Lei
 Copyright (c) 2023 David Linhardt
 Copyright (c) 2023 Iñigo Tellaetxe
@@ -142,7 +142,7 @@ def read_yaml(path_to_config_file):
     host_str = f"{host}"
     if host == "local":
         launch_mode = config["host_options"]["local"]["launch_mode"]
-        valid_options = ["serial", "parallel"]
+        valid_options = ["serial", "parallel","dask_worker"]
         if launch_mode in valid_options:
             host_str = (
                 f"{host_str}, and commands will be launched in {launch_mode} mode. "

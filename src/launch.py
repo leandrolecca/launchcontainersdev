@@ -4,7 +4,7 @@ MIT License
 
 Copyright (c) 2020-2024 Garikoitz Lerma-Usabiaga
 Copyright (c) 2020-2022 Mengxing Liu
-Copyright (c) 2022-2023 Leandro Lecca
+Copyright (c) 2022-2024 Leandro Lecca
 Copyright (c) 2022-2024 Yongning Lei
 Copyright (c) 2023 David Linhardt
 Copyright (c) 2023 Iñigo Tellaetxe
@@ -74,6 +74,15 @@ def generate_cmd(
 
     path_to_sub_derivatives = os.path.join(dir_analysis, f"sub-{sub}", f"ses-{ses}")
 
+    bind_cmd = ""
+    for bind in bind_options:
+        bind_cmd += f"--bind {bind}:{bind} "
+
+    env_cmd = ""
+    if host == "local":
+        if use_module == True:
+            env_cmd = f"module load {jobqueue_config['apptainer']} &&"
+
     if container in ["anatrois", "rtppreproc", "rtp-pipeline"]:
         logger.info("\n" + f"start to generate the DWI PIPELINE command")
         config_json = lst_container_specific_configs[0]
@@ -81,21 +90,62 @@ def generate_cmd(
             f"\n the sub is {sub} \n the ses is {ses} \n the analysis dir is {dir_analysis}"
         )
 
-        bind_cmd = ""
-        for bind in bind_options:
-            bind_cmd += f"--bind {bind}:{bind} "
-
-        env_cmd = ""
-        if host == "local":
-            if use_module == True:
-                env_cmd = f"module load {jobqueue_config['apptainer']} &&"
-
         cmd = (
             f"{env_cmd} singularity run -e --no-home {bind_cmd}"
             f"--bind {path_to_sub_derivatives}/input:/flywheel/v0/input:ro "
             f"--bind {path_to_sub_derivatives}/output:/flywheel/v0/output "
-            f"--bind {config_json}:/flywheel/v0/config.json "
+            f"--bind {path_to_sub_derivatives}/output/log/config.json:/flywheel/v0/config.json "
             f"{container_name} 1>> {logfilename}.o 2>> {logfilename}.e  "
+        )
+
+    if container == "freesurferator":
+        logger.info("\n" + f"FREESURFERATOR command")
+        config_json = lst_container_specific_configs[0]
+        logger.debug(
+            f"\n the sub is {sub} \n the ses is {ses} \n the analysis dir is {dir_analysis}"
+        )
+
+        cmd = (
+            f"{env_cmd} apptainer run --containall --pwd /flywheel/v0 {bind_cmd}"
+            f"--bind {path_to_sub_derivatives}/input:/flywheel/v0/input:ro "
+            f"--bind {path_to_sub_derivatives}/output:/flywheel/v0/output "
+            f"--bind {path_to_sub_derivatives}/work:/flywheel/v0/work "
+            f"--bind {path_to_sub_derivatives}/output/log/config.json:/flywheel/v0/config.json "
+            f"--env PATH=/opt/freesurfer/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/freesurfer/fsfast/bin:/opt/freesurfer/tktools:/opt/freesurfer/mni/bin:/sbin:/bin:/opt/ants/bin "
+            f"--env LANG=C.UTF-8 "
+            f"--env GPG_KEY=E3FF2839C048B25C084DEBE9B26995E310250568 "
+            f"--env PYTHON_VERSION=3.9.15 "
+            f"--env PYTHON_PIP_VERSION=22.0.4 "
+            f"--env PYTHON_SETUPTOOLS_VERSION=58.1.0 "
+            f"--env PYTHON_GET_PIP_URL=https://github.com/pypa/get-pip/raw/66030fa03382b4914d4c4d0896961a0bdeeeb274/public/get-pip.py "
+            f"--env PYTHON_GET_PIP_SHA256=1e501cf004eac1b7eb1f97266d28f995ae835d30250bec7f8850562703067dc6 "
+            f"--env FLYWHEEL=/flywheel/v0 "
+            f"--env ANTSPATH=/opt/ants/bin/ "
+            f"--env FREESURFER_HOME=/opt/freesurfer "
+            f"--env FREESURFER=/opt/freesurfer "
+            f"--env DISPLAY=:50.0 "
+            f"--env FS_LICENSE=/flywheel/v0/work/license.txt "
+            f"--env OS=Linux "
+            f"--env FS_OVERRIDE=0 "
+            f"--env FSF_OUTPUT_FORMAT=nii.gz "
+            f"--env MNI_DIR=/opt/freesurfer/mni "
+            f"--env LOCAL_DIR=/opt/freesurfer/local "
+            f"--env FSFAST_HOME=/opt/freesurfer/fsfast "
+            f"--env MINC_BIN_DIR=/opt/freesurfer/mni/bin "
+            f"--env MINC_LIB_DIR=/opt/freesurfer/mni/lib "
+            f"--env MNI_DATAPATH=/opt/freesurfer/mni/data "
+            f"--env FMRI_ANALYSIS_DIR=/opt/freesurfer/fsfast "
+            f"--env PERL5LIB=/opt/freesurfer/mni/lib/perl5/5.8.5 "
+            f"--env MNI_PERL5LIB=/opt/freesurfer/mni/lib/perl5/5.8.5 "
+            f"--env XAPPLRESDIR=/opt/freesurfer/MCRv97/X11/app-defaults "
+            f"--env MCR_CACHE_ROOT=/flywheel/v0/output "
+            f"--env MCR_CACHE_DIR=/flywheel/v0/output/.mcrCache9.7 "
+            f"--env FSL_OUTPUT_FORMAT=nii.gz "
+            f"--env ANTS_VERSION=v2.4.2 "
+            f"--env QT_QPA_PLATFORM=xcb "
+            f"--env PWD=/flywheel/v0 "
+            f"{container_name} "
+            f"-c python run.py 1> {logfilename}.o 2> {logfilename}.e  "
         )
 
     # Check which container we are using, and define the command accordingly
@@ -191,10 +241,12 @@ def generate_cmd(
 
     # GLU: I don't think this is right, run is done below, I will make it work just for local but not in here,
     #      it is good that this function just creates the cmd, I would keep it like that
-    # if run_lc:
+    if run_lc:
+        return(sp.run(cmd, shell = True))
+    else:
+        return cmd
     #     sp.run(cmd, shell=True)
-
-    return cmd
+    #return cmd
 
 
 # %% the launchcontainer
@@ -230,12 +282,6 @@ def launchcontainer(
     # Count how many jobs we need to launch from  sub_ses_list
     n_jobs = np.sum(sub_ses_list.RUN == "True")
 
-    client, cluster = new_func(jobqueue_config, logdir, n_jobs)
-
-    logger.info(
-        "---this is the cluster and client\n" + f"{client} \n cluster: {cluster} \n"
-    )
-
     run_lc = parser_namespace.run_lc
 
     lc_configs = []
@@ -257,11 +303,18 @@ def launchcontainer(
             f"    (3) Once the check is done, launch the jobs by adding --run_lc to the first command you executed.\n"
         )
         # If the host is not local, print the job script to be launched in the cluster.
-        if host != "local":
-            logger.critical(
-                f"The cluster job script for this command is:\n"
-                f"{cluster.job_script()}"
-            )
+        if host != "local" or (host == "local" and launch_mode == "dask_worker"):
+            client, cluster = create_cluster_client(jobqueue_config, n_jobs, logdir)
+            if host != "local":
+                logger.critical(
+                    f"The cluster job script for this command is:\n"
+                    f"{cluster.job_script()}"
+                )
+            elif host == "local" and launch_mode == "dask_worker":
+                logger.critical(
+                    f"The cluster job script for this command is:\n"
+                    f"{cluster}"
+                )
     # Iterate over the provided subject list
     commands = list()
     for row in sub_ses_list.itertuples(index=True, name="Pandas"):
@@ -277,7 +330,7 @@ def launchcontainer(
             sess.append(ses)
             dir_analysiss.append(dir_analysis)
             paths_to_analysis_config_json.append(
-                path_to_analysis_container_specific_config
+                path_to_analysis_container_specific_config[0]
             )
             run_lcs.append(run_lc)
 
@@ -288,7 +341,7 @@ def launchcontainer(
                 ses,
                 dir_analysis,
                 path_to_analysis_container_specific_config,
-                run_lc,
+                run_lc
             )
             commands.append(command)
             if not run_lc:
@@ -307,39 +360,44 @@ def launchcontainer(
 
     # RUN mode
     if run_lc and host != "local":
-        # Compose the command to run in the cluster
-        futures = client.map(
-            generate_cmd,
-            lc_configs,
-            subs,
-            sess,
+        run_dask(
+            jobqueue_config, 
+            n_jobs, 
+            logdir, 
+            lc_configs, 
+            subs, 
+            sess, 
             dir_analysiss,
             paths_to_analysis_config_json,
-            run_lcs,
+            run_lcs
         )
-        # Record the progress
-        progress(futures)
-        # Get the info and report it in the logger
-        results = client.gather(futures)
-        logger.info(results)
-        logger.info("###########")
-        # Close the connection with the client and the cluster, and inform about it
-        client.close()
-        cluster.close()
-
-        logger.critical("\n" + "launchcontainer finished, all the jobs are done")
 
     if run_lc and host == "local":
         if launch_mode == "parallel":
-            logger.info(
+            logger.critical(
                 f"\nLocally launching {len(commands)} jobs in parallel, check "
                 f"your server's memory, some jobs might fail\n"
             )
             for i, cmd in enumerate(commands):
-                logger.info(f"LAUNCHING JOB {1}/{len(commands)}:\n{cmd}\n")
+                logger.critical(f"LAUNCHING JOB {1}/{len(commands)}:\n{cmd}\n")
                 sp.run(cmd, shell=True)
-
-        if launch_mode == "serial":  # Run this with dask...
+        elif launch_mode == "dask_worker":
+            logger.critical(
+                f"\nLocally launching {len(commands)} jobs with dask-worker, "
+                f" keep an eye on your server's memory\n"
+            )
+            run_dask(
+                jobqueue_config, 
+                n_jobs, 
+                logdir, 
+                lc_configs, 
+                subs, 
+                sess, 
+                dir_analysiss,
+                paths_to_analysis_config_json,
+                run_lcs
+            )
+        elif launch_mode == "serial":  # Run this with dask...
             logger.critical(
                 f"Locally launching {len(commands)} jobs in series, this might take a lot of time"
             )
@@ -356,10 +414,50 @@ def launchcontainer(
 
     return
 
-
-def new_func(jobqueue_config, logdir, n_jobs):
+def create_cluster_client(jobqueue_config, n_jobs, logdir):
     client, cluster = dsq.dask_scheduler(jobqueue_config, n_jobs, logdir)
     return client, cluster
+
+def run_dask(
+    jobqueue_config, 
+    n_jobs, 
+    logdir, 
+    lc_configs, 
+    subs, 
+    sess, 
+    dir_analysiss,
+    paths_to_analysis_config_json,
+    run_lcs
+    ):
+    
+    client, cluster = create_cluster_client(jobqueue_config, n_jobs, logdir)
+    logger.info(
+        "---this is the cluster and client\n" + f"{client} \n cluster: {cluster} \n"
+    )
+    print(subs)
+    print(sess)
+    # Compose the command to run in the cluster
+    futures = client.map(
+        generate_cmd,
+        lc_configs,
+        subs,
+        sess,
+        dir_analysiss,
+        paths_to_analysis_config_json,
+        run_lcs
+    )
+    # Record the progress
+    progress(futures)
+    # Get the info and report it in the logger
+    results = client.gather(futures)
+    logger.info(results)
+    logger.info("###########")
+    # Close the connection with the client and the cluster, and inform about it
+    client.close()
+    cluster.close()
+
+    logger.critical("\n" + "launchcontainer finished, all the jobs are done")
+    #return client, cluster
 
 
 # %% main()
@@ -410,9 +508,10 @@ def main():
         "anatrois",
         "rtppreproc",
         "rtp-pipeline",
+        "freesurferator"
     ]:  # TODO: define list in another module for reusability accross modules and functions
         prepare.prepare_dwi_input(
-            parser_namespace, dir_analysis, lc_config, sub_ses_list, layout
+            parser_namespace, dir_analysis, lc_config, sub_ses_list, layout, path_to_analysis_container_specific_config
         )
 
     if container == "fmriprep":
