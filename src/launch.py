@@ -15,6 +15,7 @@ The above copyright notice and this permission notice shall be included in all c
 """
 import os
 import subprocess as sp
+from subprocess import Popen
 import numpy as np
 import logging
 
@@ -62,6 +63,7 @@ def generate_cmd(
 
     # Information relevant to the host and container
     jobqueue_config = lc_config["host_options"][host]
+    launch_mode = jobqueue_config["launch_mode"]
     version = lc_config["container_specific"][container]["version"]
     use_module = jobqueue_config["use_module"]
     bind_options = jobqueue_config["bind_options"]
@@ -241,7 +243,7 @@ def generate_cmd(
 
     # GLU: I don't think this is right, run is done below, I will make it work just for local but not in here,
     #      it is good that this function just creates the cmd, I would keep it like that
-    if run_lc:
+    if (run_lc and host != "local") or (run_lc and host == "local" and launch_mode == "dask_worker"):
         return(sp.run(cmd, shell = True))
     else:
         return cmd
@@ -255,7 +257,7 @@ def launchcontainer(
     lc_config,
     sub_ses_list,
     parser_namespace,
-    path_to_analysis_container_specific_config,
+    path_to_analysis_container_specific_config
 ):
     """
     This function launches containers generically in different Docker/Singularity HPCs
@@ -290,7 +292,6 @@ def launchcontainer(
     dir_analysiss = []
     paths_to_analysis_config_json = []
     run_lcs = []
-
     # PREPARATION mode
     if not run_lc:
         logger.critical(
@@ -378,9 +379,9 @@ def launchcontainer(
                 f"\nLocally launching {len(commands)} jobs in parallel, check "
                 f"your server's memory, some jobs might fail\n"
             )
-            for i, cmd in enumerate(commands):
-                logger.critical(f"LAUNCHING JOB {1}/{len(commands)}:\n{cmd}\n")
-                sp.run(cmd, shell=True)
+            procs = [ Popen(i, shell=True) for i in commands ]
+            for p in procs:
+                p.wait()
         elif launch_mode == "dask_worker":
             logger.critical(
                 f"\nLocally launching {len(commands)} jobs with dask-worker, "
@@ -527,7 +528,7 @@ def main():
         lc_config,
         sub_ses_list,
         parser_namespace,
-        path_to_analysis_container_specific_config,
+        path_to_analysis_container_specific_config
     )
 
 
