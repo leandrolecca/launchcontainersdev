@@ -244,7 +244,7 @@ def generate_cmd(
     # GLU: I don't think this is right, run is done below, I will make it work just for local but not in here,
     #      it is good that this function just creates the cmd, I would keep it like that
     if (run_lc and host != "local") or (run_lc and host == "local" and launch_mode == "dask_worker"):
-        return(sp.run(cmd, shell = True))
+       return(sp.run(cmd, shell = True))
     else:
         return cmd
     #     sp.run(cmd, shell=True)
