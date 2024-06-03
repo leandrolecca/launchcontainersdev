@@ -63,7 +63,6 @@ def generate_cmd(
 
     # Information relevant to the host and container
     jobqueue_config = lc_config["host_options"][host]
-    launch_mode = jobqueue_config["launch_mode"]
     version = lc_config["container_specific"][container]["version"]
     use_module = jobqueue_config["use_module"]
     bind_options = jobqueue_config["bind_options"]
@@ -316,7 +315,7 @@ def generate_cmd(
 
     # GLU: I don't think this is right, run is done below, I will make it work just for local but not in here,
     #      it is good that this function just creates the cmd, I would keep it like that
-    if (run_lc and host != "local") or (run_lc and host == "local" and launch_mode == "dask_worker"):
+    if run_lc:
        return(sp.run(cmd, shell = True))
     else:
         return cmd
@@ -415,7 +414,7 @@ def launchcontainer(
                 ses,
                 dir_analysis,
                 path_to_analysis_container_specific_config,
-                run_lc
+                False # set to False to print the command
             )
             commands.append(command)
             if not run_lc:
@@ -582,18 +581,17 @@ def main():
         "anatrois",
         "rtppreproc",
         "rtp-pipeline",
-        "freesurferator"
+        "freesurferator",
+        "rtp2-preproc",
+        "rtp2-pipeline"
     ]:  # TODO: define list in another module for reusability accross modules and functions
+        logger.debug(f"{container} is in the list")
         prepare.prepare_dwi_input(
             parser_namespace, dir_analysis, lc_config, sub_ses_list, layout, path_to_analysis_container_specific_config
         )
+    else:
+        logger.warning(f"{container} is not in the list")
 
-    if container == "fmriprep":
-        prepare.fmriprep_intended_for(sub_ses_list, layout)
-
-    if container in ["prfprepare", "prfanalyze-vista", "prfreport"]:
-        logger.info(f"Container not implemented yet.")
-        pass
 
     # Run mode
     launchcontainer(

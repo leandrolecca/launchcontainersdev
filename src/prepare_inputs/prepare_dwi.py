@@ -273,10 +273,6 @@ def anatrois(parser_namespace, dir_analysis,lc_config, sub, ses, layout):
         logger.debug("\n"
                      +f'the tpye of patter is {type(prefs_zipname)}')
         zips=[]
-        # pattern=r'^anatrois_S.*\.zip$'
-        pattern = lc_config["container_specific"][container]["prefs_zipname"]
-        logger.debug('\n'
-                     +f'the pattern is equal to prefs_zipname?  it is {pattern==prefs_zipname}')
         for filename in os.listdir(srcAnatPath):
             if filename.endswith(".zip") and re.match(prefs_zipname, filename):
                 zips.append(filename)
@@ -465,8 +461,10 @@ def rtppreproc(parser_namespace, Dir_analysis, lc_config, sub, ses, layout):
     #     phaseEnco_direc = container_specific_config_data["config"]["pe_dir"]
     # if version =='1.1.3':
     #     phaseEnco_direc = container_specific_config_data["config"]["acqd"]
-    
-    phaseEnco_direc = container_specific_config_data["config"]["acqd"]
+    if container == "rtp2-preproc":
+        phaseEnco_direc = container_specific_config_data["config"]["pe_dir"]
+    if container == "rtppreproc":
+        phaseEnco_direc = container_specific_config_data["config"]["acqd"]
     # the source directory that stores the output of previous anatrois analysis
     srcDirFs = os.path.join(
         basedir,
