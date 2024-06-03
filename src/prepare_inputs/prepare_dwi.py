@@ -244,7 +244,7 @@ def anatrois(parser_namespace, dir_analysis,lc_config, sub, ses, layout):
     # If we ran freesurfer before:
     if pre_fs:
         logger.info("\n"
-                   +f"########\n the sourceFile T1 will be pre_fs\n#########\n")
+                   +"########\n the sourceFile T1 will be pre_fs\n#########\n")
         if source_path_fszip == "anatrois":
             srcAnatPath = os.path.join(
                 basedir,
@@ -374,7 +374,6 @@ def anatrois(parser_namespace, dir_analysis,lc_config, sub, ses, layout):
                        +annotfile + " does not exist")
         if not os.path.exists(os.path.join(dstDir_input, "annotfile")):
             os.makedirs(os.path.join(dstDir_input, "annotfile"))
-    # seems not implemented
     if mniroizip:
         if os.path.isfile(mniroizip):
             logger.info("\n"
