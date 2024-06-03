@@ -163,10 +163,33 @@ def prepare_dwi_input(parser_namespace, Dir_analysis, lc_config, df_subSes, layo
             container_config_inputs["anat"] = {'location': {'path': os.path.join('/flywheel/v0/input/anat', 'T1.nii.gz'), 'name': 'T1.nii.gz'}, 'base': 'file'}
         # add control_points in the inputs field of the container specific config.json 
         if control_points:
-            container_config_inputs["control_points"] =  {'location': {'path': '/flywheel/v0/input/control_points/control.dat', 'name': 'control.dat'}, 'base': 'file'}
+            container_config_inputs["control_points"] =  {'location': 
+            {'path': '/flywheel/v0/input/control_points/control.dat', 'name': 'control.dat'}, 'base': 'file'}
+        if len(lc_config["container_specific"][container]["mniroizip"]) != 0:
+            container_config_inputs["mniroizip"] =  {'location': 
+            {'path': '/flywheel/v0/input/mniroizip/mniroizip.zip', 'name': 'mniroizip.zip'}, 'base': 'file'}
+        
+
+        # Add the new options
         container_specific_config_data["inputs"] = container_config_inputs
+        # Write the new config file
         with open(path_to_analysis_container_specific_config[0] , "w") as outfile:
             json.dump(container_specific_config_data, outfile, indent = 4)
+
+
+
+        
+        "mniroizip": gear_context.get_input_path("mniroizip"),
+        "annotfile": gear_context.get_input_path("annotfile"),
+        "t1w_anatomical_2": gear_context.get_input_path("t1w_anatomical_2"),
+        "t1w_anatomical_3": gear_context.get_input_path("t1w_anatomical_3"),
+        "t1w_anatomical_4": gear_context.get_input_path("t1w_anatomical_4"),
+        "t1w_anatomical_5": gear_context.get_input_path("t1w_anatomical_5"),
+        "t2w_anatomical": gear_context.get_input_path("t2w_anatomical"),
+        
+
+
+
 
     # If freesurferator, before copying configs, existingFS and control input fields need to be in the config.json
     if "rtp2-preproc" in container:
