@@ -460,7 +460,7 @@ def launchcontainer(
                 f"in {steps} steps, check your server's memory, some jobs might fail\n"
             )
             for stp in range(steps):
-                if stp == range(steps)[-1] and (k+njobs > len(commands) or k+njobs == len(commands)):
+                if stp == range(steps)[-1] and (k+njobs) <= len(commands):
                     selected_commands = commands[k:len(commands)]
                 else:
                     selected_commands = commands[k:k+njobs]
