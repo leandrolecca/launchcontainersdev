@@ -463,6 +463,8 @@ def launchcontainer(
             for stp in range(steps):
                 if stp == range(steps)[-1] and (k+njobs) <= len(commands):
                     selected_commands = commands[k:len(commands)]
+                elif (k+njobs) >= len(commands):
+                    selected_commands = commands[k:len(commands)]
                 else:
                     selected_commands = commands[k:k+njobs]
                 logger.critical(
